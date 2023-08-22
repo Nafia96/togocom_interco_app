@@ -38,16 +38,14 @@
                                     <div class="col-md-6 col-6 b-r">
                                         <strong>CREANCE TOGOCOM AVEC {{ $operator->name }} </strong>
                                         <br>
-                                        <p class="text " style="color: #ec1f28; font-weight: bold;">
-                                            {{ $operator->account->receivable }}
+                                        <p class="text " style="color: #ec1f28; font-weight: bold;">{{ $operator->account->receivable }}
                                             {{ $operator->currency }}</p>
                                     </div>
 
                                     <div class="col-md-6 col-6 b-r">
                                         <strong>DETTE TOGOCOM AVEC {{ $operator->name }} </strong>
                                         <br>
-                                        <p class="text " style="color: #ec1f28; font-weight: bold;">
-                                            {{ $operator->account->debt }}
+                                        <p class="text " style="color: #ec1f28; font-weight: bold;">{{ $operator->account->debt }}
                                             {{ $operator->currency }} </p>
                                     </div>
                                 </div>
@@ -64,8 +62,7 @@
 
                                 <div class="form-group col-md-4">
                                     <label>Periode de facturation:</label>
-                                    <input class="form-control" type="month" id="start" name="period"
-                                        min="2020-01" value="2020-01" />
+                                    <input class="form-control" type="month" id="start" name="periode" min="2020-01" value="2020-01" />
                                 </div>
 
 
@@ -115,9 +112,8 @@
                                                 {{ $operator->currency }}
                                             </div>
                                         </div>
-                                        <input name="amount" type="numeric"
-                                            class="form-control  @error('amount') is-invalid @enderror"
-                                            value="{{ @old('amount') }}" placeholder="" required>
+                                        <input name="amount" type="numeric" class="form-control  @error('amount') is-invalid @enderror" value="{{ @old('amount') }}"
+                                            placeholder="" required>
 
                                         @error('amount')
                                             <span class="invalid-feedback" role="alert">
@@ -136,8 +132,7 @@
                                                 <i class="fas fa-phone"></i>
                                             </div>
                                         </div>
-                                        <input name="call_volume" type="text"
-                                            class="form-control
+                                        <input name="call_volume" type="text" class="form-control
                                             @error('call_volume') is-invalid @enderror"
                                             value="{{ @old('call_volume') }}" placeholder="" required>
 
@@ -162,8 +157,7 @@
                                                 <i class="fas fa-phone"></i>
                                             </div>
                                         </div>
-                                        <input name="number_of_call" type="text"
-                                            class="form-control
+                                        <input name="number_of_call" type="text" class="form-control
                                             @error('number_of_call') is-invalid @enderror"
                                             value="{{ @old('number_of_call') }}" placeholder="" required>
 
@@ -190,23 +184,21 @@
 
 
                         </div>
-                </form>
+
+
+
             </div>
 
 
+            <div class="d-flex justify-content-end container-fluid">
 
+                <button type="submit" class="btn btn-primary waves-effect mb-2">Ajouter la facture</button>
+            </div>
         </div>
+        @endif
 
-
-        <div class="d-flex justify-content-end container-fluid">
-
-            <button type="submit" class="btn btn-primary waves-effect mb-2">Ajouter la facture</button>
-        </div>
+        </form>
     </div>
-    @endif
-
-    </form>
-</div>
 </div>
 </div>
 </div>
