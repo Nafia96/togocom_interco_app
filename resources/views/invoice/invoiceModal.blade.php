@@ -62,7 +62,7 @@
 
                                 <div class="form-group col-md-4">
                                     <label>Periode de facturation:</label>
-                                    <input class="form-control" type="month" id="start" name="periode" min="2020-01" value="2020-01" />
+                                    <input class="form-control" type="month" id="start" name="period" min="2020-01" value="2020-01" />
                                 </div>
 
 
