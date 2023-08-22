@@ -31,7 +31,7 @@
                         <div class="tab-content tab-bordered" id="myTab3Content">
                             <div class="tab-pane fade show active" id="about" role="tabpanel"
                                 aria-labelledby="home-tab2"
-                                style="background-color:#fcca29; color: aliceblue;  border-radius: 13px;">
+                                style="background-color:#fcca29; color: #ec1f28;  border-radius: 13px;">
 
                                 <div class="row">
 

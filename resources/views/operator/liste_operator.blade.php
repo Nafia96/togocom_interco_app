@@ -53,7 +53,7 @@
                                     <td>{{ $operator->currency }}</td>
                                     <td>{{ $operator->created_at}}</td>
 
-                                    <td style="width:18%">
+                                    <td style="width:25%">
                                         <span data-toggle="tooltip" data-placement="top" title="Voir les informations de l'opérateur en détail">
                                             <a class=" mb-2 btn btn-sm btn-dark" data-toggle="modal" data-target="{{'#voirOperatorModal'.$operator->id}}">
                                                 <i class="fas fa-eye text-white "> </i>

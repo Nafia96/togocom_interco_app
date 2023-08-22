@@ -8,6 +8,7 @@ use App\Models\Client;
 use App\Models\Account;
 use App\Models\Journal;
 use App\Models\Operation;
+use App\Models\Resum;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -38,117 +39,133 @@ class OperationController extends Controller
 
         $tgc_account = Account::where('account_number', 000)->first();
 
+        $resum = Resum::where(['id_operator' => $operator->id], ['period' => $data['period']])->first();
 
-        $invoice = Invoice::create([
-            //tgc_invoice is 1 if the invoice is Togocom own
-            'tgc_invoice' => 1,
-            'invoice_type' => $data['invoice_type'],
-            'invoice_number' => $data['invoice_number'],
-            'period' =>  $data['period'],
-            'invoice_date' =>  $data['invoice_date'],
-            'call_volume' =>  $data['call_volume'],
-            'number_of_call' =>  $data['number_of_call'],
-            'add_by' => session('id'),
-            'amount' => $data['amount'],
-            'comment' =>  $data['comment'],
+        dd($resum);
+
+        if ($resum == null) {
 
 
 
-        ]);
 
-
-        if($data['invoice_type'] == 'real')
-        {
-
-            $operation = Operation::create([
-                //Operation type 1 it mees that the facturation is receivable
-                'operation_type' => 1,
-                'account_number' => $op_account->account_number,
-                'operation_name' =>  'Facturation de TOGOCOM à '.$operator->name,
-                'comment' =>  $data['comment'],
-                'id_op_account' =>  $op_account->id,
-                'id_operator' =>  $operator->id,
+            $invoice = Invoice::create([
+                //tgc_invoice is 1 if the invoice is Togocom own
+                'tgc_invoice' => 1,
+                'invoice_type' => $data['invoice_type'],
+                'invoice_number' => $data['invoice_number'],
+                'period' =>  $data['period'],
+                'invoice_date' =>  $data['invoice_date'],
+                'call_volume' =>  $data['call_volume'],
+                'number_of_call' =>  $data['number_of_call'],
                 'add_by' => session('id'),
                 'amount' => $data['amount'],
-                'new_debt' => $op_account->debt,
-                'new_receivable' => $op_account->receivable + $data['amount'],
-                'new_netting' => $op_account->netting + $data['amount'],
-                'invoice_type' => $data['invoice_type'],
-                'id_invoice' =>  $invoice->id,
-
-
-
-
-            ]);
-
-            Account::where(['id' => $tgc_account->id ])->update([
-                'receivable' => $tgc_account->receivable + $data['amount'],
-
-            ]);
-
-            Account::where(['id' => $op_account->id ])->update([
-                'receivable' => $operation->new_receivable,
-                'netting' => $operation->new_netting,
-
-            ]);
-
-        }elseif($data['invoice_type'] == 'estimated'){
-
-            $operation = Operation::create([
-                //Operation type 1 it meen that the facturation is receivable
-                'operation_type' => 1,
-                'account_number' => $op_account->account_number,
-                'operation_name' =>  'Facturation de '.$operator->name,
                 'comment' =>  $data['comment'],
-                'id_op_account' =>  $op_account->id,
-                'id_operator' =>  $operator->id,
-                'add_by' => session('id'),
-                'amount' => $data['amount'],
-                'new_debt' => $op_account->debt,
-                'new_receivable' => $op_account->receivable + $data['amount'],
-                'new_netting' => $op_account->netting + $data['amount'],
-                'invoice_type' => $data['invoice_type'],
-                'id_invoice' =>  $invoice->id,
-
 
 
 
             ]);
 
-            Account::where(['id' => $tgc_account->id ])->update([
-                'receivable' => $tgc_account->receivable + $data['amount'],
+            $resum = Resum::create([
+                'id_operator' => $operator->id,
+                'period' => $data['period'],
+                'receivable' =>  $data['amount'],
+                'netting' => $data['amount'],
+                'id_invoice_1' =>  $invoice->id,
+                'id_invoice_2' =>  $invoice->id,
 
             ]);
 
-            Account::where(['id' => $op_account->id ])->update([
-                'receivable' => $operation->new_receivable,
-                'netting' => $operation->new_netting,
 
-            ]);
+            if ($data['invoice_type'] == 'real') {
 
-        }else{
-
-
-            $operation = Operation::create([
-                //Operation type 1 it meen that the facturation is receivable
-                'operation_type' => 1,
-                'account_number' => $op_account->account_number,
-                'operation_name' =>  'Facturation de '.$operator->name,
-                'comment' =>  $data['comment'],
-                'id_op_account' =>  $op_account->id,
-                'id_operator' =>  $operator->id,
-                'add_by' => session('id'),
-                'amount' => $data['amount'],
-                'invoice_type' => $data['invoice_type'],
-                'id_invoice' =>  $invoice->id,
+                $operation = Operation::create([
+                    //Operation type 1 it mees that the facturation is receivable
+                    'operation_type' => 1,
+                    'account_number' => $op_account->account_number,
+                    'operation_name' =>  'Facturation de TOGOCOM à ' . $operator->name,
+                    'comment' =>  $data['comment'],
+                    'id_op_account' =>  $op_account->id,
+                    'id_operator' =>  $operator->id,
+                    'add_by' => session('id'),
+                    'amount' => $data['amount'],
+                    'new_debt' => $op_account->debt,
+                    'new_receivable' => $op_account->receivable + $data['amount'],
+                    'new_netting' => $op_account->netting + $data['amount'],
+                    'invoice_type' => $data['invoice_type'],
+                    'id_invoice' =>  $invoice->id,
 
 
 
 
+                ]);
 
-            ]);
 
-        }
+
+                Account::where(['id' => $tgc_account->id])->update([
+                    'receivable' => $tgc_account->receivable + $data['amount'],
+
+                ]);
+
+                Account::where(['id' => $op_account->id])->update([
+                    'receivable' => $operation->new_receivable,
+                    'netting' => $operation->new_netting,
+
+                ]);
+            } elseif ($data['invoice_type'] == 'estimated') {
+
+                $operation = Operation::create([
+                    //Operation type 1 it meen that the facturation is receivable
+                    'operation_type' => 1,
+                    'account_number' => $op_account->account_number,
+                    'operation_name' =>  'Facturation de ' . $operator->name,
+                    'comment' =>  $data['comment'],
+                    'id_op_account' =>  $op_account->id,
+                    'id_operator' =>  $operator->id,
+                    'add_by' => session('id'),
+                    'amount' => $data['amount'],
+                    'new_debt' => $op_account->debt,
+                    'new_receivable' => $op_account->receivable + $data['amount'],
+                    'new_netting' => $op_account->netting + $data['amount'],
+                    'invoice_type' => $data['invoice_type'],
+                    'id_invoice' =>  $invoice->id,
+
+
+
+
+                ]);
+
+                Account::where(['id' => $tgc_account->id])->update([
+                    'receivable' => $tgc_account->receivable + $data['amount'],
+
+                ]);
+
+                Account::where(['id' => $op_account->id])->update([
+                    'receivable' => $operation->new_receivable,
+                    'netting' => $operation->new_netting,
+
+                ]);
+            } else {
+
+
+                $operation = Operation::create([
+                    //Operation type 1 it meen that the facturation is receivable
+                    'operation_type' => 1,
+                    'account_number' => $op_account->account_number,
+                    'operation_name' =>  'Facturation de ' . $operator->name,
+                    'comment' =>  $data['comment'],
+                    'id_op_account' =>  $op_account->id,
+                    'id_operator' =>  $operator->id,
+                    'add_by' => session('id'),
+                    'amount' => $data['amount'],
+                    'invoice_type' => $data['invoice_type'],
+                    'id_invoice' =>  $invoice->id,
+
+
+
+
+
+                ]);
+            }
 
 
 
@@ -160,7 +177,11 @@ class OperationController extends Controller
             ]);
 
 
-        return redirect()->route('operations_list', ['id_operator' => $operator->id])->with('flash_message_success', 'Facture ajouté avec succès!');
+            return redirect()->route('operations_list', ['id_operator' => $operator->id])->with('flash_message_success', 'Facture ajouté avec succès!');
+        } else {
+
+            return redirect()->back()->with('flash_message_error', 'Cette facture existe déjà!');
+        }
     }
 
     //Operator to Togocom
@@ -185,116 +206,131 @@ class OperationController extends Controller
 
         $op_account = Account::where('id_operator', $operator->id)->first();
 
+        $resum = Resum::where(['id_operator' => $operator->id], ['period' => $data['period']])->first();
+
+
         $tgc_account = Account::where('account_number', 000)->first();
 
 
-        $invoice = Invoice::create([
-            //tgc_invoice is 2 if the invoice is Operator own
-            'tgc_invoice' => 2,
-            'invoice_type' => $data['invoice_type'],
-            'invoice_number' => $data['invoice_number'],
-            'period' =>  $data['period'],
-            'invoice_date' =>  $data['invoice_date'],
-            'call_volume' =>  $data['call_volume'],
-            'number_of_call' =>  $data['call_volume'],
-            'add_by' => session('id'),
-            'amount' => $data['amount'],
-            'comment' =>  $data['comment'],
 
+        if ($resum->debt == null) {
 
-
-        ]);
-
-        if($data['invoice_type'] == 'real')
-        {
-
-            $operation = Operation::create([
-                //Operation type 2 it mees that the facturation is debt
-                'operation_type' => 2,
-                'account_number' => $op_account->account_number,
-                'operation_name' =>  'Facturation de '.$operator->name.' à TOGOCOM',
-                'comment' =>  $data['comment'],
-                'id_invoice' =>  $invoice->id,
-                'id_op_account' =>  $op_account->id,
-                'id_operator' =>  $operator->id,
+            $invoice = Invoice::create([
+                //tgc_invoice is 2 if the invoice is Operator own
+                'tgc_invoice' => 2,
+                'invoice_type' => $data['invoice_type'],
+                'invoice_number' => $data['invoice_number'],
+                'period' =>  $data['period'],
+                'invoice_date' =>  $data['invoice_date'],
+                'call_volume' =>  $data['call_volume'],
+                'number_of_call' =>  $data['call_volume'],
                 'add_by' => session('id'),
                 'amount' => $data['amount'],
-                'new_receivable' => $op_account->receivable,
-                'new_debt' => $op_account->debt + $data['amount'],
-                'new_netting' => $op_account->netting - $data['amount'],
-                'invoice_type' => $data['invoice_type'],
-
-
-
-            ]);
-
-            Account::where(['id' => $tgc_account->id ])->update([
-                'debt' => $tgc_account->debt + $data['amount'],
-
-            ]);
-
-            Account::where(['id' => $op_account->id ])->update([
-                'debt' => $operation->new_debt,
-                'netting' => $operation->new_netting,
-
-            ]);
-
-        }elseif($data['invoice_type'] == 'estimated'){
-
-            $operation = Operation::create([
-                //Operation type 2 it mees that the facturation is receivable
-                'operation_type' => 2,
-                'account_number' => $op_account->account_number,
-                'operation_name' =>  'Facturation de '.$operator->name.' à TOGOCOM',
                 'comment' =>  $data['comment'],
-                'id_invoice' =>  $invoice->id,
-
-                'id_op_account' =>  $op_account->id,
-                'id_operator' =>  $operator->id,
-                'add_by' => session('id'),
-                'amount' => $data['amount'],
-                'new_receivable' => $op_account->receivable,
-                'new_debt' => $op_account->debt + $data['amount'],
-                'new_netting' => $op_account->netting - $data['amount'],
-                'invoice_type' => $data['invoice_type'],
 
 
 
             ]);
 
-            Account::where(['id' => $tgc_account->id ])->update([
-                'debt' => $tgc_account->debt + $data['amount'],
+
+            Resum::where(
+                ['id_operator' => $operator->id],
+                ['period' => $data['period']]
+            )->update([
+                'debt' =>  $data['amount'],
+                'netting' => $resum->netting - $data['amount'],
+                'id_invoice_2' =>  $invoice->id,
 
             ]);
 
-            Account::where(['id' => $op_account->id ])->update([
-                'receivable' => $operation->new_debt,
-                'netting' => $operation->new_netting,
-
-            ]);
-
-        }else{
 
 
-            $operation = Operation::create([
-                //Operation type 2 it mees that the facturation is receivable
-                'operation_type' => 2,
-                'account_number' => $op_account->account_number,
-                'operation_name' =>  'Facturation de '.$operator->name.' à TOGOCOM',
-                'comment' =>  $data['comment'],
-                'id_invoice' =>  $invoice->id,
+            if ($data['invoice_type'] == 'real') {
 
-                'id_op_account' =>  $op_account->id,
-                'id_operator' =>  $operator->id,
-                'add_by' => session('id'),
-                'amount' => $data['amount'],
-                'invoice_type' => $data['invoice_type'],
+                $operation = Operation::create([
+                    //Operation type 2 it mees that the facturation is debt
+                    'operation_type' => 2,
+                    'account_number' => $op_account->account_number,
+                    'operation_name' =>  'Facturation de ' . $operator->name . ' à TOGOCOM',
+                    'comment' =>  $data['comment'],
+                    'id_invoice' =>  $invoice->id,
+                    'id_op_account' =>  $op_account->id,
+                    'id_operator' =>  $operator->id,
+                    'add_by' => session('id'),
+                    'amount' => $data['amount'],
+                    'new_receivable' => $op_account->receivable,
+                    'new_debt' => $op_account->debt + $data['amount'],
+                    'new_netting' => $op_account->netting - $data['amount'],
+                    'invoice_type' => $data['invoice_type'],
 
 
 
-            ]);
+                ]);
 
-        }
+                Account::where(['id' => $tgc_account->id])->update([
+                    'debt' => $tgc_account->debt + $data['amount'],
+
+                ]);
+
+                Account::where(['id' => $op_account->id])->update([
+                    'debt' => $operation->new_debt,
+                    'netting' => $operation->new_netting,
+
+                ]);
+            } elseif ($data['invoice_type'] == 'estimated') {
+
+                $operation = Operation::create([
+                    //Operation type 2 it mees that the facturation is receivable
+                    'operation_type' => 2,
+                    'account_number' => $op_account->account_number,
+                    'operation_name' =>  'Facturation de ' . $operator->name . ' à TOGOCOM',
+                    'comment' =>  $data['comment'],
+                    'id_invoice' =>  $invoice->id,
+
+                    'id_op_account' =>  $op_account->id,
+                    'id_operator' =>  $operator->id,
+                    'add_by' => session('id'),
+                    'amount' => $data['amount'],
+                    'new_receivable' => $op_account->receivable,
+                    'new_debt' => $op_account->debt + $data['amount'],
+                    'new_netting' => $op_account->netting - $data['amount'],
+                    'invoice_type' => $data['invoice_type'],
+
+
+
+                ]);
+
+                Account::where(['id' => $tgc_account->id])->update([
+                    'debt' => $tgc_account->debt + $data['amount'],
+
+                ]);
+
+                Account::where(['id' => $op_account->id])->update([
+                    'receivable' => $operation->new_debt,
+                    'netting' => $operation->new_netting,
+
+                ]);
+            } else {
+
+
+                $operation = Operation::create([
+                    //Operation type 2 it mees that the facturation is receivable
+                    'operation_type' => 2,
+                    'account_number' => $op_account->account_number,
+                    'operation_name' =>  'Facturation de ' . $operator->name . ' à TOGOCOM',
+                    'comment' =>  $data['comment'],
+                    'id_invoice' =>  $invoice->id,
+
+                    'id_op_account' =>  $op_account->id,
+                    'id_operator' =>  $operator->id,
+                    'add_by' => session('id'),
+                    'amount' => $data['amount'],
+                    'invoice_type' => $data['invoice_type'],
+
+
+
+                ]);
+            }
 
 
 
@@ -308,7 +344,11 @@ class OperationController extends Controller
 
 
             return redirect()->route('operations_list', ['id_operator' => $operator->id])->with('flash_message_success', 'Facture ajouté avec succès!');
+        } else {
+
+            return redirect()->back()->with('flash_message_error', 'Cette facture existe déjà!');
         }
+    }
 
     //Operator operation list
 
@@ -317,26 +357,26 @@ class OperationController extends Controller
 
         $operator = Operator::where('id', $id_operator)->first();
 
-        $operations = Operation::where(['id_operator' => $id_operator,'is_delete'=>0])
+        $operations = Operation::where(['id_operator' => $id_operator, 'is_delete' => 0])
             ->orderBy('updated_at', 'DESC')
             ->get();
 
         return view('operator.operation_list', compact('operations', 'operator'))->render();
     }
 
-        //Operator invoice list
+    //Operator invoice list
 
-        public function invoice_list($id_operator)
-        {
+    public function invoice_list($id_operator)
+    {
 
-            $invoice = Invoice::where('id', $id_operator)->first();
+        $invoice = Invoice::where('id', $id_operator)->first();
 
-            $operations = Operation::where(['id_operator' => $id_operator,'is_delete'=>0])
-                ->orderBy('updated_at', 'DESC')
-                ->get();
+        $operations = Operation::where(['id_operator' => $id_operator, 'is_delete' => 0])
+            ->orderBy('updated_at', 'DESC')
+            ->get();
 
-            return view('operator.operation_list', compact('operations', 'operator'))->render();
-        }
+        return view('operator.operation_list', compact('operations', 'operator'))->render();
+    }
 
 
     //All Operator operations list
@@ -372,7 +412,7 @@ class OperationController extends Controller
         if ($data['comission'] == 1) {
 
             $entre = ($data['nombre_de_jour'] - 1) * $compte->taux_cotisation;
-                    $new_solde_actuel = $compte->solde_actuelle + $entre;
+            $new_solde_actuel = $compte->solde_actuelle + $entre;
 
             $operation = Operation::create([
                 'libelle_operation' => 'Cotisation tontine',
@@ -380,10 +420,10 @@ class OperationController extends Controller
                 'type_operation' => 'cotisation',
                 'nombre_jour' => $data['nombre_de_jour'],
                 'taux_cotisation' => $compte->taux_cotisation,
-                'entre' =>$data['nombre_de_jour']* $compte->taux_cotisation,
-                'benefice' =>$compte->taux_cotisation,
+                'entre' => $data['nombre_de_jour'] * $compte->taux_cotisation,
+                'benefice' => $compte->taux_cotisation,
                 'tous_entre' => $data['nombre_de_jour'] * $compte->taux_cotisation,
-                'sortie' =>0,
+                'sortie' => 0,
                 'solde_restant' => $new_solde_actuel,
                 'account_number' => $compte->account_number,
                 'add_by' => session('id'),
@@ -407,46 +447,44 @@ class OperationController extends Controller
                 'beniefice_accumule' => $benefice_total_agence,
 
             ]);
-
         } else {
 
             $entre = $data['nombre_de_jour'] * $compte->taux_cotisation;
 
 
-        $new_solde_actuel = $compte->solde_actuelle + $entre;
+            $new_solde_actuel = $compte->solde_actuelle + $entre;
 
-        $operation = Operation::create([
-            'libelle_operation' => 'Cotisation tontine',
-            'type_compte' => $compte->type_compte,
-            'type_operation' => 'cotisation',
-            'nombre_jour' => $data['nombre_de_jour'],
-            'taux_cotisation' => $compte->taux_cotisation,
-            'entre' => $entre,
-            'tous_entre' => $data['nombre_de_jour'] * $compte->taux_cotisation,
-            'benefice' =>0,
-            'sortie' => 0,
-            'solde_restant' => $new_solde_actuel,
-            'account_number' => $compte->account_number,
-            'add_by' => session('id'),
-            'id_compte' => $compte->id,
-            'id_client' => $compte->id_client,
-            'id_agence' => session('id_agence'),
-        ]);
+            $operation = Operation::create([
+                'libelle_operation' => 'Cotisation tontine',
+                'type_compte' => $compte->type_compte,
+                'type_operation' => 'cotisation',
+                'nombre_jour' => $data['nombre_de_jour'],
+                'taux_cotisation' => $compte->taux_cotisation,
+                'entre' => $entre,
+                'tous_entre' => $data['nombre_de_jour'] * $compte->taux_cotisation,
+                'benefice' => 0,
+                'sortie' => 0,
+                'solde_restant' => $new_solde_actuel,
+                'account_number' => $compte->account_number,
+                'add_by' => session('id'),
+                'id_compte' => $compte->id,
+                'id_client' => $compte->id_client,
+                'id_agence' => session('id_agence'),
+            ]);
 
-        Account::where(['id' => $data['id_compte']])->update([
-            'solde_actuelle' => $new_solde_actuel,
-            'nombre_de_retrait' => $compte->nombre_de_retrait + $data['nombre_de_jour'],
+            Account::where(['id' => $data['id_compte']])->update([
+                'solde_actuelle' => $new_solde_actuel,
+                'nombre_de_retrait' => $compte->nombre_de_retrait + $data['nombre_de_jour'],
 
 
-        ]);
+            ]);
 
-        $solde_total_agence = $agence->solde_total + ($data['nombre_de_jour'] * $compte->taux_cotisation);
+            $solde_total_agence = $agence->solde_total + ($data['nombre_de_jour'] * $compte->taux_cotisation);
 
-        Operator::where(['id' => session('id_agence')])->update([
-            'solde_total' => $solde_total_agence,
+            Operator::where(['id' => session('id_agence')])->update([
+                'solde_total' => $solde_total_agence,
 
-        ]);
-
+            ]);
         }
 
         $user = $compte->client->user;
@@ -571,7 +609,7 @@ class OperationController extends Controller
         $id_agence = session('id_agence');
 
         $entre = Operation::where(['id_agence' => $id_agence, 'is_delete' => 0])->sum('entre');
-        $benefice= Operation::where(['id_agence' => $id_agence, 'is_delete' => 0])->sum('benefice');
+        $benefice = Operation::where(['id_agence' => $id_agence, 'is_delete' => 0])->sum('benefice');
         $sortie = Operation::where(['id_agence' => $id_agence, 'is_delete' => 0])->sum('sortie');
         $versement = Operation::where(['id_agence' => $id_agence, 'is_delete' => 0])->sum('versement');
         $agence = Operator::where(['id' => $id_agence, 'is_delete' => 0])->first();
@@ -580,76 +618,74 @@ class OperationController extends Controller
         $solde = $entre - ($versement + $sortie);
 
 
-            if ($data['somme'] < $solde ) {
+        if ($data['somme'] < $solde) {
 
-                $versement = ($data['somme']);
+            $versement = ($data['somme']);
 
-                $new_solde_actuel = $solde -$data['somme'];
+            $new_solde_actuel = $solde - $data['somme'];
 
-                $operation = Operation::create([
+            $operation = Operation::create([
                 'libelle_operation' => "Versement à l'agence principal",
                 'type_compte' => 'principal',
-                    'type_operation' => 'versement',
-                    'entre' => 0,
-                    'sortie' => 0,
-                    'benefice' => 0,
-                    'versement' => $versement,
-                    'solde_restant' => $new_solde_actuel,
-                    'add_by' => session('id'),
-                    'id_compte' => $compte->id,
+                'type_operation' => 'versement',
+                'entre' => 0,
+                'sortie' => 0,
+                'benefice' => 0,
+                'versement' => $versement,
+                'solde_restant' => $new_solde_actuel,
+                'add_by' => session('id'),
+                'id_compte' => $compte->id,
                 'type_compte' => $compte->type_compte,
 
-                    'id_client' => 1,
-                    'id_agence' => session('id_agence'),
-                ]);
+                'id_client' => 1,
+                'id_agence' => session('id_agence'),
+            ]);
 
-                $new_solde_admin_account = $compte->solde_actuell + $data['somme'];
+            $new_solde_admin_account = $compte->solde_actuell + $data['somme'];
 
-                Account::where(['id' => 1])->update([
-                    'solde_actuelle' => $new_solde_admin_account,
+            Account::where(['id' => 1])->update([
+                'solde_actuelle' => $new_solde_admin_account,
 
-                ]);
+            ]);
 
-                $solde_total_agence = $new_solde_actuel;
+            $solde_total_agence = $new_solde_actuel;
 
-                Operator::where(['id' => session('id_agence')])->update([
-                    'solde_total' => $solde_total_agence,
+            Operator::where(['id' => session('id_agence')])->update([
+                'solde_total' => $solde_total_agence,
 
-                ]);
-
-
-                $user = $compte->client->user;
-
-                Journal::create([
-                    'action' => "Versement de " . $data['somme'] . "Fr cfa  sur le compte  " . $compte->account_number . "de l'agence principal par l'agence : ". $agence->nom .". Le nouveau solde de l'agence est:" . $solde_total_agence . "Fr cfa et le nouveau solde de l'agence principal est:" . $new_solde_admin_account,
-                    'user_id' => session('id'),
-                ]);
-
-                return redirect('agence_operations')->with('flash_message_success', 'Versement effectuer  avec succès!');
-            } else {
-
-                return redirect()->back()->with('flash_message_error', 'Solde agence insuffisant   pour effectuer cette opération!');
-            }
+            ]);
 
 
+            $user = $compte->client->user;
+
+            Journal::create([
+                'action' => "Versement de " . $data['somme'] . "Fr cfa  sur le compte  " . $compte->account_number . "de l'agence principal par l'agence : " . $agence->nom . ". Le nouveau solde de l'agence est:" . $solde_total_agence . "Fr cfa et le nouveau solde de l'agence principal est:" . $new_solde_admin_account,
+                'user_id' => session('id'),
+            ]);
+
+            return redirect('agence_operations')->with('flash_message_success', 'Versement effectuer  avec succès!');
+        } else {
+
+            return redirect()->back()->with('flash_message_error', 'Solde agence insuffisant   pour effectuer cette opération!');
+        }
     }
 
 
     public function retrait_admin()
     {
-        $versement = Operation::where(['is_delete'=>0])->sum('versement');
-        $benefice = Operation::where(['is_delete'=>0])->sum('benefice');
-        $retrait_admin = Operation::where(['is_delete'=>0,'type_operation' => 'retrait_admin'])->sum('sortie');
+        $versement = Operation::where(['is_delete' => 0])->sum('versement');
+        $benefice = Operation::where(['is_delete' => 0])->sum('benefice');
+        $retrait_admin = Operation::where(['is_delete' => 0, 'type_operation' => 'retrait_admin'])->sum('sortie');
 
 
         $benefice_act = $benefice - $retrait_admin;
 
-         $solde = $versement - $retrait_admin;
+        $solde = $versement - $retrait_admin;
 
 
 
 
-        return view('comptes.retrait_admin', compact('solde', 'retrait_admin','versement','benefice_act'));
+        return view('comptes.retrait_admin', compact('solde', 'retrait_admin', 'versement', 'benefice_act'));
     }
 
 
@@ -667,47 +703,45 @@ class OperationController extends Controller
         $compte = Account::where('account_number', 1)->first();
 
 
-            if ($data['somme'] <= $data['solde'] ) {
+        if ($data['somme'] <= $data['solde']) {
 
-                $sortie = $data['somme'];
+            $sortie = $data['somme'];
 
-                $new_solde_actuel = $data['solde'] - $data['somme'];
+            $new_solde_actuel = $data['solde'] - $data['somme'];
 
-                $operation = Operation::create([
+            $operation = Operation::create([
                 'libelle_operation' => "Retrait sur le compte  principal de la société",
 
-                    'type_operation' => 'retrait_admin',
-                    'entre' => 0,
-                    'benefice' => 0,
-                    'versement' => 0,
-                    'sortie' => $sortie,
-                    'solde_restant' => $new_solde_actuel,
-                    'add_by' => session('id'),
-                    'id_compte' => $compte->id,
+                'type_operation' => 'retrait_admin',
+                'entre' => 0,
+                'benefice' => 0,
+                'versement' => 0,
+                'sortie' => $sortie,
+                'solde_restant' => $new_solde_actuel,
+                'add_by' => session('id'),
+                'id_compte' => $compte->id,
                 'type_compte' => $compte->type_compte,
 
-                    'id_client' => 1,
-                    'id_agence' => session('id_agence'),
-                ]);
+                'id_client' => 1,
+                'id_agence' => session('id_agence'),
+            ]);
 
 
-                Account::where(['id' => 1])->update([
-                    'solde_actuelle' => $new_solde_actuel,
+            Account::where(['id' => 1])->update([
+                'solde_actuelle' => $new_solde_actuel,
 
-                ]);
+            ]);
 
-                Journal::create([
-                    'action' => "Retrai de " . $data['somme'] . "Fr cfa sur le compte   de l'agence principal. Le nouveau solde sur le compte de la société est: " . $new_solde_actuel ,
-                    'user_id' => session('id'),
-                ]);
+            Journal::create([
+                'action' => "Retrai de " . $data['somme'] . "Fr cfa sur le compte   de l'agence principal. Le nouveau solde sur le compte de la société est: " . $new_solde_actuel,
+                'user_id' => session('id'),
+            ]);
 
-                return redirect('dashboard')->with('flash_message_success', 'Retrait effectuer  avec succès!');
-            } else {
+            return redirect('dashboard')->with('flash_message_success', 'Retrait effectuer  avec succès!');
+        } else {
 
-                return redirect()->back()->with('flash_message_error', 'Solde insuffisant sur le compte de la société  pour effectuer cette opération!');
-            }
-
-
+            return redirect()->back()->with('flash_message_error', 'Solde insuffisant sur le compte de la société  pour effectuer cette opération!');
+        }
     }
 
 
@@ -719,7 +753,7 @@ class OperationController extends Controller
 
         $client = Client::where('id', $id_client)->first();
 
-        $operations = Operation::where(['id_client' => $id_client, 'id_compte' => $id_compte, 'is_delete'=>0])
+        $operations = Operation::where(['id_client' => $id_client, 'id_compte' => $id_compte, 'is_delete' => 0])
             ->orderBy('updated_at', 'DESC')
             ->get();
 
@@ -731,7 +765,7 @@ class OperationController extends Controller
 
         if (getUserType()->type_user == 2) {
 
-            $operations = Operation::where(['id_agence' => session('id_agence'),'is_delete'=>0])
+            $operations = Operation::where(['id_agence' => session('id_agence'), 'is_delete' => 0])
                 ->orderBy('updated_at', 'DESC')
                 ->get();
 
@@ -775,7 +809,7 @@ class OperationController extends Controller
     {
 
 
-        $operations = Operation::where('is_delete',0)->get();
+        $operations = Operation::where('is_delete', 0)->get();
 
 
         return view('comptes.agence_liste_operations', compact('operations'))->render();
@@ -804,51 +838,50 @@ class OperationController extends Controller
         $agence = Operator::where('id', session('id_agence'))->first();
 
 
-            $benefice = 100;
-            $carnet = 200;
+        $benefice = 100;
+        $carnet = 200;
 
-            $new_benefice_actuel = $compte->beniefice_accumule + $benefice;
+        $new_benefice_actuel = $compte->beniefice_accumule + $benefice;
 
-             Operation::create([
-                'libelle_operation' => 'Achat de carnet',
-                'type_operation' => 'carnet',
-                'entre' => 300,
-                'sortie' => 0,
-                'benefice' => 100,
-                'tous_entre' => 300,
-                'account_number' => $compte->account_number,
-                'type_compte' => $compte->type_compte,
-                'solde_restant' => $compte->solde_actuelle,
-                'add_by' => session('id'),
-                'id_compte' => $compte->id,
-                'id_client' => $compte->id_client,
-                'id_agence' => session('id_agence'),
-            ]);
-
-
-
-            Account::where(['id' => $id_compte])->update([
-                'beniefice_accumule' =>$new_benefice_actuel,
-
-            ]);
-
-            $new_benefice_accumule = $agence->beniefice_accumule + $benefice;
-
-            Operator::where(['id' => session('id_agence')])->update([
-                'beniefice_accumule' => $new_benefice_accumule,
-
-            ]);
+        Operation::create([
+            'libelle_operation' => 'Achat de carnet',
+            'type_operation' => 'carnet',
+            'entre' => 300,
+            'sortie' => 0,
+            'benefice' => 100,
+            'tous_entre' => 300,
+            'account_number' => $compte->account_number,
+            'type_compte' => $compte->type_compte,
+            'solde_restant' => $compte->solde_actuelle,
+            'add_by' => session('id'),
+            'id_compte' => $compte->id,
+            'id_client' => $compte->id_client,
+            'id_agence' => session('id_agence'),
+        ]);
 
 
-            $user = $compte->client->user;
 
-            Journal::create([
-                'action' => "Ajout de 300fr (frais d'achat du carnet) sur le compte  " . $compte->account_number . " du client " . $user->first_name . " " . $user->last_name,
-                'user_id' => session('id'),
-            ]);
+        Account::where(['id' => $id_compte])->update([
+            'beniefice_accumule' => $new_benefice_actuel,
 
-            return redirect()->back()->with('flash_message_success', 'Ajout de 300fr pour achat de carnet effectuer  avec succès!');
+        ]);
 
+        $new_benefice_accumule = $agence->beniefice_accumule + $benefice;
+
+        Operator::where(['id' => session('id_agence')])->update([
+            'beniefice_accumule' => $new_benefice_accumule,
+
+        ]);
+
+
+        $user = $compte->client->user;
+
+        Journal::create([
+            'action' => "Ajout de 300fr (frais d'achat du carnet) sur le compte  " . $compte->account_number . " du client " . $user->first_name . " " . $user->last_name,
+            'user_id' => session('id'),
+        ]);
+
+        return redirect()->back()->with('flash_message_success', 'Ajout de 300fr pour achat de carnet effectuer  avec succès!');
     }
 
 
@@ -857,7 +890,7 @@ class OperationController extends Controller
 
         $operation = Operation::where('id', $id)->first();
 
-       Operation::where(['id' => $id])->update([
+        Operation::where(['id' => $id])->update([
             'is_delete' => 1,
         ]);
 
@@ -866,12 +899,12 @@ class OperationController extends Controller
         $agence = Operator::where('id', $operation->id_agence)->first();
 
 
-        if($operation->type_operation == "new"){
+        if ($operation->type_operation == "new") {
 
-         //   dd($compte);
+            //   dd($compte);
 
 
-           $new_solde_actuel = $compte->solde_actuelle - ($operation->entre - 5500);
+            $new_solde_actuel = $compte->solde_actuelle - ($operation->entre - 5500);
 
             Account::where(['id' => $operation->id_compte])->update([
 
@@ -881,8 +914,7 @@ class OperationController extends Controller
 
 
             ]);
-
-        }elseif($operation->type_operation == "depot"){
+        } elseif ($operation->type_operation == "depot") {
 
             $new_solde_actuel = $compte->solde_actuelle - $operation->entre;
 
@@ -893,8 +925,7 @@ class OperationController extends Controller
 
 
             ]);
-
-        }elseif($operation->type_operation == "retrait"){
+        } elseif ($operation->type_operation == "retrait") {
 
             $new_solde_actuel = $compte->solde_actuelle + $operation->sortie;
 
@@ -905,8 +936,7 @@ class OperationController extends Controller
 
 
             ]);
-
-        }elseif($operation->type_operation == "versement"){
+        } elseif ($operation->type_operation == "versement") {
 
             $new_solde_actuel = $agence->solde_actuelle + $operation->versement;
             $cmpt_solde_actuel = $compte->solde_actuelle - $operation->versement;
@@ -925,8 +955,7 @@ class OperationController extends Controller
 
 
             ]);
-
-        }elseif($operation->type_operation == "carnet"){
+        } elseif ($operation->type_operation == "carnet") {
 
             $new_solde_actuel = $agence->beniefice_accumule - $operation->benefice;
             $cmpt_solde_actuel = $compte->beniefice_accumule - $operation->benefice;
@@ -945,25 +974,19 @@ class OperationController extends Controller
 
 
             ]);
-
-        }elseif($operation->type_operation == "cotisation"){
+        } elseif ($operation->type_operation == "cotisation") {
 
             $new_solde_actuel = $agence->solde_total - $operation->entre;
             $cmpt_solde_actuel = $compte->solde_actuelle - $operation->entre;
             $cmpt_beniefice_accumule = $compte->beniefice_accumule - $operation->benefice;
-            if($operation->benefice != 0)
-            {
+            if ($operation->benefice != 0) {
 
-                $cmpt_nombre_de_retrait = $compte->nombre_de_retrait - ($operation->entre/$operation->taux_cotisation)+1;
-              $cmpt_solde_actuel = $compte->solde_actuelle - $operation->entre + $operation->taux_cotisation;
+                $cmpt_nombre_de_retrait = $compte->nombre_de_retrait - ($operation->entre / $operation->taux_cotisation) + 1;
+                $cmpt_solde_actuel = $compte->solde_actuelle - $operation->entre + $operation->taux_cotisation;
+            } else {
 
-
-            }else{
-
-                $cmpt_nombre_de_retrait = $compte->nombre_de_retrait - ($operation->entre/$operation->taux_cotisation);
-             $cmpt_solde_actuel = $compte->solde_actuelle - $operation->entre;
-
-
+                $cmpt_nombre_de_retrait = $compte->nombre_de_retrait - ($operation->entre / $operation->taux_cotisation);
+                $cmpt_solde_actuel = $compte->solde_actuelle - $operation->entre;
             }
 
 
@@ -982,8 +1005,7 @@ class OperationController extends Controller
 
 
             ]);
-
-        }elseif($operation->type_operation == "retrait_admin"){
+        } elseif ($operation->type_operation == "retrait_admin") {
 
             $new_solde_actuel = $compte->solde_actuelle + $operation->sortie;
 
@@ -994,7 +1016,6 @@ class OperationController extends Controller
 
 
             ]);
-
         }
 
 

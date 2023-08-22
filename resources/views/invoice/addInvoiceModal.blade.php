@@ -7,7 +7,7 @@
                 <div class="row container-fluid mt-3 ">
                     <div class="mt-3 col-12 text-center  m-auto">
                         <h6 class="modal-title" style="background-color:#03a04f; color: aliceblue ; "
-                            id="myLargeModalLabel">AJOUT D'UNE FACTURATION DE {{ $operator->name }} À TOGOCOM   </h6>
+                            id="myLargeModalLabel">AJOUT D'UNE FACTURATION DE {{ $operator->name }} A TOGOCOM  </h6>
                     </div>
                 </div>
 
@@ -31,20 +31,22 @@
                         <div class="tab-content tab-bordered" id="myTab3Content">
                             <div class="tab-pane fade show active" id="about" role="tabpanel"
                                 aria-labelledby="home-tab2"
-                                style="background-color:#fcca29; color: aliceblue;  border-radius: 13px;">
+                                style="background-color:#fcca29; color: #ec1f28;  border-radius: 13px;">
 
                                 <div class="row">
+
                                     <div class="col-md-6 col-6 b-r">
-                                        <strong>Dette du TOGOCOM envers {{ $operator->name }} </strong>
-                                        <br>
-                                        <p class="text " style="color: #ec1f28; font-weight: bold;">{{ $operator->account->debt }}
-                                            {{ $operator->currency }} </p>
-                                    </div>
-                                    <div class="col-md-6 col-6 b-r">
-                                        <strong>Créance de {{ $operator->name }} en faveur de TOGOCOM</strong>
+                                        <strong>CREANCE TOGOCOM AVEC {{ $operator->name }} </strong>
                                         <br>
                                         <p class="text " style="color: #ec1f28; font-weight: bold;">{{ $operator->account->receivable }}
                                             {{ $operator->currency }}</p>
+                                    </div>
+
+                                    <div class="col-md-6 col-6 b-r">
+                                        <strong>DETTE TOGOCOM AVEC {{ $operator->name }} </strong>
+                                        <br>
+                                        <p class="text " style="color: #ec1f28; font-weight: bold;">{{ $operator->account->debt }}
+                                            {{ $operator->currency }} </p>
                                     </div>
                                 </div>
 
@@ -59,23 +61,17 @@
                             <div class="form-row">
 
                                 <div class="form-group col-md-4">
-                                    <label>De (Periode de facturation) :</label>
-                                    <input name="start_period" type="text" class="form-control datepicker">
+                                    <label>Periode de facturation:</label>
+                                    <input class="form-control" type="month" id="start" name="period" min="2020-01" value="2020-01" />
                                 </div>
 
-                                <div class="form-group col-md-4">
-                                    <label>Au (Periode de facturation) :</label>
-                                    <input name="end_period" type="text" class="form-control datepicker">
-                                </div>
+
 
                                 <div class="form-group col-md-4">
                                     <label>Date facturé :</label>
                                     <input name="invoice_date" type="text" class="form-control datepicker">
                                 </div>
 
-                            </div>
-
-                            <div class="form-row">
 
                                 <div class="form-group col-md-4">
                                     <label for="inputEmail4">Numeros de la facture</label>
@@ -89,17 +85,24 @@
                                         </span>
                                     @enderror
                                 </div>
+                            </div>
+
+                            <div class="form-row">
+
+
+
 
                                 <div class="form-group col-md-4">
 
                                     <label for="inputEmail4">Type de facture</label>
                                     <select name="invoice_type" id="inputState" class="form-control">
-                                        <option selected value="real">Facture reèl</option>
-                                        <option value="estimated">Facture Estimé</option>
-                                        <option value="litigious">Facture Litigieux</option>
+                                        <option selected value="real">Facture reèlle</option>
+                                        <option value="estimated">Facture Estimée</option>
+                                        <option value="litigious">Facture Litigieuse</option>
 
                                     </select>
                                 </div>
+
 
                                 <div class="form-group col-md-4">
                                     <label>Montant de la facture</label>
@@ -120,9 +123,6 @@
 
                                     </div>
                                 </div>
-
-                            </div>
-                            <div class="form-row">
 
                                 <div class="form-group col-md-4">
                                     <label>Volume d'appel (En minute)</label>
@@ -145,6 +145,30 @@
                                     </div>
                                 </div>
 
+                            </div>
+                            <div class="form-row">
+
+
+                                <div class="form-group col-md-4">
+                                    <label>Nombre d'appels</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <div class="input-group-text">
+                                                <i class="fas fa-phone"></i>
+                                            </div>
+                                        </div>
+                                        <input name="number_of_call" type="text" class="form-control
+                                            @error('number_of_call') is-invalid @enderror"
+                                            value="{{ @old('number_of_call') }}" placeholder="" required>
+
+                                        @error('number_of_call')
+                                            <span class="invalid-feedback" role="alert">
+                                                <strong>{{ $message }}</strong>
+                                            </span>
+                                        @enderror
+
+                                    </div>
+                                </div>
                                 <div class="form-group col-md-8">
                                     <label>Commentaire sur la facture</label>
                                     <textarea name="comment" class="form-control @error('comment') is-invalid @enderror">{{ @old('comment') }}</textarea>
