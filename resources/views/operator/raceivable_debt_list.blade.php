@@ -1,11 +1,11 @@
 @extends('template.principal_tamplate')
-@section('title', 'Liste des opérations '. $operator->name )
+@section('title', 'Liste des créances et dettes de '. $operator->name )
 @section('breadcrumb')
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
 
-            <li class="breadcrumb-item active" aria-current="page">Liste des opérations  {{$operator->name}}</li>
+            <li class="breadcrumb-item active" aria-current="page">Liste des créances et dettes de  {{$operator->name}}</li>
             <div class="d-flex justify-content-end container-fluid mt-n3">
                 <a href="{{ route('liste_operator') }}" class="btn btn-primary ">Liste des opérateurs</a>
             </div>
@@ -23,7 +23,7 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-header">
-                        <h4>Liste des opérations  {{$operator->name}}</h4>
+                        <h4>Liste des créances et dettes de {{$operator->name}}</h4>
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
@@ -31,47 +31,80 @@
                                 <thead>
                                     <tr>
                                         <th class="recherche">N°</th>
-                                        <th class="recherche">Libellé</th>
-                                        <th class="recherche">Opérateur</th>
-                                        <th class="recherche">Montant</th>
-                                        <th class="recherche">Date d'ajout</th>
-                                        <th>Action</th>
+                                        <th class="recherche">PRESTATIONS</th>
+                                        <th class="recherche">PERIODES</th>
+                                        <th class="recherche">CREANCES</th>
+                                        <th class="recherche">ENCAISSEMENT</th>
+                                        <th class="recherche">DETTES</th>
+                                        <th class="recherche">DECAISSEMENT</th>
+                                        <th class="recherche">SOLDE</th>
+                                        <th class="recherche">DATE D'AJOUT</th>
+                                        <th>ACTION</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php $n = 1; ?>
 
-                                    @foreach ($operations as $operation)
+                                    @foreach ($resums as $resum)
                                         <tr>
                                             <td>{{ $n }} </td>
-                                            <td style="width:25%">{{ $operation->operation_name }} </td>
-                                            <td>{{ $operator->name }}</td>
-                                            <td>{{ $operation->amount . $operator->currency }}</td>
-                                            <td>{{ $operation->created_at }}</td>
+                                            <td style="width:18%">{{ $resum->service }} </td>
+
+                                    @if($resum->period == null)
+                                    <td>---------</td>
+                                    @endif
+
+                                    @if($resum->period != null)
+                                    <td>{{ $resum->period }}</td>
+                                    @endif
+
+                                    @if($resum->receivable == null)
+                                            <td>0</td>
+                                    @endif
+
+                                    @if($resum->receivable != null)
+                                            <td>{{ number_format($resum->receivable) .'  '. $operator->currency }}</td>
+                                    @endif
+
+
+                                    @if($resum->incoming_payement == null)
+                                    <td>0</td>
+                                    @endif
+
+                                    @if($resum->incoming_payement != null)
+                                     <td>{{ number_format($resum->incoming_payement) .'  '. $operator->currency }}</td>
+                                    @endif
+
+
+                                    @if($resum->debt == null)
+                                    <td>0</td>
+                                    @endif
+
+                                    @if($resum->debt != null)
+                                    <td>{{ number_format($resum->debt) .'  '. $operator->currency }}</td>
+                                    @endif 
+                                    
+                                    
+                                    
+                                    @if($resum->payout == null)
+                                    <td>0</td>
+                                    @endif
+
+                                    @if($resum->payout != null)
+                                    <td>{{ number_format($resum->payout) .'  '. $operator->currency }}
+                                    @endif 
+
+                                      <td>{{ number_format($resum->netting) .'  '. $operator->currency }}</td>
+                                            <td>{{ $resum->created_at }}</td>
 
                                             <td style="width:10%">
                                                 <span data-toggle="tooltip" data-placement="top"
-                                                    title="Voir la facture">
+                                                    title="Voir les factures concernées">
                                                     <a class=" mb-2 btn btn-sm btn-primary" data-toggle="modal"
-                                                        data-target="{{ '#invoice' . $operation->id }}">
+                                                        data-target="{{ '#invoice' . $resum->id }}">
                                                         <i class="fas fa-eye text-white "> </i>
                                                     </a>
                                                 </span>
-
-
-
-
-                                                <span data-toggle="tooltip" data-placement="top"
-                                                    title="Annuler l'opération">
-                                                    <a class=" delete-confirm mb-2 btn btn-sm btn-danger"
-                                                        href="/delete_operator/{{ $operation->id }}">
-                                                        <i class="fas far fa-times-circle text-white"> </i>
-                                                    </a>
-                                                </span>
-
-
-
-
 
                                             </td>
                                         </tr>

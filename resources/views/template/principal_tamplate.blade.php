@@ -70,13 +70,12 @@
 
 <body>
 
-    @if (Session::has('flash_message_error'))
-        <script type="text/javascript" src="{{ asset('assets/js/sweetalert.min.js') }}"></script>
-        <script type="text/javascript">
-            ;
-            swal("{{ session('flash_message_error') }}", "Merci", "flash_message_error");
-        </script>
-    @endif
+    @if (Session::has('error'))
+    <script type="text/javascript" src="{{ asset('assets/js/sweetalert.min.js')}}"></script>
+    <script type="text/javascript">;
+    swal("{{ session('error') }}", "Merci", "error");
+ </script>
+ @endif
     @if (Session::has('flash_message_success'))
         <script type="text/javascript" src="{{ asset('assets/js/sweetalert.min.js') }}"></script>
         <script type="text/javascript">

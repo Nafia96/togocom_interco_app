@@ -1,7 +1,7 @@
 <div class="modal fade bd-example-modal-lg" id="{{ 'voirOperatorModal'.$operator->id }}" tabindex="-1" role="dialog"
     aria-labelledby="myLargeModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
-        <div class="modal-content" style="color: #fcca29">
+        <div class="modal-content" style="color: #03a04f">
             <div class="modal-header">
 
                 <div class="row container-fluid mt-3 ">
@@ -23,7 +23,7 @@
                             aria-labelledby="home-tab2" style="background-color:#E5E8E8;  border-radius: 13px;">
                             <div class="row">
 
-                                <div class="col-md-6 col-6 b-r" style="color:#fcca29; font-weight: bold; ">
+                                <div class="col-md-6 col-6 b-r" style="color:#03a04f; font-weight: bold; ">
                                     <strong>Nom de l'opérateur</strong>
                                     <br>
                                     <p style="color:#ec1f28; font-weight: bold; ">{{ $operator->name }}</p>

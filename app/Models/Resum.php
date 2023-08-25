@@ -30,7 +30,7 @@ class Resum extends Model
 	*
 	* @var arrayclient
 	*/
-	protected $fillable = ['id_operator','period','receivable','debt' ,'incoming_payement','payout','netting','id_invoice_1','id_invoice_2'];
+	protected $fillable = ['id_operator','period','receivable','debt' ,'incoming_payement','payout','netting','id_invoice_1','id_invoice_2','service'];
 
     /*
     public function latestResum()

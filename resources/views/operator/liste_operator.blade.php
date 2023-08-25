@@ -61,7 +61,7 @@
                                         </span>
 
                                         <span data-toggle="tooltip" data-placement="top"
-                                        title="Facturer cet opérateur">
+                                        title="Ajouter une créance">
                                         <a class=" mb-2 btn btn-sm btn-primary" data-toggle="modal"
                                             data-target="{{ '#invoiceModal' . $operator->id }}">
                                             <i class="fas fa-donate text-white "> </i>
@@ -69,7 +69,7 @@
                                     </span>
 
                                     <span data-toggle="tooltip" data-placement="top"
-                                                        title="Ajouter une facture de l'opérateur à TOGOCOM">
+                                                        title="Ajouter une dette">
                                                         <a class=" mb-2 btn btn-sm btn-warning" data-toggle="modal"
                                                             data-target="{{ '#addInvoiceModal'.$operator->id }}">
                                                             <i class="fas fa-hand-holding-usd text-white "> </i>
@@ -78,14 +78,14 @@
 
                                      <span data-toggle="tooltip" data-placement="top"
                                                         title="Réglement">
-                                                        <a class=" mb-2 btn btn-sm btn-secondary" data-toggle="modal"
+                                                        <a class=" mb-2 btn btn-sm btn-info" data-toggle="modal"
                                                             data-target="{{ '#settlementModal'.$operator->id }}">
                                                             <i class="fas fa-chart-pie text-white"></i>
                                                         </a>
 
                                      </span>
 
-                                     <span data-toggle="tooltip" data-placement="top" title="Liste de toutes les opérations de l'opérateur">
+                                     <span data-toggle="tooltip" data-placement="top" title="Toutes les opérations">
                                         <a class=" mb-2 btn btn-sm btn-success" href="{{url('operations_list/' . $operator->id)}}">
                                             <i class="fas far fas fa-copy green-color"> </i>
                                         </a>
@@ -94,7 +94,13 @@
 
 
 
-                                        <span data-toggle="tooltip" data-placement="top" title="Tous les factures de l'opérateur">
+                                        <span data-toggle="tooltip" data-placement="top" title="Créances et dettes (Résumé)">
+                                            <a class="mb-2 btn btn-sm btn-warning" href="{{url('receivable_debt/'.$operator->id)}}">
+                                                <i class="fas fa-list text-white"> </i>
+                                            </a>
+                                        </span>
+
+                                        <span data-toggle="tooltip" data-placement="top" title="Toutes les factures">
                                             <a class="mb-2 btn btn-sm btn-warning" href="{{url('invoice_list/'.$operator->id)}}">
                                                 <i class="fas fa-list text-white"> </i>
                                             </a>

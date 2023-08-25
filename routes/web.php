@@ -142,26 +142,19 @@ Route::get('activate_epargne/{id}',[ComptesController::class, 'activate_epargne'
 
 
 
-//Comptes salaire route
-Route::get('add_salaire',[ComptesController::class, 'add_salaire'])->name('add_salaire');
-Route::post('add_salaire',[ComptesController::class, 'salaire_register'])->name('salaire_register');
-Route::get('liste_salaire',[ComptesController::class, 'liste_salaire'])->name('liste_salaire');
-Route::get('update_salaire/{id}',[ComptesController::class, 'update_salaire'])->name('update_salaire');
-Route::post('save_salaire_update',[ComptesController::class, 'save_salaire_update'])->name('save_salaire_update');
-Route::get('delete_salaire/{id}',[ComptesController::class, 'delete_salaire'])->name('delete_salaire');
-Route::get('delete_salaire_liste',[ComptesController::class, 'delete_salaire_liste'])->name('delete_salaire_liste');
-Route::get('activate_salaire/{id}',[ComptesController::class, 'activate_salaire'])->name('activate_salaire');
-
-
 
 //Route des operations
 
 Route::post('tgc_to_ope_invoice',[OperationController::class, 'tgc_to_ope_invoice'])->name('tgc_to_ope_invoice');
 Route::post('ope_to_tgc_invoice',[OperationController::class, 'ope_to_tgc_invoice'])->name('ope_to_tgc_invoice');
+Route::post('add_settlement',[OperationController::class, 'add_settlement'])->name('add_settlement');
 Route::get('operations_list/{id_operator}',[OperationController::class, 'operations_list'])->name('operations_list');
 Route::get('invoice_list/{id_operator}',[OperationController::class, 'invoice_list'])->name('invoice_list');
 Route::get('all_operations',[OperationController::class, 'all_operations'])->name('all_operations');
+Route::get('receivable_debt/{id_operator}',[OperationController::class, 'receivable_debt'])->name('receivable_debt');
 
+
+//Fin route operations
 
 Route::post('epargne_tontine',[OperationController::class, 'epargne_tontine'])->name('epargne_tontine');
 Route::post('retrait',[OperationController::class, 'retrait'])->name('retrait');
