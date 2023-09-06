@@ -101,8 +101,8 @@
                                         </span>
 
                                         <span data-toggle="tooltip" data-placement="top" title="Toutes les factures">
-                                            <a class="mb-2 btn btn-sm btn-warning" href="{{url('invoice_list/'.$operator->id)}}">
-                                                <i class="fas fa-list text-white"> </i>
+                                            <a class="mb-2 btn btn-sm  btn-dark" href="{{url('invoice_list/'.$operator->id)}}">
+                                                <i class="fas fa-receipt"></i>
                                             </a>
                                         </span>
 

@@ -98,7 +98,6 @@
                                     <select name="invoice_type" id="inputState" class="form-control">
                                         <option selected value="real">Facture réelle</option>
                                         <option value="estimated">Facture Estimée</option>
-                                        <option value="litigious">Facture Litigieuse</option>
 
                                     </select>
                                 </div>

@@ -51,6 +51,25 @@
 
 
                     <div class="form-group col-md-4">
+                        <label for="inputEmail4">Telephone 2 </label>
+                        <input type="tel" name="tel2" class="form-control @error('tel2') is-invalid @enderror"
+                            id="" placeholder="" value="{{ @old('tel2') }}">
+
+                        @error('tel2')
+                            <span class="invalid-feedback" role="alert">
+                                <strong>{{ $message }}</strong>
+                            </span>
+                        @enderror
+                    </div>
+
+
+
+
+                </div>
+
+                <div class="form-row">
+
+                    <div class="form-group col-md-4">
                         <label for="inputEmail4">Email </label>
                         <input type="email" name="email" class="form-control @error('email') is-invalid @enderror"
                             id="" placeholder="" value="{{ @old('email') }}">
@@ -64,9 +83,35 @@
 
 
 
+                    <div class="form-group col-md-4">
+                        <label for="inputEmail10">Email 2 </label>
+                        <input name="email2" type="email" class="form-control  @error('email2') is-invalid @enderror"
+                            placeholder="" value="{{ @old('email2') }}" required>
+
+                        @error('email2')
+                            <span class="invalid-feedback" role="alert">
+                                <strong>{{ $message }}</strong>
+                            </span>
+                        @enderror
+                    </div>
+
+
+                    <div class="form-group col-md-4">
+                        <label for="inputEmail4">Email 3</label>
+                        <input type="email" name="email3" class="form-control @error('email3') is-invalid @enderror"
+                            id="" placeholder="" value="{{ @old('email3') }}">
+
+                        @error('email3')
+                            <span class="invalid-feedback" role="alert">
+                                <strong>{{ $message }}</strong>
+                            </span>
+                        @enderror
+                    </div>
+
+
+
 
                 </div>
-
 
 
                 <div class="form-row ">
@@ -341,7 +386,7 @@
                         </select>
                     </div>
 
-                    <div class="form-group col-md-4">
+                    <div class="form-group col-md-2">
                         <label for="inputEmail4">Devise de l'opérateur </label>
                         <select name="currency" id="inputState" class="form-control">
                             <option value="USD" selected="selected" label="US dollar">USD</option>
@@ -508,6 +553,15 @@
                             <option value="ZAR" label="South African rand">ZAR</option>
                             <option value="ZMW" label="Zambian kwacha">ZMW</option>
                             <option value="ZWB" label="Zimbabwean bonds">ZWB</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group col-md-2">
+                        <label for="inputEmail4">Opérateur zone CEDEAO </label>
+                        <select name="cedeao" id="inputState" class="form-control">
+                            <option value="1"  >OUI</option>
+                            <option value="0" selected="selected">NON</option>
+                           
                         </select>
                     </div>
 

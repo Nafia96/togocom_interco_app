@@ -147,7 +147,11 @@ Route::get('activate_epargne/{id}',[ComptesController::class, 'activate_epargne'
 
 Route::post('tgc_to_ope_invoice',[OperationController::class, 'tgc_to_ope_invoice'])->name('tgc_to_ope_invoice');
 Route::post('ope_to_tgc_invoice',[OperationController::class, 'ope_to_tgc_invoice'])->name('ope_to_tgc_invoice');
+Route::post('update_estimated_invoice',[OperationController::class, 'update_estimated_invoice'])->name('update_estimated_invoice');
+Route::post('update_all_invoice',[OperationController::class, 'update_all_invoice'])->name('update_all_invoice');
 Route::post('add_settlement',[OperationController::class, 'add_settlement'])->name('add_settlement');
+Route::post('add_contestation',[OperationController::class, 'add_contestation'])->name('add_contestation');
+Route::post('add_cn',[OperationController::class, 'add_cn'])->name('add_cn');
 Route::get('operations_list/{id_operator}',[OperationController::class, 'operations_list'])->name('operations_list');
 Route::get('invoice_list/{id_operator}',[OperationController::class, 'invoice_list'])->name('invoice_list');
 Route::get('all_operations',[OperationController::class, 'all_operations'])->name('all_operations');

@@ -25,7 +25,10 @@ class OperatorController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'tel' => 'required|string',
+            'tel2' => 'nullable|string',
             'email' => 'required|email',
+            'email2' => 'nullable|email',
+            'email3' => 'nullable|email',
             'adresse' => 'nullable|string',
             'country' => 'required|string',
             'currency' => 'required|string',
@@ -38,10 +41,14 @@ class OperatorController extends Controller
         $operator = Operator::create([
             'name' => $data['name'],
             'tel' => $data['tel'],
+            'tel2' => $data['tel2'],
             'email' => $data['email'],
+            'email2' => $data['email2'],
+            'email3' => $data['email3'],
             'adresse' => $data['adresse'],
             'country' => $data['country'],
             'currency' => $data['currency'],
+            'cedeao' => $data['cedeao'],
             'description' => $data['description'],
 
         ]);
@@ -105,7 +112,10 @@ class OperatorController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'tel' => 'required|string',
+            'tel2' => 'nullable|string',
             'email' => 'required|email',
+            'email2' => 'nullable|email',
+            'email3' => 'nullable|email',
             'adresse' => 'nullable|string',
             'country' => 'required|string',
             'currency' => 'required|string',

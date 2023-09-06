@@ -39,6 +39,20 @@ class Invoice extends Model
         return $this->belongsTo(Operator::class,'operator_id');
     }
 
+	public function contestation()
+    {
+		
+		return $this->hasOne(Contestation::class, 'id_invoice');  
+ 	 }
+
+	  public function creditnote()
+	  {
+		  
+		  return $this->hasOne(Creditnote::class, 'id_invoice');  
+	  }
+
+
+
    /*  public function client(){
         return $this->belongsTo(Client::class,'id_client');
     }

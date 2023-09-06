@@ -19,11 +19,13 @@ class CreateResumTable extends Migration
             $table->string('period')->nullable();
             $table->string('service')->nullable();
 
-            $table->unsignedBigInteger('id_invoice_1');
-            $table->foreign('id_invoice_1')->references('id')->on('invoice');
+    
+            $table->unsignedBigInteger('id_operation_1');
+            $table->foreign('id_operation_1')->references('id')->on('operation');
+                                                                                                                                                                                                                                                
+            $table->unsignedBigInteger('id_operation_2');
+            $table->foreign('id_operation_2')->references('id')->on('operation');
 
-            $table->unsignedBigInteger('id_invoice_2');
-            $table->foreign('id_invoice_2')->references('id')->on('invoice');
 
             $table->unsignedBigInteger('id_operator');
             $table->foreign('id_operator')->references('id')->on('operator');

@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Resum extends Model
+class Contestation extends Model
 {
     use HasFactory;
 
@@ -15,7 +15,7 @@ class Resum extends Model
 	*
 	* @var string
 	*/
-	protected $table = 'Resum';
+	protected $table = 'Contestation';
 
 	/**
 	* The primary key for the model.
@@ -30,21 +30,21 @@ class Resum extends Model
 	*
 	* @var arrayclient
 	*/
-	protected $fillable = ['id_operator','period','receivable','debt' ,'incoming_payement','payout','netting','id_operation_1','id_operation_2','service',];
+	protected $fillable = ['id_operator','id_invoice','amount','contesation_date',  'comment','operation_id' ];
 
  
-	public function operation1(){
-        return $this->belongsTo(Operation::class,'id_operation_1');
+	public function invoice(){
+        return $this->belongsTo(Invoice::class,'id_invoice');
     }
 
-	public function operation2(){
-        return $this->belongsTo(Operation::class,'id_operation_2');
+	public function operator(){
+        return $this->belongsTo(Operator::class,'id_operator');
     }
 
 
 
 	/*
-    public function latestResum()
+    public function latestContesation()
     {
         return $this->hasOne(Comptes::class)->latestOfMany();
     }

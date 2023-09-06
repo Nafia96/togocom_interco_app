@@ -18,7 +18,11 @@ class CreateOperatorTable extends Migration
             $table->string('name');
             $table->string('currency')->nullable();
             $table->string('tel')->nullable();
+            $table->string('tel2')->nullable();
             $table->string('email')->nullable();
+            $table->string('email2')->nullable();
+            $table->string('email3')->nullable();
+            $table->integer('cedeao')->nullable();
             $table->string('adresse')->nullable();
             $table->string('country')->nullable();
             $table->string('description')->nullable();

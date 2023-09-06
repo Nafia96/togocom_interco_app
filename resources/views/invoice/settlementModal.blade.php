@@ -38,14 +38,14 @@
                                     <div class="col-md-6 col-6 b-r">
                                         <strong>CREANCE TOGOCOM AVEC {{ $operator->name }} </strong>
                                         <br>
-                                        <p class="text " style="color: #ec1f28; font-weight: bold;">{{ $operator->account->receivable }}
+                                        <p class="text " style="color: #ec1f28; font-weight: bold;">{{ number_format($operator->account->receivable) }}
                                             {{ $operator->currency }}</p>
                                     </div>
 
                                     <div class="col-md-6 col-6 b-r">
                                         <strong>DETTE TOGOCOM AVEC {{ $operator->name }} </strong>
                                         <br>
-                                        <p class="text " style="color: #ec1f28; font-weight: bold;">{{ $operator->account->debt }}
+                                        <p class="text " style="color: #ec1f28; font-weight: bold;">{{ number_format($operator->account->debt) }}
                                             {{ $operator->currency }} </p>
                                     </div>
                                     
@@ -55,7 +55,7 @@
                                     <div class="mt-3  col-12 text-center  m-auto">
                                        <h2> <strong>NETING ACTUEL</strong> </h2>
                                         <br>
-                                    <h3>    <p class="text " style="color: #ec1f28; font-weight: bold; ">{{  $operator->account->receivable -  $operator->account->debt }}
+                                    <h3>    <p class="text " style="color: #ec1f28; font-weight: bold; ">{{  number_format($operator->account->receivable -  $operator->account->debt) }}
                                             {{ $operator->currency }} </p> </h3>
                                     </div>
 

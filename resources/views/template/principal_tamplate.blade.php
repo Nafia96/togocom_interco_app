@@ -71,11 +71,12 @@
 <body>
 
     @if (Session::has('error'))
-    <script type="text/javascript" src="{{ asset('assets/js/sweetalert.min.js')}}"></script>
-    <script type="text/javascript">;
-    swal("{{ session('error') }}", "Merci", "error");
- </script>
- @endif
+        <script type="text/javascript" src="{{ asset('assets/js/sweetalert.min.js') }}"></script>
+        <script type="text/javascript">
+            ;
+            swal("{{ session('error') }}", "Merci", "error");
+        </script>
+    @endif
     @if (Session::has('flash_message_success'))
         <script type="text/javascript" src="{{ asset('assets/js/sweetalert.min.js') }}"></script>
         <script type="text/javascript">
@@ -247,10 +248,12 @@
                                 <ul class="dropdown-menu">
 
                                     <li class="{{ Request::is('all_operations') ? 'active' : '' }}"><a
-                                            class="nav-link " href="{{ route('all_operations') }}">Liste des opérations
+                                            class="nav-link " href="{{ route('all_operations') }}">Liste des
+                                            opérations
                                         </a></li>
                                     <li class="{{ Request::is('liste_operator') ? 'active' : '' }}"><a
-                                            class="nav-link " href="{{ route('liste_operator') }}">Operations supprimées</a>
+                                            class="nav-link " href="{{ route('liste_operator') }}">Operations
+                                            supprimées</a>
                                     </li>
 
 
@@ -385,8 +388,8 @@
                                         data-feather="briefcase"></i><span>Gestion comptes épargne</span></a>
                                 <ul class="dropdown-menu">
 
-                                    <li class="{{ Request::is('add_epargne') ? 'active' : '' }}"><a class="nav-link "
-                                            href="{{ route('add_epargne') }}">Créer un compte
+                                    <li class="{{ Request::is('add_epargne') ? 'active' : '' }}"><a
+                                            class="nav-link " href="{{ route('add_epargne') }}">Créer un compte
                                             épargne
                                         </a></li>
                                     <li class="{{ Request::is('liste_epargne') ? 'active' : '' }}"><a
@@ -502,10 +505,23 @@
                 @if (isset($operations))
                     @foreach ($operations as $operation)
                         @include('invoice.invoice')
+                        @include('invoice.conteste_invoiceModal')
+                        @include('invoice.update_all_invoiceModal')
+                        @include('invoice.cn_Modal')
                     @endforeach
 
 
                 @endif
+
+                @if (isset($resums))
+                    @foreach ($resums as $resum)
+                        @include('invoice.update_invoiceModal')
+                    @endforeach
+
+
+                @endif
+
+                
 
                 @if (isset($agents))
                     @foreach ($agents as $agent)

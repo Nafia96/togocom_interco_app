@@ -6,8 +6,8 @@
             <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
 
             <li class="breadcrumb-item active" aria-current="page">Liste des créances et dettes de  {{$operator->name}}</li>
-            <div class="d-flex justify-content-end container-fluid mt-n3">
-                <a href="{{ route('liste_operator') }}" class="btn btn-primary ">Liste des opérateurs</a>
+            <div class="d-flex justify-content-end container-fluid mt-n3 ">
+                <a href="{{ route('liste_operator') }}" class="btn btn-primary  ">Liste des opérateurs</a>
             </div>
         </ol>
 
@@ -76,14 +76,47 @@
                                     @endif
 
 
-                                    @if($resum->debt == null)
-                                    <td>0</td>
-                                    @endif
+                                    @if($resum->operation2->invoice->invoice_type == 'estimated') 
 
-                                    @if($resum->debt != null)
-                                    <td>{{ number_format($resum->debt) .'  '. $operator->currency }}</td>
-                                    @endif 
+                                        @if($resum->debt == null)
+                                            <td>0</td>
+                                        @endif
+
+                                        @if($resum->debt != null &&  $resum->service != 'Facture de service voix')
+                                        <td>  {{ number_format($resum->debt) .'  '. $operator->currency  }} </td>
+
+                        
+                                            
+                                        @endif 
+
+                                        @if($resum->debt != null &&  $resum->service == 'Facture de service voix')
+                                        <td style="background-color: #fcca29;" >
+
+                            
+                                           
+                                                <div style="display:block;" data-toggle="modal"
+                                                data-target="{{ '#update_invoiceModal' . $resum->id }}"> 
+                                                    {{ number_format($resum->debt) .'  '. $operator->currency  }}
+                                                </div> 
+                                          
+                                            
+                                        </td>
+                                            
+                                        @endif 
+
+                                    @endif
                                     
+                                    @if($resum->operation2->invoice->invoice_type != 'estimated') 
+
+                                        @if($resum->debt == null)
+                                            <td>0</td>
+                                        @endif
+
+                                        @if($resum->debt != null)
+                                            <td>{{ number_format($resum->debt) .'  '. $operator->currency }} </td>
+                                        @endif 
+
+                                    @endif
                                     
                                     
                                     @if($resum->payout == null)
@@ -97,14 +130,43 @@
                                       <td>{{ number_format($resum->netting) .'  '. $operator->currency }}</td>
                                             <td>{{ $resum->created_at }}</td>
 
+                                           
+
                                             <td style="width:10%">
+
+                                                @if($resum->operation2->operation_type != '3' )
                                                 <span data-toggle="tooltip" data-placement="top"
-                                                    title="Voir les factures concernées">
+                                                    title="Voir la facture de créance">
                                                     <a class=" mb-2 btn btn-sm btn-primary" data-toggle="modal"
-                                                        data-target="{{ '#invoice' . $resum->id }}">
-                                                        <i class="fas fa-eye text-white "> </i>
+                                                        data-target="{{ '#invoice' . $resum->operation1->id }}">
+                                                        <i class="fas fa-receipt text-white "> </i>
                                                     </a>
                                                 </span>
+                                                @endif   
+                                                
+                                                @if($resum->operation2->operation_type == '3' )
+
+                                                    <span data-toggle="tooltip" data-placement="top"
+                                                        title="Voir la facture du règlement">
+                                                        <a class=" mb-2 btn btn-sm btn-primary" data-toggle="modal"
+                                                            data-target="{{ '#invoice' . $resum->operation2->id }}">
+                                                            <i class="fas fa-receipt text-white "> </i>
+                                                        </a>
+                                                    </span>
+                                                @endif    
+
+                                                @if($resum->operation2->id != $resum->operation1->id )
+
+                                                    <span data-toggle="tooltip" data-placement="top"
+                                                        title="Voir la facture de la dette">
+                                                        <a class=" mb-2 btn btn-sm btn-dark" data-toggle="modal"
+                                                            data-target="{{ '#invoice' . $resum->operation2->id }}">
+                                                            <i class="fas fa-receipt text-white "> </i>
+                                                        </a>
+                                                    </span>
+                                                @endif    
+
+                                           
 
                                             </td>
                                         </tr>
