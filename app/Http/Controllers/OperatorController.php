@@ -23,7 +23,7 @@ class OperatorController extends Controller
     {
 
         $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => '|required|unique:operator|string|max:255',
             'tel' => 'required|string',
             'tel2' => 'nullable|string',
             'email' => 'required|email',

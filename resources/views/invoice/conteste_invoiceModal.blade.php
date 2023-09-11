@@ -19,10 +19,10 @@
                 <form action="{{ url('add_contestation') }}" enctype="multipart/form-data" method="post">
                     @csrf
 
-                    @if (isset($operator))
+                    @if (isset($operation->operator))
                         <div class="mt-3  col-12 text-center  m-auto">
                             <div class="author-box-name mb-3" style="color: #03a04f; font-weight: bold;">
-                                <h5>{{ $operator->name }} - {{ $operator->tel }} - {{ $operator->email }}</h5>
+                                <h5>{{ $operation->operator->name }} - {{ $operation->operator->tel }} - {{ $operation->operator->email }}</h5>
                             </div>
                         </div>
 
@@ -32,7 +32,7 @@
                            
 
 
-                            <input type="hidden" name="id_operator" value="{{ $operator->id }}">
+                            <input type="hidden" name="id_operator" value="{{ $operation->operator->id }}">
                             <input type="hidden" name="operation_id" value="{{ $operation->id }}">
                             <input type="hidden" name="invoice_id" value="{{ $operation->invoice->id }}">
 
@@ -47,7 +47,7 @@
                                     <div class="input-group">
                                         <div class="input-group-prepend">
                                             <div class="input-group-text">
-                                                {{ $operator->currency }}
+                                                {{ $operation->operator->currency }}
                                             </div>
                                         </div>
                                         <input name="amount" type="numeric"
@@ -67,7 +67,7 @@
                                     <div class="input-group">
                                         <div class="input-group-prepend">
                                             <div class="input-group-text">
-                                                {{ $operator->currency }}
+                                                {{ $operation->operator->currency }}
                                             </div>
                                         </div>
                                         <input disabled name="olde_amount" type="numeric"

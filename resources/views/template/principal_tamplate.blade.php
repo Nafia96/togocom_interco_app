@@ -199,7 +199,7 @@
                                             opérateurs</a>
                                     </li>
                                     <li class="{{ Request::is('delete_operator_liste') ? 'active' : '' }}"><a
-                                            class="nav-link " href="{{ route('delete_operator_liste') }}">Agences
+                                            class="nav-link " href="{{ route('delete_operator_liste') }}">Opérateurs 
                                             supprimées</a>
                                     </li>
 
@@ -210,7 +210,7 @@
 
 
                             <li
-                                class="dropdown  {{ Request::is('add_operator') ? 'active' : '' }}
+                                class="dropdown  {{ Request::is('all_invoice_list') ? 'active' : '' }}
                               {{ Request::is('liste_operator') ? 'active' : '' }}
                               {{ Request::is('delete_operator_liste') ? 'active' : '' }}
                              ">
@@ -219,8 +219,8 @@
                                         data-feather="briefcase"></i><span>Gestion des factures</span></a>
                                 <ul class="dropdown-menu">
 
-                                    <li class="{{ Request::is('add_operator') ? 'active' : '' }}"><a
-                                            class="nav-link " href="{{ route('add_operator') }}">Liste des factures
+                                    <li class="{{ Request::is('all_invoice_list') ? 'active' : '' }}"><a
+                                            class="nav-link " href="{{ route('all_invoice_list') }}">Liste des factures
                                         </a></li>
                                     <li class="{{ Request::is('liste_operator') ? 'active' : '' }}"><a
                                             class="nav-link " href="{{ route('liste_operator') }}">Factures

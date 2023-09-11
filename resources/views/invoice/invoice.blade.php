@@ -20,12 +20,12 @@
                                 </div>
                                 <div class="col-6">
                                     <div class="mt-3  text-right  m-auto">
-                                        <strong style="font-size: 25px;">{{ $operator->name }}</strong>
+                                        <strong style="font-size: 25px;">{{ $operation->operator->name }}</strong>
                                         <br>
                                         <address>
-                                            {{ $operator->adresse }}<br>
-                                            <strong>Tel: </strong>{{ $operator->tel }}<br>
-                                            <strong>Email: </strong>{{ $operator->email }}<br>
+                                            {{ $operation->operator->adresse }}<br>
+                                            <strong>Tel: </strong>{{ $operation->operator->tel }}<br>
+                                            <strong>Email: </strong>{{$operation->operator->email }}<br>
                                         </address>
                                     </div>
                                 </div>
@@ -43,7 +43,7 @@
                                     @endif
 
                                     @if ($operation->operation_type == '2')
-                                        <strong style="font-size: 20px;"> FACTURE {{ $operator->name }} </strong>
+                                        <strong style="font-size: 20px;"> FACTURE {{ $operation->operator->name }} </strong>
                                         <br>
                                         FACTURE DE TRACFIC
                                     @endif
@@ -134,7 +134,7 @@
                                         <td class="text-center">{{ $operation->invoice->number_of_call }}</td>
                                         <td class="text-center">{{ $operation->invoice->call_volume }}</td>
                                         <td class="text-center">{{ number_format($operation->invoice->amount) }}
-                                            {{ $operator->currency }}</td>
+                                            {{ $operation->operator->currency }}</td>
                                     </tr>
 
                                 @endif
@@ -149,7 +149,7 @@
                                         <td class="text-center">---------</td>
                                         <td class="text-center">---------</td>
                                         <td class="text-center">{{ number_format($operation->invoice->amount) }}
-                                            {{ $operator->currency }}</td>
+                                            {{ $operation->operator->currency }}</td>
                                     </tr>
                                 @endif
 
@@ -164,16 +164,16 @@
                             <div class="col-4 text-center">
                                 <strong>CREANCE TOGCOCOM: <br></strong> <span
                                     style="color: #ec1f28; font-weight: bold;">
-                                    {{ number_format($operation->new_receivable) }} {{ $operator->currency }}</span>
+                                    {{ number_format($operation->new_receivable) }} {{ $operation->operator->currency }}</span>
                             </div>
                             <div class="col-4 text-center">
                                 <strong>DETTE TOGOCOM: <br></strong> <span style="color: #ec1f28; font-weight: bold;">
-                                    {{ number_format($operation->new_debt) }} {{ $operator->currency }}</span>
+                                    {{ number_format($operation->new_debt) }} {{ $operation->operator->currency }}</span>
                             </div>
                             <div class="col-4 text-center">
                                 <strong>NETTING :
                                 </strong> <br><span style="color: #ec1f28; font-weight: bold;">
-                                    {{ number_format($operation->new_netting) }} {{ $operator->currency }}</span>
+                                    {{ number_format($operation->new_netting) }} {{ $operation->operator->currency }}</span>
                             </div>
 
                         </div>
@@ -204,16 +204,21 @@
                                         style="background-color: #fcca29; border: 1px solid white;
                                             border-collapse: collapse;">
 
-                                        <td class="text-center">{{number_format( $operation->invoice->contestation->amount) }} {{ $operator->currency }}</td>
+                                        <td class="text-center">{{number_format( $operation->invoice->contestation->amount) }} {{ $operation->operator->currency }}</td>
+
+                                        @if (isset($operation->invoice->creditnote->debt))
+
                                         @if ( $operation->invoice->creditnote->debt != null)
-                                        <td class="text-center">{{ number_format($operation->invoice->creditnote->debt) }} {{ $operator->currency }}</td>
+                                        <td class="text-center">{{ number_format($operation->invoice->creditnote->debt) }} {{ $operation->operator->currency }}</td>
                                         <td class="text-center">DETTE</td>
 
                                         @endif
 
                                         @if ( $operation->invoice->creditnote->receivable != null)
-                                        <td class="text-center">{{ number_format($operation->invoice->creditnote->receivable) }} {{ $operator->currency }}</td>
+                                        <td class="text-center">{{ number_format($operation->invoice->creditnote->receivable) }} {{ $operation->operator->currency }}</td>
                                         <td class="text-center">CREANCE</td>
+
+                                        @endif
 
                                         @endif
 

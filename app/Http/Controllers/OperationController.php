@@ -1006,6 +1006,20 @@ class OperationController extends Controller
     }
 
 
+        //Operator invoice list
+
+        public function all_invoice_list()
+        {
+    
+    
+            $operations = Operation::all()->sortByDesc("updated_at");
+
+        //  dd(gettype($operations[1]->invoice->amount));
+    
+            return view('operator.all_invoice', compact('operations'))->render();
+        }
+
+
     //All Operator operations list
 
     public function all_operations()
