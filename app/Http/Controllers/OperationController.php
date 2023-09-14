@@ -235,7 +235,8 @@ class OperationController extends Controller
 
         $resum = Resum::where([
             'id_operator' =>  $operator->id,
-            'period' => $data['period']
+            'period' => $data['period'],
+            'is_delete' => 0
         ])->first();
 
 
@@ -249,7 +250,7 @@ class OperationController extends Controller
             if ($resum->debt == null) {
 
                 $invoice = Invoice::create([
-                    //tgc_invoice is 2 if the invoice is Operator own
+                    //tgc_invoice is 2 if the invoice is debt
                     'tgc_invoice' => 2,
                     'invoice_type' => $data['invoice_type'],
                     'invoice_number' => $data['invoice_number'],
@@ -358,7 +359,7 @@ class OperationController extends Controller
 
 
                     $operation = Operation::create([
-                        //Operation type 2 it mees that the facturation is receivable
+                        //Operation type 2 it mees that the facturation is debt
                         'operation_type' => 2,
                         'account_number' => $op_account->account_number,
                         'operation_name' =>  'Facture de service voix (DETTE)',
@@ -398,6 +399,211 @@ class OperationController extends Controller
         }
     }
 
+    //Togocom to operator
+
+    public function cancel_operation($id_operation)
+    {
+
+        $operation = Operation::where('id', $id_operation)->first();
+
+
+        $op_account = Account::where('id_operator', $operation->operator->id)->first();
+
+        $tgc_account = Account::where('account_number', 000)->first();
+
+        if ($operation->operation_type == 2) {
+
+
+            Invoice::where([
+                'id' =>  $operation->invoice->id,
+            ])->update([
+                'is_delete' =>  1,
+
+            ]);
+
+            Operation::where([
+                'id' =>  $operation->id,
+            ])->update([
+                'is_delete' =>  1,
+
+            ]);
+
+
+            Resum::where([
+                'id' =>  $operation->resum2->id,
+            ])->update([
+                'debt' =>  null,
+                'netting' => $operation->resum2->netting + $operation->amount,
+
+            ]);
+
+
+            Account::where(['id' => $tgc_account->id])->update([
+                'debt' => $tgc_account->debt - $operation->amount,
+
+            ]);
+
+            Account::where(['id' => $op_account->id])->update([
+                'debt' => $op_account->debt - $operation->amount,
+                'netting' => $op_account->netting + $operation->amount,
+
+            ]);
+        } elseif ($operation->operation_type == 1) {
+
+            $resum = Resum::where('id', $operation->resum->id)->first();
+
+            Invoice::where([
+                'id' =>  $operation->invoice->id,
+            ])->update([
+                'is_delete' =>  1,
+
+            ]);
+
+            Operation::where([
+                'id' =>  $operation->id,
+            ])->update([
+                'is_delete' =>  1,
+
+            ]);
+
+            Resum::where([
+                'id' =>  $operation->resum->id,
+            ])->update([
+                'is_delete' =>  1,
+
+            ]);
+
+
+            Account::where(['id' => $tgc_account->id])->update([
+                'receivable' => $tgc_account->receivable - $operation->amount,
+
+            ]);
+
+            Account::where(['id' => $op_account->id])->update([
+                'receivable' => $op_account->receivable - $operation->amount,
+                'netting' => $op_account->netting - $operation->amount,
+
+            ]);
+            if ($resum->operation2->id != $resum->operation1->id) {
+
+
+
+                Invoice::where([
+                    'id' =>  $resum->operation2->invoice->id,
+                ])->update([
+                    'is_delete' =>  1,
+    
+                ]);
+    
+                Operation::where([
+                    'id' =>  $resum->operation2->id,
+                ])->update([
+                    'is_delete' =>  1,
+    
+                ]);
+    
+   
+                Account::where(['id' => $tgc_account->id])->update([
+                    'debt' => $tgc_account->debt - $resum->operation2->amount,
+    
+                ]);
+    
+                Account::where(['id' => $op_account->id])->update([
+                    'debt' => $op_account->debt - $resum->operation2->amount,
+                    'netting' => $op_account->netting + $resum->operation2->amount,
+    
+                ]);
+            }
+
+        } elseif ($operation->operation_type == 3) {
+
+            if ($operation->invoice_type == 'Encaissement') {
+
+
+                Invoice::where([
+                    'id' =>  $operation->invoice->id,
+                ])->update([
+                    'is_delete' =>  1,
+
+                ]);
+
+                Operation::where([
+                    'id' =>  $operation->id,
+                ])->update([
+                    'is_delete' =>  1,
+
+                ]);
+
+                Resum::where([
+                    'id' =>  $operation->resum->id,
+                ])->update([
+                    'is_delete' =>  1,
+
+                ]);
+
+
+                Account::where(['id' => $tgc_account->id])->update([
+                    'receivable' => $tgc_account->receivable + $operation->amount,
+
+                ]);
+
+                Account::where(['id' => $op_account->id])->update([
+                    'receivable' => $op_account->receivable + $operation->amount,
+                    'netting' => $op_account->netting + $operation->amount,
+
+                ]);
+
+
+            } else {
+
+                Invoice::where([
+                    'id' =>  $operation->invoice->id,
+                ])->update([
+                    'is_delete' =>  1,
+
+                ]);
+
+                Operation::where([
+                    'id' =>  $operation->id,
+                ])->update([
+                    'is_delete' =>  1,
+
+                ]);
+
+                Resum::where([
+                    'id' =>  $operation->resum->id,
+                ])->update([
+                    'is_delete' =>  1,
+
+                ]);
+
+
+                Account::where(['id' => $tgc_account->id])->update([
+                    'debt' => $tgc_account->debt + $operation->amount,
+
+                ]);
+
+                Account::where(['id' => $op_account->id])->update([
+                    'debt' => $op_account->debt + $operation->amount,
+                    'netting' => $op_account->netting - $operation->amount,
+
+                ]);
+            }
+        } elseif ($operation->operation_type == 4) {
+
+            
+
+        }
+
+        Journal::create([
+            'action' => "Anullation de l'opperation du facture N° " . $operation->invoice->invoice_number . " pour l'opérateur " . $operation->operator->name . " d'un montant de " . $operation->amount . $operation->operator->currency,
+            'user_id' => session('id'),
+        ]);
+
+
+        return redirect()->back()->with('flash_message_success', 'Opperation annulée avec succès!');
+    }
+
     //Mise à jour de la facture estimé
     public function update_estimated_invoice(Request $request)
     {
@@ -424,7 +630,7 @@ class OperationController extends Controller
 
         $invoice = Invoice::where('id', $data['invoice_id'])->first();
 
-        $operation = Operation::where('id', $data['operation_id'])->first();
+        $operation = Operation::where(['id' => $data['operation_id'], 'is_delete' => 0])->first();
 
         $new_debt = $resum->debt -  $data['amount'];
 
@@ -483,98 +689,161 @@ class OperationController extends Controller
         return redirect()->route('receivable_debt', ['id_operator' => $operator->id])->with('flash_message_success', 'Mises à jour effectuées avec succès!');
     }
 
-     //Mise à jour de la facture estimé
-     public function update_all_invoice(Request $request)
-     {
- 
-         $data = $request->all();
- 
-         $request->validate([
- 
-             'amount' => 'required|integer',
- 
-         ]);
- 
- 
-         $data = $request->all();
- 
-         $operator = Operator::where('id', $data['id_operator'])->first();
- 
-         $op_account = Account::where('id_operator', $operator->id)->first();
- 
- 
-         $tgc_account = Account::where('account_number', 000)->first();
+    //Mise à jour de la facture estimé
+    public function update_all_invoice(Request $request)
+    {
 
-         $operation = Operation::where('id', $data['operation_id'])->first();
+        $data = $request->all();
 
-         $id_resum = $operation->resum->id;
+        $request->validate([
 
- 
-         $resum = Resum::where('id', $id_resum )->first();
- 
-         $invoice = Invoice::where('id', $data['invoice_id'])->first();
- 
- 
-         Resum::where([
-             'id' =>  $id_resum ,
-         ])->update([
-             'debt' =>  $data['amount'],
-             'netting' => $resum->netting + $resum->debt -  $data['amount'],
- 
-         ]);
- 
- 
-         Invoice::where([
-             'id' =>  $data['invoice_id'],
-         ])->update([
-             'amount' =>  $data['amount'],
-             'invoice_number' =>  $data['invoice_number'],
-             'period' =>  $data['period'],
-             'invoice_date' =>  $data['invoice_date'],
-             'call_volume' =>  $data['call_volume'],
-             'comment' =>  $data['comment'],
-             'number_of_call' =>  $data['number_of_call'],
-             'invoice_type' => $data['invoice_type'],
- 
-         ]);
- 
- 
- 
-         Operation::where([
-             'id' =>  $data['operation_id'],
-         ])->update([
-            'comment' =>  $data['comment'],
-            'amount' =>  $data['amount'],
+            'amount' => 'required|integer',
 
-             'invoice_type' =>  $data['invoice_type'],
-             'new_debt' => ($op_account->debt - $operation->amount) + $data['amount'],
-             'new_netting' => ($op_account->netting +  $operation->amount) - $data['amount'],
-         ]);
- 
- 
-         //  dd('Operation ok');
- 
- 
-         Account::where(['id' => $tgc_account->id])->update([
-             'debt' => ($tgc_account->debt - $operation->amount) + $data['amount'],
- 
-         ]);
- 
-         Account::where(['id' => $op_account->id])->update([
-             'debt' => ($op_account->debt - $operation->amount) + $data['amount'],
-             'netting' => ($op_account->netting +  $operation->amount) - $data['amount'],
- 
-         ]);
- 
- 
-         Journal::create([
-             'action' => "Mise à jours de la facture N° " . $invoice->invoice_number  ,
-             'user_id' => session('id'),
-         ]);
- 
- 
-         return redirect()->back()->with('flash_message_success', 'Mises à jour effectuées avec succès!');
-     }
+        ]);
+
+
+        $data = $request->all();
+
+        $operator = Operator::where('id', $data['id_operator'])->first();
+
+        $op_account = Account::where('id_operator', $operator->id)->first();
+
+
+        $tgc_account = Account::where('account_number', 000)->first();
+
+        $operation = Operation::where(['id' => $data['operation_id'], 'is_delete' => 0])->first();
+
+
+        if ($operation->operation_type == 2) {
+
+            $id_resum = $operation->resum2->id;
+
+
+            $resum = Resum::where('id', $id_resum)->first();
+
+            $invoice = Invoice::where('id', $data['invoice_id'])->first();
+
+
+            Resum::where([
+                'id' =>  $id_resum,
+            ])->update([
+                'debt' =>  $data['amount'],
+                'netting' => $resum->netting + $resum->debt -  $data['amount'],
+
+            ]);
+
+
+            Invoice::where([
+                'id' =>  $data['invoice_id'],
+            ])->update([
+                'amount' =>  $data['amount'],
+                'invoice_number' =>  $data['invoice_number'],
+                'period' =>  $data['period'],
+                'invoice_date' =>  $data['invoice_date'],
+                'call_volume' =>  $data['call_volume'],
+                'comment' =>  $data['comment'],
+                'number_of_call' =>  $data['number_of_call'],
+                'invoice_type' => $data['invoice_type'],
+
+            ]);
+
+
+
+            Operation::where([
+                'id' =>  $data['operation_id'],
+            ])->update([
+                'comment' =>  $data['comment'],
+                'amount' =>  $data['amount'],
+
+                'invoice_type' =>  $data['invoice_type'],
+                'new_debt' => ($op_account->debt - $operation->amount) + $data['amount'],
+                'new_netting' => ($op_account->netting +  $operation->amount) - $data['amount'],
+            ]);
+
+
+            //  dd('Operation ok');
+
+
+            Account::where(['id' => $tgc_account->id])->update([
+                'debt' => ($tgc_account->debt - $operation->amount) + $data['amount'],
+
+            ]);
+
+            Account::where(['id' => $op_account->id])->update([
+                'debt' => ($op_account->debt - $operation->amount) + $data['amount'],
+                'netting' => ($op_account->netting +  $operation->amount) - $data['amount'],
+
+            ]);
+        } else {
+
+
+            $id_resum = $operation->resum->id;
+
+
+            $resum = Resum::where('id', $id_resum)->first();
+
+            $invoice = Invoice::where('id', $data['invoice_id'])->first();
+
+
+            Resum::where([
+                'id' =>  $id_resum,
+            ])->update([
+                'receivable' =>  $data['amount'],
+                'netting' => $resum->netting - $resum->receivable +  $data['amount'],
+
+            ]);
+
+
+            Invoice::where([
+                'id' =>  $data['invoice_id'],
+            ])->update([
+                'amount' =>  $data['amount'],
+                'invoice_number' =>  $data['invoice_number'],
+                'period' =>  $data['period'],
+                'invoice_date' =>  $data['invoice_date'],
+                'call_volume' =>  $data['call_volume'],
+                'comment' =>  $data['comment'],
+                'number_of_call' =>  $data['number_of_call'],
+                'invoice_type' => $data['invoice_type'],
+
+            ]);
+
+
+
+            Operation::where([
+                'id' =>  $data['operation_id'],
+            ])->update([
+                'comment' =>  $data['comment'],
+                'amount' =>  $data['amount'],
+
+                'invoice_type' =>  $data['invoice_type'],
+                'new_receivable' => ($op_account->receivable - $operation->amount) + $data['amount'],
+                'new_netting' => ($op_account->netting -  $operation->amount) + $data['amount'],
+            ]);
+
+
+            //  dd('Operation ok');
+
+
+            Account::where(['id' => $tgc_account->id])->update([
+                'receivable' => ($tgc_account->receivable - $operation->amount) + $data['amount'],
+
+            ]);
+
+            Account::where(['id' => $op_account->id])->update([
+                'receivable' => ($op_account->receivable - $operation->amount) + $data['amount'],
+                'netting' => ($op_account->netting -  $operation->amount) + $data['amount'],
+
+            ]);
+        }
+
+        Journal::create([
+            'action' => "Mise à jours de la facture N° " . $invoice->invoice_number,
+            'user_id' => session('id'),
+        ]);
+
+        return redirect()->back()->with('flash_message_success', 'Mises à jour effectuées avec succès!');
+    }
 
     //Ajout d'une contestation de facture
     public function add_contestation(Request $request)
@@ -609,25 +878,25 @@ class OperationController extends Controller
         Invoice::where([
             'id' =>  $data['invoice_id'],
         ])->update([
-           
+
             'invoice_type' => 'litigious',
 
         ]);
 
 
- Operation::where([
+        Operation::where([
             'id' =>  $data['operation_id'],
         ])->update([
-           
+
             'invoice_type' => 'litigious',
-          
+
         ]);
 
 
 
 
         Journal::create([
-            'action' => "Contestation d'un montant de : " . $data['amount'] . $operator->currency. " de la facture N°:". $invoice->invoice_number ,
+            'action' => "Contestation d'un montant de : " . $data['amount'] . $operator->currency . " de la facture N°:" . $invoice->invoice_number,
             'user_id' => session('id'),
         ]);
 
@@ -661,8 +930,7 @@ class OperationController extends Controller
         $data = $request->all();
 
 
-        if($data['cn_type'] == 'debt')
-        {
+        if ($data['cn_type'] == 'debt') {
 
             Creditnote::create([
                 'id_operator' => $data['id_operator'],
@@ -671,64 +939,63 @@ class OperationController extends Controller
                 'contestation_id' => $data['contestation_id'],
                 'debt' =>  $data['amount'],
                 'comment' =>  $data['comment'],
-    
+
             ]);
-    
+
             Invoice::where([
                 'id' =>  $data['invoice_id'],
             ])->update([
-               
+
                 'invoice_type' => 'real',
-              
+
             ]);
-    
+
             Operation::where([
                 'id' =>  $data['operation_id'],
             ])->update([
-               
+
                 'invoice_type' => 'real',
                 'new_debt' => $op_account->debt - $data['amount'],
-                'new_netting' => $op_account->netting + $data['amount'] ,
-    
+                'new_netting' => $op_account->netting + $data['amount'],
+
             ]);
-    
-    
-    
+
+
+
             // Le compte de togocom
             Account::where(['id' => $tgc_account->id])->update([
                 'debt' => $tgc_account->debt - $data['amount'],
-    
+
             ]);
-    
+
             //Le compte de l'opeateur en question
             Account::where(['id' => $op_account->id])->update([
                 'debt' => $op_account->debt - $data['amount'],
-                'netting' => $op_account->netting + $data['amount'] ,
-    
+                'netting' => $op_account->netting + $data['amount'],
+
             ]);
-    
+
             Resum::create([
                 'id_operator' => $data['id_operator'],
                 'id_operation_1' => $data['operation_id'],
                 'id_operation_2' => $data['operation_id'],
-                'debt' =>  - $data['amount'],
+                'debt' =>  -$data['amount'],
                 'comment' =>  $data['comment'],
-                'service' =>  'Note de crédit '.$invoice->period,
+                'service' =>  'Note de crédit ' . $invoice->period,
                 'period' =>  $invoice->period,
-                'netting' => $op_account->netting + $data['amount'] ,
-    
-    
+                'netting' => $op_account->netting + $data['amount'],
+
+
             ]);
-    
-    
-          
-    
+
+
+
+
             Journal::create([
-                'action' => "Ajout d'une note de credit, d'un montant de : " . $data['amount'] . $operator->currency. " de la facture N°:". $invoice->invoice_number." en diminution de dette" ,
+                'action' => "Ajout d'une note de credit, d'un montant de : " . $data['amount'] . $operator->currency . " de la facture N°:" . $invoice->invoice_number . " en diminution de dette",
                 'user_id' => session('id'),
             ]);
-    
-        }else{
+        } else {
 
             Creditnote::create([
                 'id_operator' => $data['id_operator'],
@@ -737,65 +1004,64 @@ class OperationController extends Controller
                 'contestation_id' => $data['contestation_id'],
                 'receivable' =>  $data['amount'],
                 'comment' =>  $data['comment'],
-    
+
             ]);
-    
+
             Invoice::where([
                 'id' =>  $data['invoice_id'],
             ])->update([
-               
+
                 'invoice_type' => 'real',
-              
+
             ]);
-    
+
             Operation::where([
                 'id' =>  $data['operation_id'],
             ])->update([
-               
+
                 'invoice_type' => 'real',
                 'new_receivable' => $op_account->receivable - $data['amount'],
-                'new_netting' => $op_account->netting - $data['amount'] ,
-    
+                'new_netting' => $op_account->netting - $data['amount'],
+
             ]);
-    
-    
-    
+
+
+
             // Le compte de togocom
             Account::where(['id' => $tgc_account->id])->update([
                 'receivable' => $tgc_account->receivable - $data['amount'],
-    
+
             ]);
-    
+
             //Le compte de l'opeateur en question
             Account::where(['id' => $op_account->id])->update([
                 'receivable' => $op_account->receivable - $data['amount'],
-                'netting' => $op_account->netting - $data['amount'] ,
-    
+                'netting' => $op_account->netting - $data['amount'],
+
             ]);
-    
+
             Resum::create([
                 'id_operator' => $data['id_operator'],
                 'id_operation_1' => $data['operation_id'],
                 'id_operation_2' => $data['operation_id'],
-                'receivable' =>  - $data['amount'],
+                'receivable' =>  -$data['amount'],
                 'comment' =>  $data['comment'],
-                'service' =>  'Note de crédit '.$invoice->period,
+                'service' =>  'Note de crédit ' . $invoice->period,
                 'period' =>  $invoice->period,
-                'netting' => $op_account->netting - $data['amount'] ,
-    
-    
+                'netting' => $op_account->netting - $data['amount'],
+
+
             ]);
-    
-    
-          
-    
+
+
+
+
             Journal::create([
-                'action' => "Ajout d'une note de credit, d'un montant de : " . $data['amount'] . $operator->currency. " de la facture N°:". $invoice->invoice_number." en diminution de créance" ,
+                'action' => "Ajout d'une note de credit, d'un montant de : " . $data['amount'] . $operator->currency . " de la facture N°:" . $invoice->invoice_number . " en diminution de créance",
                 'user_id' => session('id'),
             ]);
-    
         }
-       
+
 
         return redirect()->route('receivable_debt', ['id_operator' => $operator->id])->with('flash_message_success', 'Note de crédit ajouté avec avec succès!');
     }
@@ -979,7 +1245,7 @@ class OperationController extends Controller
 
     public function operations_list($id_operator)
     {
-        
+
 
         $operator = Operator::where('id', $id_operator)->first();
 
@@ -1006,18 +1272,20 @@ class OperationController extends Controller
     }
 
 
-        //Operator invoice list
+    //Operator invoice list
 
-        public function all_invoice_list()
-        {
-    
-    
-            $operations = Operation::all()->sortByDesc("updated_at");
+    public function all_invoice_list()
+    {
+
+
+        $operations = Operation::where('is_delete', 0)
+            ->orderBy('updated_at', 'DESC')
+            ->get();
 
         //  dd(gettype($operations[1]->invoice->amount));
-    
-            return view('operator.all_invoice', compact('operations'))->render();
-        }
+
+        return view('operator.all_invoice', compact('operations'))->render();
+    }
 
 
     //All Operator operations list
@@ -1026,9 +1294,22 @@ class OperationController extends Controller
     {
 
 
-        $operations = Operation::all()->sortByDesc("updated_at");
+        $operations = Operation::where('is_delete', 0)
+            ->orderBy('updated_at', 'DESC')
+            ->get();
 
-        return view('operator.all_operations', compact('operations'))->render();
+        return view('operator.all_operation_list', compact('operations'))->render();
+    }
+
+    public function all_cancel_operations()
+    {
+
+
+        $operations = Operation::where('is_delete', 1)
+            ->orderBy('updated_at', 'DESC')
+            ->get();
+
+        return view('operator.all_cancel_operation_list', compact('operations'))->render();
     }
 
     //Liste des creances et des dettes
@@ -1038,7 +1319,7 @@ class OperationController extends Controller
 
         $operator = Operator::where('id', $id_operator)->first();
 
-        $resums = Resum::where(['id_operator' => $id_operator])
+        $resums = Resum::where(['id_operator' => $id_operator, 'is_delete' => 0])
             ->orderBy('updated_at', 'DESC')
             ->get();
 

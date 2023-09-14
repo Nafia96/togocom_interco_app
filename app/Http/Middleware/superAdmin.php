@@ -17,7 +17,7 @@ class superAdmin
     public function handle(Request $request, Closure $next)
     {
 
-        if ($request->session()->get('type_user') != 1) {
+        if ($request->session()->get('type_user') != 3) {
             return redirect('/')->with('error', 'Accès intedit! Veuillez vous connecter.');
         }
         return $next($request);

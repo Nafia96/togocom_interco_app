@@ -374,6 +374,18 @@ if (!function_exists('getUserType')) {
     }
 }
 
+
+if (!function_exists('periodePrint')) {
+    function periodePrint($period)
+    {
+        $date = strtotime ( $period );
+        $newDate = date ( 'M-Y' , $date ) ;
+        return $newDate;
+
+    }
+}
+
+
 if (!function_exists('getAllZones')) {
     function getAllZones()
     {

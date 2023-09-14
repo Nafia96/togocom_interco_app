@@ -47,7 +47,8 @@ class HomeController extends Controller
 
                     if($currentUser->type_user == 1){
 
-                        return redirect('/dashboard');
+                        return redirect('/agence_dashboard');
+                       
 
                     }elseif($currentUser->type_user == 2){
 
@@ -55,7 +56,7 @@ class HomeController extends Controller
 
                     }elseif($currentUser->type_user == 3){
 
-                        return redirect('/agent_dashboard');
+                        return redirect('/dashboard');
 
                     }else{
                         return redirect('/client_dashboard');
@@ -98,7 +99,7 @@ class HomeController extends Controller
 
         $request->validate([
             'old_password' => 'required',
-            'password' => 'required|confirmed',
+            'password' => '|required|min:8|regex:/[@$.!%*#?&]/|confirmed',
             'password_confirmation' => 'required',
         ]);
 
@@ -135,27 +136,19 @@ class HomeController extends Controller
         if(session('id') != null){
 
 
-
         $user = User::where(['id' =>session('id')])->first();
-
 
 
         if($user->type_user == 1){
 
-
-
-
-
-
-
-            return view('dashboard');
+            return redirect('agence_dashboard');
 
         }elseif($user->type_user == 2){
 
             return redirect('agence_dashboard');
 
         }elseif($user->type_user == 3){
-            return redirect('agent_dashboard');
+            return view('dashboard');
 
         }elseif($user->type_user == 4){
             return redirect('client_dashboard');

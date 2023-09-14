@@ -1,11 +1,11 @@
 @extends('template.principal_tamplate')
-@section('title', 'Liste des factures de ' . $operator->name)
+@section('title', 'Liste de toutes les factures')
 @section('breadcrumb')
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
 
-            <li class="breadcrumb-item active" aria-current="page">Liste des factures de {{ $operator->name }}</li>
+            <li class="breadcrumb-item active" aria-current="page">Liste de toutes les factures</li>
             <div class="d-flex justify-content-end container-fluid mt-n3">
                 <a href="{{ route('liste_operator') }}" class="btn btn-primary ">Liste des opérateurs</a>
             </div>
@@ -23,14 +23,15 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-header">
-                        <h4>Liste des factures de {{ $operator->name }}</h4>
+                        <h4>Liste de toutes les factures</h4>
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
-                            <table class="table table-striped table-hover" id="tableExpor" style="width:100%;">
+                            <table class="table table-striped table-hover category" id="tableExpor" style="width:100%;">
                                 <thead>
                                     <tr>
                                         <th class="recherche">N°</th>
+                                        <th class="recherche">OPERATEUR</th>
                                         <th class="recherche">PRESTATION</th>
                                         <th class="recherche">N° FACTURE</th>
                                         <th class="recherche">PERIODES</th>
@@ -40,6 +41,7 @@
 
                                         <th class="recherche">DETTES TOGOCOM</th>
                                         <th class="recherche">SOLDE</th>
+                                        <th class="recherche">DATE FACTURE</th>
                                         <th class="recherche">DATE D'AJOUT</th>
                                         <th>Action</th>
                                     </tr>
@@ -51,6 +53,7 @@
                                         @if ($operation->invoice->invoice_type == 'litigious')
                                             <tr style="background-color: #03a04f; color:aliceblue;">
                                                 <td>{{ $n }} </td>
+                                                <td>{{ $operation->operator->name }} </td>
                                                 <td style="width:15%">{{ $operation->operation_name }} </td>
 
 
@@ -64,7 +67,7 @@
                                                 @endif
 
                                                 @if ($operation->invoice->period != null)
-                                                    <td>{{ periodePrint($operation->invoice->period) }}</td>
+                                                    <td>{{ $operation->invoice->period }}</td>
                                                 @endif
 
                                                 @if ($operation->invoice->period == null)
@@ -74,11 +77,13 @@
                                                 <td>Facture Litigieuse</td>
 
 
-                                                <td>{{ $operation->amount . '  ' . $operator->currency }}</td>
-                                                <td>{{ $operation->new_receivable . '  ' . $operator->currency }}</td>
-                                                <td>{{ $operation->new_debt . '  ' . $operator->currency }}</td>
-                                                <td>{{ $operation->new_receivable - $operation->new_debt . '  ' . $operator->currency }}
+                                                <td>{{ $operation->amount }}</td>
+                                                <td>{{ $operation->new_receivable . '  ' . $operation->operator->currency }}
                                                 </td>
+                                                <td>{{ $operation->new_debt . '  ' . $operation->operator->currency }}</td>
+                                                <td>{{ $operation->new_receivable - $operation->new_debt . '  ' . $operation->operator->currency }}
+                                                </td>
+                                                <td>{{ $operation->invoice->invoice_date }}</td>
                                                 <td>{{ $operation->created_at }}</td>
 
                                                 <td style="width:10%">
@@ -120,6 +125,8 @@
                                         @if ($operation->invoice->invoice_type == 'estimated')
                                             <tr style="background-color: #fcca29;">
                                                 <td>{{ $n }} </td>
+                                                <td>{{ $operation->operator->name }} </td>
+
                                                 <td style="width:15%">{{ $operation->operation_name }} </td>
                                                 @if ($operation->invoice->invoice_number != null)
                                                     <td style="width:15%">{{ $operation->invoice->invoice_number }} </td>
@@ -130,7 +137,7 @@
                                                 @endif
 
                                                 @if ($operation->invoice->period != null)
-                                                    <td>{{ periodePrint($operation->invoice->period) }}</td>
+                                                    <td>{{ $operation->invoice->period }}</td>
                                                 @endif
 
                                                 @if ($operation->invoice->period == null)
@@ -140,11 +147,14 @@
                                                 <td>Facture Estimée</td>
 
 
-                                                <td>{{ $operation->amount . '  ' . $operator->currency }}</td>
-                                                <td>{{ $operation->new_receivable . '  ' . $operator->currency }}</td>
-                                                <td>{{ $operation->new_debt . '  ' . $operator->currency }}</td>
-                                                <td>{{ $operation->new_receivable - $operation->new_debt . '  ' . $operator->currency }}
+                                                <td>{{ $operation->amount }}</td>
+                                                <td>{{ $operation->new_receivable . '  ' . $operation->operator->currency }}
                                                 </td>
+                                                <td>{{ $operation->new_debt . '  ' . $operation->operator->currency }}</td>
+                                                <td>{{ $operation->new_receivable - $operation->new_debt . '  ' . $operation->operator->currency }}
+                                                </td>
+                                                <td>{{ $operation->invoice->invoice_date }}</td>
+
                                                 <td>{{ $operation->created_at }}</td>
 
                                                 <td style="width:10%">
@@ -175,6 +185,8 @@
                                         @if ($operation->invoice->invoice_type != 'litigious' && $operation->invoice->invoice_type != 'estimated')
                                             <tr>
                                                 <td>{{ $n }} </td>
+                                                <td>{{ $operation->operator->name }} </td>
+
                                                 <td style="width:15%">{{ $operation->operation_name }} </td>
                                                 @if ($operation->invoice->invoice_number != null)
                                                     <td style="width:15%">{{ $operation->invoice->invoice_number }} </td>
@@ -185,7 +197,7 @@
                                                 @endif
 
                                                 @if ($operation->invoice->period != null)
-                                                    <td>{{periodePrint( $operation->invoice->period )}}</td>
+                                                    <td>{{ $operation->invoice->period }}</td>
                                                 @endif
 
                                                 @if ($operation->invoice->period == null)
@@ -203,11 +215,14 @@
                                                     <td>{{ $operation->invoice_type }}</td>
                                                 @endif
 
-                                                <td>{{ $operation->amount . '  ' . $operator->currency }}</td>
-                                                <td>{{ $operation->new_receivable . '  ' . $operator->currency }}</td>
-                                                <td>{{ $operation->new_debt . '  ' . $operator->currency }}</td>
-                                                <td>{{ $operation->new_receivable - $operation->new_debt . '  ' . $operator->currency }}
+                                                <td>{{ $operation->amount }}</td>
+                                                <td>{{ $operation->new_receivable . '  ' . $operation->operator->currency }}
                                                 </td>
+                                                <td>{{ $operation->new_debt . '  ' . $operation->operator->currency }}</td>
+                                                <td>{{ $operation->new_receivable - $operation->new_debt . '  ' . $operation->operator->currency }}
+                                                </td>
+                                                <td>{{ $operation->invoice->invoice_date }}</td>
+
                                                 <td>{{ $operation->created_at }}</td>
 
                                                 <td style="width:10%">
@@ -247,10 +262,27 @@
                                         @endif
                                         <?php $n = $n + 1; ?>
                                     @endforeach
+                                <tfoot>
 
-
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td id="area_total"></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                </tfoot>
 
                                 </tbody>
+
                             </table>
                         </div>
                     </div>
@@ -441,29 +473,23 @@
                     "thousands": "."
                 }
             });
+
+
+
+
+
+
+
+
+
         });
 
         $('.delete-confirm').on('click', function(event) {
             event.preventDefault();
             const url = $(this).attr('href');
             swal({
-                title: 'Voulez-vous vraiment annuler cette opération?',
-                text: 'Tout ce qui concerne cette opération va être supprimé',
-                icon: 'warning',
-                buttons: ["Annuler", "Oui!"],
-            }).then(function(value) {
-                if (value) {
-                    window.location.href = url;
-                }
-            });
-        });
-
-        $('.litigious-confirm').on('click', function(event) {
-            event.preventDefault();
-            const url = $(this).attr('href');
-            swal({
-                title: 'Voulez-vous vraiment transformer cette facture en facture litigieuse?',
-                text: 'Après avoir résolu le litige, vous devez  ajouter un credit note à la facture',
+                title: 'Voulez-vous vraiment supprimer cet opérateur?',
+                text: 'Cet opérateur sera supprimé définitivement de cette liste!',
                 icon: 'warning',
                 buttons: ["Annuler", "Oui!"],
             }).then(function(value) {
@@ -474,8 +500,13 @@
         });
 
 
-        new SlimSelect({
-            select: '.demo'
-        })
+        var td = document.querySelectorAll('#tableExpor > tbody > tr > td:eq(6)');
+
+        var total = [].reduce.call(td, function(a, b) {
+            return a + parseInt(b.innerText);
+        }, 0);
+
+        document.getElementById('area_total').innerText = total;
+        
     </script>
 @stop

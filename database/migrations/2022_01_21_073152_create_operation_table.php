@@ -28,10 +28,11 @@ class CreateOperationTable extends Migration
             $table->unsignedBigInteger('id_invoice');
             $table->foreign('id_invoice')->references('id')->on('invoice');
 
+            $table->unsignedBigInteger('add_by');
+            $table->foreign('add_by')->references('id')->on('users');
 
             $table->integer('is_delete')->default(0);
             $table->integer('id_op_account')->nullable();
-            $table->integer('add_by')->nullable();
             $table->bigInteger('incoming_balance')->nullable();
             $table->bigInteger('output_balance')->nullable();
             $table->bigInteger('new_netting')->nullable();

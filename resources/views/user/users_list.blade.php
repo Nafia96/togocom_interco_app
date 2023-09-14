@@ -1,129 +1,144 @@
 @extends('template.principal_tamplate')
-@section('title','Liste des comptes dépôts')
+@section('title', 'Liste des utilisateurs')
 @section('breadcrumb')
-<nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="{{route('dashboard')}}">Dashboard</a></li>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
 
-        <li class="breadcrumb-item active" aria-current="page">Liste des comptes dépôts</li>
-        <div class="d-flex justify-content-end container-fluid mt-n3">
-            <a href="{{route('add_depot')}}" class="btn btn-primary ">Ajouter un compte </a>
-        </div>
-    </ol>
+            <li class="breadcrumb-item active" aria-current="page">Liste des utilisateurs</li>
+            <div class="d-flex justify-content-end container-fluid mt-n3">
+                <a href="{{ route('add_user') }}" class="btn btn-primary ">Ajouter un utilisateur </a>
+            </div>
+        </ol>
 
 
 
-</nav>
+    </nav>
 @stop
 
 @section('content')
 
-<div class="section-body">
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h4>Liste des comptes dépôts</h4>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover" id="tableExpor" style="width:100%;">
-                            <thead>
-                                <tr>
+    <div class="section-body">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h4>Liste des utilisateurs</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover" id="tableExpor" style="width:100%;">
+                                <thead>
+                                    <tr>
+                                        <th class="recherche">N°</th>
+                                        <th class="recherche">Nom de l'utilisateurs</th>
+                                        <th class="recherche">Email</th>
+                                        <th class="recherche">Tel</th>
+                                        <th class="recherche">Poste occupé</th>
+                                        <th class="recherche">Niveau</th>
+                                        <th class="recherche">Date d'ajout</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php $n = 1; ?>
 
-                                    <th class="recherche">Numéros de compte</th>
-                                    <th class="recherche">Client</th>
-                                    <th class="recherche">Agence</th>
-                                    <th class="recherche">Solde</th>
-                                    <th class="recherche">Date de création</th>
-                                    <th >Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
+                                    @foreach ($users as $user)
+                                        <tr>
+                                            <td>{{ $n }} </td>
+                                            <td>{{ $user->last_name . ' ' . $user->first_name }} </td>
+                                            <td>{{ $user->email }}</td>
+                                            <td>{{ $user->tel }}</td>
+                                            <td>{{ $user->post }}</td>
+                                            @if( $user->type_user == 0)
+                                            <td>Premier niveau</td>
+                                            @endif
+                                            @if( $user->type_user == 1)
+                                            <td>Deuxième niveau</td>
+                                            @endif
+                                            @if( $user->type_user == 2)
+                                            <td>Troisième niveau</td>
+                                            @endif
 
-                                @foreach($comptes as $compte)
-                                <tr>
-                                    <td>{{ $compte->account_number }}</td>
-                                    <td>{{ $compte->client->last_name.' '.$compte->client->first_name}} </td>
-                                    <td>{{ $compte->agence->nom }}</td>
+                                            @if( $user->type_user == 3)
+                                            <td>Quatrième niveau</td>
+                                            @endif
+                                           
+                                            <td>{{ $user->created_at }}</td>
 
-                                    <td>{{ $compte->solde_actuelle}}Fr CFA</td>
-
-                                    <td>{{ $compte->created_at}}</td>
-
-                                    <td style="width:16%">
-                                        <span data-toggle="tooltip" data-placement="top" title="Voir les informations du compte en détail">
-                                            <a class=" mb-2 btn btn-sm btn-success" data-toggle="modal" data-target="{{'#voirDepotModal'.$compte->id}}">
-                                                <i class="fas fa-eye text-white "> </i>
-                                            </a>
-                                        </span>
-
-
-                                        <span data-toggle="tooltip" data-placement="top" title="Modifier les informations du compte ">
-                                            <a class=" mb-2 btn btn-sm btn-info" href="{{url('update_depot/'.$compte->id)}}">
-                                                <i class="fas fas fa-user-cog text-white "> </i>
-                                            </a>
-                                        </span>
-
-
-
-
-
-                                        <span data-toggle="tooltip" data-placement="top" title="Supprimer cet compte ">
-                                            <a class=" delete-confirm mb-2 btn btn-sm btn-danger" href="{{url('delete_depot/'.$compte->id)}}">
-                                                <i class="fas far fa-times-circle text-white"> </i>
-                                            </a>
-                                        </span>
+                                            <td style="width:10%">
+                                               
 
 
-
-
-
-                                    </td>
-                                </tr>
-                                @endforeach
+                                                <span data-toggle="tooltip" data-placement="top"
+                                                    title="Modifier les informations de l'utilisateurs">
+                                                    <a class=" mb-2 btn btn-sm btn-info"
+                                                        href="{{ url('update_user/' . $user->id) }}">
+                                                        <i class="fas fas fa-user-cog text-white "> </i>
+                                                    </a>
+                                                </span>
 
 
 
-                            </tbody>
-                        </table>
+                                                <span data-toggle="tooltip" data-placement="top"
+                                                    title="Supprimer cet utilisateurs">
+                                                    <a class=" delete-confirm mb-2 btn btn-sm btn-danger"
+                                                        href="/delete_user/{{ $user->id }}">
+                                                        <i class="fas far fa-times-circle text-white"> </i>
+                                                    </a>
+                                                </span>
+
+
+
+
+
+                                            </td>
+                                        </tr>
+                                        <?php $n = $n + 1; ?>
+                                    @endforeach
+
+
+
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
 
 @stop
 
 @section('script')
-<script>
-    $(document).ready(function() {
+    <script>
+        $(document).ready(function() {
             // Setup - add a text input to each footer cell
-            $('#tableExpor thead tr .recherche').clone(true).appendTo( '#tableExpor thead' ).addClass("rech");
-            $('#tableExpor thead .rech ').each( function (i) {
+            $('#tableExpor thead tr .recherche').clone(true).appendTo('#tableExpor thead').addClass("rech");
+            $('#tableExpor thead .rech ').each(function(i) {
                 var title = $(this).text();
-                $(this).html( '<input type="text" class="form-control" placeholder="Rechercher '+title+'" />' );
+                $(this).html('<input type="text" class="form-control" placeholder="Rechercher ' + title +
+                    '" />');
 
-                $( 'input', this ).on( 'keyup change', function () {
-                    if ( table.column(i).search() !== this.value ) {
+                $('input', this).on('keyup change', function() {
+                    if (table.column(i).search() !== this.value) {
                         table
-                        .column(i)
-                        .search( this.value )
-                        .draw();
+                            .column(i)
+                            .search(this.value)
+                            .draw();
                     }
-                } );
-            } );
+                });
+            });
 
-            var table = $('#tableExpor').DataTable( {
+            var table = $('#tableExpor').DataTable({
                 orderCellsTop: true,
                 fixedHeader: true,
                 dom: 'Bfrtip',
                 buttons: [
-                'copy', 'csv', 'excel', 'pdf', 'print'
+                    'copy', 'csv', 'excel', 'pdf', 'print'
                 ],
-                "language":{
+                "language": {
                     "emptyTable": "Aucune donnée disponible dans le tableau",
                     "lengthMenu": "Afficher _MENU_ éléments",
                     "loadingRecords": "Chargement...",
@@ -274,26 +289,27 @@
                     "searchPlaceholder": "...",
                     "thousands": "."
                 }
-            } );
-} );
+            });
+        });
 
-$('.delete-confirm').on('click', function (event) {
-    event.preventDefault();
-    const url = $(this).attr('href');
-    swal({
-        title: 'Voulez-vous vraiment supprimer cet compte ?',
-        text: 'Cet compte  sera supprimer definitivement de cette liste!',
-        icon: 'warning',
-        buttons: ["Annuler", "Oui!"],
-    }).then(function(value) {
-        if (value) {
-            window.location.href = url;
-        }
-    });
-});
- new SlimSelect({
+        $('.delete-confirm').on('click', function(event) {
+            event.preventDefault();
+            const url = $(this).attr('href');
+            swal({
+                title: 'Voulez-vous vraiment supprimer cet utilisateurs?',
+                text: 'Cet utilisateurs sera supprimé définitivement de cette liste!',
+                icon: 'warning',
+                buttons: ["Annuler", "Oui!"],
+            }).then(function(value) {
+                if (value) {
+                    window.location.href = url;
+                }
+            });
+        });
+
+
+        new SlimSelect({
             select: '.demo'
         })
-
-</script>
+    </script>
 @stop

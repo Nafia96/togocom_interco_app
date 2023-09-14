@@ -20,8 +20,7 @@ class CreateUsersTable extends Migration
                 $table->integer('type_user');
                 $table->string('tel')->nullable();
                 $table->string('post')->nullable();
-                $table->string('date_debut')->nullable();
-                $table->string('is_delete')->nullable();
+                $table->string('is_delete')->default(0);
                 $table->string('token')->nullable();
                 $table->string('create_by')->nullable();
                 $table->string('delete_by')->nullable();

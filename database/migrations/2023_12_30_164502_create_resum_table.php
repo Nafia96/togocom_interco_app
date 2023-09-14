@@ -39,6 +39,7 @@ class CreateResumTable extends Migration
 
             $table->bigInteger('payout')->nullable();
 
+            $table->string('is_delete')->default(0);
 
             $table->bigInteger('netting')->nullable();
             

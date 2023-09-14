@@ -30,6 +30,7 @@ class CreateContestationTable extends Migration
             $table->bigInteger('amount')->nullable();
             $table->date('contesation_date')->nullable();
             $table->string('comment')->nullable();
+            $table->string('is_delete')->default(0);
 
             
             $table->timestamps();

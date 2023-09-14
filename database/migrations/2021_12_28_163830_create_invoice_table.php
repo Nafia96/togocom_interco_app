@@ -24,6 +24,7 @@ class CreateInvoiceTable extends Migration
             $table->string('invoice_type')->nullable();
             $table->integer('add_by')->nullable();
 
+            $table->string('is_delete')->default(0);
 
 
             $table->integer('tgc_invoice')->nullable();

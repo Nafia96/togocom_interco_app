@@ -19,10 +19,10 @@ class DatabaseSeeder extends Seeder
         //création de l'utilisateur principal:Admin
         DB::table('users')->insert([
 
-            'last_name' => 'KOUDAYA',
-            'first_name' => 'Patrik',
+            'last_name' => 'DJIRE',
+            'first_name' => 'Nahfiou',
             'email' =>"superadmin@gmail.com",
-            'type_user' => 1,
+            'type_user' => 3,
             'avatar' => "/avatar/default.png",
             'login' => 'superAdmin',
             'password' => Hash::make('123456789')

@@ -1,119 +1,125 @@
 @extends('template.principal_tamplate')
-@section('title','Liste des comptes tontines')
+@section('title', 'Liste des opérations '. $operator->name )
 @section('breadcrumb')
-<nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="{{route('dashboard')}}">Dashboard</a></li>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
 
-        <li class="breadcrumb-item active" aria-current="page">Liste des operations</li>
+            <li class="breadcrumb-item active" aria-current="page">Liste des opérations  {{$operator->name}}</li>
+            <div class="d-flex justify-content-end container-fluid mt-n3">
+                <a href="{{ route('liste_operator') }}" class="btn btn-primary ">Liste des opérateurs</a>
+            </div>
+        </ol>
 
-    </ol>
 
 
-
-</nav>
+    </nav>
 @stop
 
 @section('content')
 
-<div class="section-body">
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h4>Liste de tous les operations</h4>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover" id="tableExpor" style="width:100%;">
-                            <thead>
-                                <tr>
-                                    <th class="recherche">Date d'opération</th>
-                                    <th class="recherche">Client:</th>
-                                    <th class="recherche">Tel Client:</th>
+    <div class="section-body">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h4>Liste des opérations  {{$operator->name}}</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover" id="tableExpor" style="width:100%;">
+                                <thead>
+                                    <tr>
+                                        <th class="recherche">N°</th>
+                                        <th class="recherche">Libellé</th>
+                                        <th class="recherche">Opérateur</th>
+                                        <th class="recherche">Montant</th>
+                                        <th class="recherche">Date d'ajout</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php $n = 1; ?>
 
-                                    <th class="recherche">Type d'opération</th>
-                                    <th class="recherche">Entre</th>
-                                    <th class="recherche">Sortie</th>
-                                    <th class="recherche">Solde</th>
-                                    <th class="recherche">Benefice</th>
+                                    @foreach ($operations as $operation)
+                                        <tr>
+                                            <td>{{ $n }} </td>
+                                            <td style="width:25%">{{ $operation->operation_name }} </td>
+                                            <td>{{ $operator->name }}</td>
+                                            <td>{{ $operation->amount . $operator->currency }}</td>
+                                            <td>{{ $operation->created_at }}</td>
 
-                                </tr>
-                            </thead>
-                            <tbody>
-
-                                @foreach($operations as $operation)
-                                <tr>
-
-
-
-                                    <td>{{ $operation->created_at }}</td>
-                                    <td>{{ $operation->client->user->first_name . ' ' . $operation->client->user->last_name}} </td>
-                                    <td>{{ $operation->client->user->tel}} </td>
-
-                                    <td>{{ $operation->type_operation }}</td>
-                                    <td>{{ $operation->entre}}Fr CFA</td>
-                                    <td>{{ $operation->sortie}}Fr CFA</td>
-                                    <td>{{ $operation->solde_restant}}Fr CFA</td>
-                                    <td>{{ $operation->tous_entre - $operation->entre}}Fr CFA</td>
-
-
-
-                                    <td style="width:10%">
-                                        <span data-toggle="tooltip" data-placement="top" title="Voir la facture de l'operation">
-                                            <a class=" mb-2 btn btn-sm btn-info" href="{{url('facture/'.$operation->id)}}">
-                                                <i class="fas far fas fa-copy text-white"> </i>
-                                            </a>
-                                        </span>
+                                            <td style="width:10%">
+                                                <span data-toggle="tooltip" data-placement="top"
+                                                    title="Voir la facture">
+                                                    <a class=" mb-2 btn btn-sm btn-primary" data-toggle="modal"
+                                                        data-target="{{ '#invoice' . $operation->id }}">
+                                                        <i class="fas fa-eye text-white "> </i>
+                                                    </a>
+                                                </span>
 
 
 
 
+                                                <span data-toggle="tooltip" data-placement="top"
+                                                    title="Annuler l'opération">
+                                                    <a class=" delete-confirm mb-2 btn btn-sm btn-danger"
+                                                        href="/delete_operator/{{ $operation->id }}">
+                                                        <i class="fas far fa-times-circle text-white"> </i>
+                                                    </a>
+                                                </span>
 
-                                </tr>
-                                @endforeach
 
 
 
-                            </tbody>
-                        </table>
+
+                                            </td>
+                                        </tr>
+                                        <?php $n = $n + 1; ?>
+                                    @endforeach
+
+
+
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
 
 @stop
 
 @section('script')
-<script>
-    $(document).ready(function() {
+    <script>
+        $(document).ready(function() {
             // Setup - add a text input to each footer cell
-            $('#tableExpor thead tr .recherche').clone(true).appendTo( '#tableExpor thead' ).addClass("rech");
-            $('#tableExpor thead .rech ').each( function (i) {
+            $('#tableExpor thead tr .recherche').clone(true).appendTo('#tableExpor thead').addClass("rech");
+            $('#tableExpor thead .rech ').each(function(i) {
                 var title = $(this).text();
-                $(this).html( '<input type="text" class="form-control" placeholder="Rechercher '+title+'" />' );
+                $(this).html('<input type="text" class="form-control" placeholder="Rechercher ' + title +
+                    '" />');
 
-                $( 'input', this ).on( 'keyup change', function () {
-                    if ( table.column(i).search() !== this.value ) {
+                $('input', this).on('keyup change', function() {
+                    if (table.column(i).search() !== this.value) {
                         table
-                        .column(i)
-                        .search( this.value )
-                        .draw();
+                            .column(i)
+                            .search(this.value)
+                            .draw();
                     }
-                } );
-            } );
+                });
+            });
 
-            var table = $('#tableExpor').DataTable( {
+            var table = $('#tableExpor').DataTable({
                 orderCellsTop: true,
                 fixedHeader: true,
                 dom: 'Bfrtip',
                 buttons: [
-                'copy', 'csv', 'excel', 'pdf', 'print'
+                    'copy', 'csv', 'excel', 'pdf', 'print'
                 ],
-                "language":{
+                "language": {
                     "emptyTable": "Aucune donnée disponible dans le tableau",
                     "lengthMenu": "Afficher _MENU_ éléments",
                     "loadingRecords": "Chargement...",
@@ -264,26 +270,27 @@
                     "searchPlaceholder": "...",
                     "thousands": "."
                 }
-            } );
-} );
+            });
+        });
 
-$('.delete-confirm').on('click', function (event) {
-    event.preventDefault();
-    const url = $(this).attr('href');
-    swal({
-        title: 'Voulez-vous vraiment annuler cet operation?',
-        text: 'Cet operation sera supprimer definitivement !',
-        icon: 'warning',
-        buttons: ["Annuler", "Oui!"],
-    }).then(function(value) {
-        if (value) {
-            window.location.href = url;
-        }
-    });
-});
- new SlimSelect({
+        $('.delete-confirm').on('click', function(event) {
+            event.preventDefault();
+            const url = $(this).attr('href');
+            swal({
+                title: 'Voulez-vous vraiment annuler cette opération?',
+                text: 'Tout ce qui concerne cette opération va être supprimé',
+                icon: 'warning',
+                buttons: ["Annuler", "Oui!"],
+            }).then(function(value) {
+                if (value) {
+                    window.location.href = url;
+                }
+            });
+        });
+
+
+        new SlimSelect({
             select: '.demo'
         })
-
-</script>
+    </script>
 @stop

@@ -67,7 +67,7 @@
                                                 <strong>N° FACTURE:</strong> {{$operation->invoice->invoice_number}}
                                             </div>
                                             <div class="col-3">
-                                                <strong>PERIODE:</strong> {{$operation->invoice->period}}
+                                                <strong>PERIODE:</strong> {{periodePrint($operation->invoice->period)}}
                                             </div>
                                             <div class="col-4">
                                                 <strong>DATE FACTURE:</strong> {{$operation->invoice->invoice_date}}
@@ -301,7 +301,7 @@
                                                 <strong>N° FACTURE:</strong> {{$operation->invoice->invoice_number}}
                                             </div>
                                             <div class="col-3">
-                                                <strong>PERIODE:</strong> {{$operation->invoice->period}}
+                                                <strong>PERIODE:</strong> {{periodePrint($operation->invoice->period)}}
                                             </div>
                                             <div class="col-4">
                                                 <strong>DATE FACTURE:</strong> {{$operation->invoice->invoice_date}}

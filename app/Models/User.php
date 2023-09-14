@@ -18,44 +18,8 @@ class User extends Authenticatable
      *
      * @var string[]
      */
-    protected $fillable = [
-        'last_name',
-        'email',
-        'password',
-        'first_name',
-        'type_user',
-        'password',
-        'occupation',
-        'tel',
-        'tel2',
-        'ville',
-        'email',
-        'quartier',
-        'adresse',
-        'diplome',
-        'area',
-        'post',
-        'date_debut',
-        'is_delet',
-        'type_contras',
-        'numeros_matricule',
-        'fin_contrat',
-        'debut_contras',
-        'login',
-        'id_agence',
-        'avatar',
+	protected $fillable = ['last_name','first_name','type_user','tel','post','is_delete','token','create_by','delete_by','reactive_by','avatar','login','email','email_verified_at','password'];
 
-
-
-        'created_by',
-        'deleted_by',
-        'reactive_by',
-        'token',
-        'type_carte',
-        'card_number',
-
-
-    ];
 
 
 
@@ -77,6 +41,8 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    
 
     public function agence(){
 

@@ -38,10 +38,20 @@ class Operation extends Model
         return $this->belongsTo(Invoice::class,'id_invoice');
     }
 
+    public function user(){
+        return $this->belongsTo(User::class,'add_by');
+    }
+
     public function resum()
     {
 		
 		return $this->hasOne(Resum::class, 'id_operation_1');  
+ 	 }
+     
+      public function resum2()
+    {
+		
+		return $this->hasOne(Resum::class, 'id_operation_2');  
  	 }
 /*
     public function agence(){

@@ -34,6 +34,9 @@ class CreateCreditnoteTable extends Migration
 
             $table->bigInteger('receivable')->nullable();
             
+            $table->string('is_delete')->default(0);
+
+
             $table->string('comment')->nullable();
             
             $table->timestamps();

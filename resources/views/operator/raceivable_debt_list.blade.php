@@ -55,7 +55,9 @@
                                     @endif
 
                                     @if($resum->period != null)
-                                    <td>{{ $resum->period }}</td>
+
+                                    
+                                    <td>{{periodePrint($resum->period) }}</td>
                                     @endif
 
                                     @if($resum->receivable == null)

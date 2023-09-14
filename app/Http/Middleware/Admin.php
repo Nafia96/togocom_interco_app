@@ -16,7 +16,7 @@ class Admin
      */
     public function handle(Request $request, Closure $next)
     {
-        if ($request->session()->get('is_admin') != 1) {
+        if ($request->session()->get('is_admin') != 3) {
             return redirect('/')->with('flash_message_error', 'Accès intedit! Veuillez vous connecter.');
         }
         return $next($request);

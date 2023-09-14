@@ -33,7 +33,11 @@
                                         <th class="recherche">N°</th>
                                         <th class="recherche">Libellé</th>
                                         <th class="recherche">Opérateur</th>
+                                        <th class="recherche">N° FACTURE</th>
+
                                         <th class="recherche">Montant</th>
+                                        <th class="recherche">Devise</th>
+                                        <th class="recherche">Ajouter par:</th>
                                         <th class="recherche">Date d'ajout</th>
                                         <th>Action</th>
                                     </tr>
@@ -46,7 +50,12 @@
                                             <td>{{ $n }} </td>
                                             <td style="width:25%">{{ $operation->operation_name }} </td>
                                             <td>{{ $operator->name }}</td>
-                                            <td>{{ $operation->amount . $operator->currency }}</td>
+                                            <td style="width:15%">{{ $operation->invoice->invoice_number }} </td>
+
+                                            <td>{{ $operation->amount  }}</td>
+                                            <td>{{ $operator->currency }}</td>
+                                            <td>{{ $operation->user->last_name .' '. $operation->user->first_name }}</td>
+                                          
                                             <td>{{ $operation->created_at }}</td>
 
                                             <td style="width:10%">
@@ -64,7 +73,7 @@
                                                 <span data-toggle="tooltip" data-placement="top"
                                                     title="Annuler l'opération">
                                                     <a class=" delete-confirm mb-2 btn btn-sm btn-danger"
-                                                        href="/delete_operator/{{ $operation->id }}">
+                                                        href="/cancel_operation/{{ $operation->id }}">
                                                         <i class="fas far fa-times-circle text-white"> </i>
                                                     </a>
                                                 </span>

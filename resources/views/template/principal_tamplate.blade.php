@@ -112,10 +112,10 @@
 
                     <li class="dropdown"><a href="#" data-toggle="dropdown"
                             class="nav-link dropdown-toggle nav-link-lg nav-link-user"> <img alt="image"
-                                src="{{ getUserAuth()->avatar }}" class="user-img-radious-style"> <span
+                                src="/avatar/default.png" class="user-img-radious-style"> <span
                                 class="d-sm-none d-lg-inline-block"></span></a>
                         <div class="dropdown-menu dropdown-menu-right pullDown">
-                            @if (getUserType()->type_user == 1)
+                            @if (getUserType()->type_user == 3)
                                 <div class="dropdown-title">SUPER ADMIN : {{ getUserAuth()->first_name }}
                                     {{ getUserAuth()->last_name }}</div>
                             @endif
@@ -125,7 +125,7 @@
                                     {{ getUserAuth()->last_name }}</div>
                             @endif
 
-                            @if (getUserType()->type_user == 3)
+                            @if (getUserType()->type_user == 1)
                                 <div class="dropdown-title"> AGENT : {{ getUserAuth()->first_name }}
                                     {{ getUserAuth()->last_name }}</div>
                             @endif
@@ -161,7 +161,7 @@
                     <ul class="sidebar-menu">
                         <li class="menu-header">Menu principal</li>
                         <li class="dropdown">
-                            @if (getUserType()->type_user == 1)
+                            @if (getUserType()->type_user == 3)
                                 <a href="{{ url('/dashboard') }}" class="nav-link"><i
                                         data-feather="monitor"></i><span>Tableau de Bord</span></a>
                             @endif
@@ -169,17 +169,14 @@
                                 <a href="{{ url('/operator_dashboard') }}" class="nav-link"><i
                                         data-feather="monitor"></i><span>Tableau de Bord</span></a>
                             @endif
-                            @if (getUserType()->type_user == 3)
-                                <a href="{{ url('/agent_dashboard') }}" class="nav-link"><i
-                                        data-feather="monitor"></i><span>Tableau de Bord</span></a>
-                            @endif
+                          
                             @if (getUserType()->type_user == 4)
                                 <a href="{{ url('/client_dashboard') }}" class="nav-link"><i
                                         data-feather="monitor"></i><span>Tableau de Bord</span></a>
                             @endif
                         </li>
 
-                        @if (getUserType()->type_user == 1)
+                        @if (getUserType()->type_user == 3)
                             <li class="menu-header">Gestions des données</li>
                             <li
                                 class="dropdown  {{ Request::is('add_operator') ? 'active' : '' }}
@@ -199,7 +196,7 @@
                                             opérateurs</a>
                                     </li>
                                     <li class="{{ Request::is('delete_operator_liste') ? 'active' : '' }}"><a
-                                            class="nav-link " href="{{ route('delete_operator_liste') }}">Opérateurs 
+                                            class="nav-link " href="{{ route('delete_operator_liste') }}">Opérateurs
                                             supprimées</a>
                                     </li>
 
@@ -211,8 +208,8 @@
 
                             <li
                                 class="dropdown  {{ Request::is('all_invoice_list') ? 'active' : '' }}
-                              {{ Request::is('liste_operator') ? 'active' : '' }}
-                              {{ Request::is('delete_operator_liste') ? 'active' : '' }}
+                              {{ Request::is('all_invoice_list') ? 'active' : '' }}
+                              {{ Request::is('all_invoice_list') ? 'active' : '' }}
                              ">
 
                                 <a href="#" class="menu-toggle nav-link has-dropdown"><i
@@ -220,16 +217,17 @@
                                 <ul class="dropdown-menu">
 
                                     <li class="{{ Request::is('all_invoice_list') ? 'active' : '' }}"><a
-                                            class="nav-link " href="{{ route('all_invoice_list') }}">Liste des factures
+                                            class="nav-link " href="{{ route('all_invoice_list') }}">Toutes les factures
                                         </a></li>
-                                    <li class="{{ Request::is('liste_operator') ? 'active' : '' }}"><a
-                                            class="nav-link " href="{{ route('liste_operator') }}">Factures
-                                            Estimé</a>
+                                    <li class="{{ Request::is('all_invoice_list') ? 'active' : '' }}"><a
+                                            class="nav-link " href="{{ route('all_invoice_list') }}">Factures estimés</a>
                                     </li>
-                                    <li class="{{ Request::is('delete_operator_liste') ? 'active' : '' }}"><a
-                                            class="nav-link " href="{{ route('delete_operator_liste') }}">Factures
-                                            Litigieux</a>
+                                    <li class="{{ Request::is('all_invoice_list') ? 'active' : '' }}"><a
+                                            class="nav-link " href="{{ route('all_invoice_list') }}">Factures litigieuse</a>
                                     </li>
+                                    <li class="{{ Request::is('all_invoice_list') ? 'active' : '' }}"><a
+                                        class="nav-link " href="{{ route('all_invoice_list') }}">Factures supprimées</a>
+                                </li>
 
 
 
@@ -239,7 +237,7 @@
 
                             <li
                                 class="dropdown  {{ Request::is('all_operations') ? 'active' : '' }}
-                              {{ Request::is('all_operations') ? 'active' : '' }}
+                              {{ Request::is('all_cancel_operations') ? 'active' : '' }}
 
                              ">
 
@@ -249,13 +247,40 @@
 
                                     <li class="{{ Request::is('all_operations') ? 'active' : '' }}"><a
                                             class="nav-link " href="{{ route('all_operations') }}">Liste des
-                                            opérations
+                                            opperations
                                         </a></li>
-                                    <li class="{{ Request::is('liste_operator') ? 'active' : '' }}"><a
-                                            class="nav-link " href="{{ route('liste_operator') }}">Operations
+                                    <li class="{{ Request::is('all_cancel_operations') ? 'active' : '' }}"><a
+                                            class="nav-link " href="{{ route('all_cancel_operations') }}">Opperations
                                             supprimées</a>
                                     </li>
 
+
+
+                                </ul>
+                            </li>
+                        @endif
+
+                        @if (getUserType()->type_user == 3)
+                            <li
+                                class="dropdown  {{ Request::is('add_user') ? 'active' : '' }}
+                                      {{ Request::is('users_list') ? 'active' : '' }}
+                                        {{ Request::is('delete_user_liste') ? 'active' : '' }} ">
+
+                                <a href="#" class="menu-toggle nav-link has-dropdown"><i
+                                        data-feather="briefcase"></i><span>Gestion des utilisateurs</span></a>
+                                <ul class="dropdown-menu">
+
+                                    <li class="{{ Request::is('add_user') ? 'active' : '' }}"><a class="nav-link "
+                                            href="{{ route('add_user') }}">Ajouter un utilisateur
+                                        </a></li>
+                                    <li class="{{ Request::is('users_list') ? 'active' : '' }}"><a class="nav-link "
+                                            href="{{ route('users_list') }}">Liste des utilisateurs
+                                        </a></li>
+
+                                    <li class="{{ Request::is('delete_user_liste') ? 'active' : '' }}"><a
+                                            class="nav-link " href="{{ route('delete_user_liste') }}">Utilisateurs
+                                            suprimés
+                                        </a></li>
 
 
                                 </ul>
@@ -267,198 +292,10 @@
                                     data-feather="package"></i><span>Journal des Actions</span></a>
                         </li>
 
-                        @if (getUserType()->type_user == 2)
-                            <li
-                                class="dropdown  {{ Request::is('add_agent') ? 'active' : '' }}
-                            {{ Request::is('liste_agent') ? 'active' : '' }}
-                            {{ Request::is('delete_agent_liste') ? 'active' : '' }} ">
-
-                                <a href="#" class="menu-toggle nav-link has-dropdown"><i
-                                        data-feather="briefcase"></i><span>Gestion desssssss Agents</span></a>
-                                <ul class="dropdown-menu">
-
-                                    <li class="{{ Request::is('add_agent') ? 'active' : '' }}"><a class="nav-link "
-                                            href="{{ route('add_agent') }}">Créer un agent
-                                        </a></li>
-                                    <li class="{{ Request::is('liste_agent') ? 'active' : '' }}"><a class="nav-link "
-                                            href="{{ route('liste_agent') }}">Liste des agents
-                                        </a></li>
-
-                                    <li class="{{ Request::is('delete_agent_liste') ? 'active' : '' }}"><a
-                                            class="nav-link " href="{{ route('delete_agent_liste') }}">Liste des
-                                            agents suprimées
-                                        </a></li>
-
-
-                                </ul>
-                            </li>
-                        @endif
-
-                        @if (getUserType()->type_user == 3 || getUserType()->type_user == 2)
-
-                            <li
-                                class="dropdown  {{ Request::is('add_client') ? 'active' : '' }}
-                            {{ Request::is('liste_client') ? 'active' : '' }}
-                            {{ Request::is('delete_client_liste') ? 'active' : '' }} ">
-
-                                <a href="#" class="menu-toggle nav-link has-dropdown"><i
-                                        data-feather="briefcase"></i><span>Gestion des clients</span></a>
-                                <ul class="dropdown-menu">
-
-                                    <li class="{{ Request::is('add_client') ? 'active' : '' }}"><a class="nav-link "
-                                            href="{{ route('add_client') }}">Créer un
-                                            client
-                                        </a></li>
-                                    <li class="{{ Request::is('liste_client') ? 'active' : '' }}"><a
-                                            class="nav-link " href="{{ route('liste_client') }}">Liste des
-                                            clients
-                                        </a></li>
-
-                                    @if (getUserType()->type_user == 2)
-                                        <li class="{{ Request::is('delete_client_liste') ? 'active' : '' }}"><a
-                                                class="nav-link " href="{{ route('delete_client_liste') }}">Liste
-                                                des clients suprimées
-                                            </a></li>
-                                    @endif
 
 
 
 
-                                </ul>
-                            </li>
-
-
-                        @endif
-
-                        @if (getUserType()->type_user == 3 || getUserType()->type_user == 2)
-
-                            <li
-                                class="dropdown  {{ Request::is('add_tontine') ? 'active' : '' }}
-                    {{ Request::is('liste_tontine') ? 'active' : '' }}
-                    {{ Request::is('delete_tontine_liste') ? 'active' : '' }} ">
-
-                                <a href="#" class="menu-toggle nav-link has-dropdown"><i
-                                        data-feather="briefcase"></i><span>Gestion comptes tontine</span></a>
-                                <ul class="dropdown-menu">
-
-                                    <li class="{{ Request::is('add_tontine') ? 'active' : '' }}"><a class="nav-link "
-                                            href="{{ route('add_tontine') }}">Créer un compte
-                                            Tontine
-                                        </a></li>
-                                    @if (getUserType()->type_user == 2)
-                                        <li class="{{ Request::is('liste_tontine') ? 'active' : '' }}"><a
-                                                class="nav-link " href="{{ route('liste_tontine') }}">Liste des
-                                                tontines
-                                            </a></li>
-                                    @endif
-                                    @if (getUserType()->type_user == 3)
-                                        <li class="{{ Request::is('liste_tontine') ? 'active' : '' }}"><a
-                                                class="nav-link " href="{{ route('liste_tontine_agent') }}">Liste des
-                                                tontines
-                                            </a></li>
-                                    @endif
-
-
-                                    @if (getUserType()->type_user == 2)
-                                        <li class="{{ Request::is('delete_tontine_liste') ? 'active' : '' }}"><a
-                                                class="nav-link " href="{{ route('delete_tontine_liste') }}">Liste
-                                                des tontines suprimées
-                                            </a></li>
-                                    @endif
-
-
-
-
-                                </ul>
-                            </li>
-
-
-                        @endif
-
-
-
-                        @if (getUserType()->type_user == 2 || getUserType()->type_user == 3)
-
-                            <li
-                                class="dropdown  {{ Request::is('add_epargne') ? 'active' : '' }}
-                                    {{ Request::is('liste_epargne') ? 'active' : '' }}
-                                    {{ Request::is('delete_epargne_liste') ? 'active' : '' }} ">
-
-                                <a href="#" class="menu-toggle nav-link has-dropdown"><i
-                                        data-feather="briefcase"></i><span>Gestion comptes épargne</span></a>
-                                <ul class="dropdown-menu">
-
-                                    <li class="{{ Request::is('add_epargne') ? 'active' : '' }}"><a
-                                            class="nav-link " href="{{ route('add_epargne') }}">Créer un compte
-                                            épargne
-                                        </a></li>
-                                    <li class="{{ Request::is('liste_epargne') ? 'active' : '' }}"><a
-                                            class="nav-link " href="{{ route('liste_epargne') }}">Liste des
-                                            comptes épargne
-                                        </a></li>
-                                    @if (getUserType()->type_user == 2)
-                                        <li class="{{ Request::is('delete_epargne_liste') ? 'active' : '' }}"><a
-                                                class="nav-link " href="{{ route('delete_epargne_liste') }}">Compte
-                                                pargnes supprimées
-                                            </a></li>
-                                    @endif
-
-
-                                </ul>
-                            </li>
-
-
-                        @endif
-
-
-
-
-                        @if (getUserType()->type_user == 3)
-                            <li class="dropdown">
-                                <a href="{{ url('/agent_operations') }}" class="nav-link"><i
-                                        data-feather="monitor"></i><span>Tous mes operations</span></a>
-
-                            </li>
-                        @endif
-
-                        @if (getUserType()->type_user == 4)
-                            <li class="dropdown">
-                                <a href="{{ url('/client_operations') }}" class="nav-link"><i
-                                        data-feather="monitor"></i><span>Tous mes operations</span></a>
-
-                            </li>
-                        @endif
-
-
-                        @if (getUserType()->type_user == 2)
-                            <li class="dropdown">
-                                <a href="{{ url('/operator_operations') }}" class="nav-link"><i
-                                        data-feather="monitor"></i><span>Liste des operations</span></a>
-
-                            </li>
-
-                            <li class="dropdown">
-                                <a href="{{ url('/versement') }}" class="nav-link"><i
-                                        data-feather="monitor"></i><span>Faire un versement</span></a>
-
-                            </li>
-                        @endif
-
-
-
-                        @if (getUserType()->type_user == 4)
-                            <li class="dropdown">
-                                <a href="{{ url('/liste_tontine_client') }}" class="nav-link"><i
-                                        data-feather="monitor"></i><span>Mes comptes tontine</span></a>
-
-                            </li>
-
-                            <li class="dropdown">
-                                <a href="{{ url('/liste_epargne_client') }}" class="nav-link"><i
-                                        data-feather="monitor"></i><span>Mes comptes épargne</span></a>
-
-                            </li>
-                        @endif
 
 
 
@@ -502,6 +339,8 @@
 
                 @endif
 
+         
+
                 @if (isset($operations))
                     @foreach ($operations as $operation)
                         @include('invoice.invoice')
@@ -521,7 +360,7 @@
 
                 @endif
 
-                
+
 
                 @if (isset($agents))
                     @foreach ($agents as $agent)

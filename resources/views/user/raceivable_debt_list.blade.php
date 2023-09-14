@@ -1,13 +1,13 @@
 @extends('template.principal_tamplate')
-@section('title', 'Liste des comptes tontines')
+@section('title', 'Liste des créances et dettes de '. $operator->name )
 @section('breadcrumb')
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
 
-            <li class="breadcrumb-item active" aria-current="page">Liste des comptes tontines</li>
-            <div class="d-flex justify-content-end container-fluid mt-n3">
-                <a href="{{ route('add_tontine') }}" class="btn btn-primary ">Ajouter un compte </a>
+            <li class="breadcrumb-item active" aria-current="page">Liste des créances et dettes de  {{$operator->name}}</li>
+            <div class="d-flex justify-content-end container-fluid mt-n3 ">
+                <a href="{{ route('liste_operator') }}" class="btn btn-primary  ">Liste des opérateurs</a>
             </div>
         </ol>
 
@@ -23,148 +23,154 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-header">
-                        <h4>Liste des comptes tontines</h4>
+                        <h4>Liste des créances et dettes de {{$operator->name}}</h4>
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
                             <table class="table table-striped table-hover" id="tableExpor" style="width:100%;">
                                 <thead>
                                     <tr>
-
-                                        <th class="recherche">Numéros de compte</th>
-                                        <th class="recherche">Client</th>
-                                        <th class="recherche">Taux cotisation</th>
-                                        <th class="recherche">Solde</th>
-                                        <th class="recherche">Jours cotisé</th>
-                                        <th class="recherche">Mois cotisé</th>
-                                        <th class="recherche">Date de création</th>
-                                        <th>Action</th>
+                                        <th class="recherche">N°</th>
+                                        <th class="recherche">PRESTATIONS</th>
+                                        <th class="recherche">PERIODES</th>
+                                        <th class="recherche">CREANCES</th>
+                                        <th class="recherche">ENCAISSEMENT</th>
+                                        <th class="recherche">DETTES</th>
+                                        <th class="recherche">DECAISSEMENT</th>
+                                        <th class="recherche">SOLDE</th>
+                                        <th class="recherche">DATE D'AJOUT</th>
+                                        <th>ACTION</th>
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    <?php $n = 1; ?>
 
-                                    @foreach ($comptes as $compte)
+                                    @foreach ($resums as $resum)
                                         <tr>
-                                            <td>{{ $compte->account_number }}</td>
-                                            <td>{{ $compte->client->user->last_name . ' ' . $compte->client->user->first_name }}
-                                            </td>
+                                            <td>{{ $n }} </td>
+                                            <td style="width:18%">{{ $resum->service }} </td>
 
-                                            <td>{{ $compte->taux_cotisation }}Fr CFA</td>
-                                            <td>{{ $compte->solde_actuelle }}Fr CFA</td>
+                                    @if($resum->period == null)
+                                    <td>---------</td>
+                                    @endif
 
-                                            @php
-                                                if ($compte->nombre_de_retrait != 0) {
-                                                    # code...
-                                                    $nbr_mois = (int) ($compte->nombre_de_retrait / 31);
+                                    @if($resum->period != null)
+                                    <td>{{ $resum->period }}</td>
+                                    @endif
 
-                                                    if ($compte->nombre_de_retrait >= 31) {
-                                                        # code...
-                                                        $nbr_jours = $compte->nombre_de_retrait - $nbr_mois * 31;
-                                                    } else {
-                                                        # code...
-                                                        $nbr_jours = $compte->nombre_de_retrait;
-                                                    }
-                                                }
+                                    @if($resum->receivable == null)
+                                            <td>0</td>
+                                    @endif
 
-                                            @endphp
-                                            @if ($compte->nombre_de_retrait == 0)
+                                    @if($resum->receivable != null)
+                                            <td>{{ number_format($resum->receivable) .'  '. $operator->currency }}</td>
+                                    @endif
 
-                                                <td>0 jours</td>
-                                            @else
-                                                <td>{{ $nbr_jours }} jours</td>
-                                            @endif
 
-                                            @if ($compte->nombre_de_retrait == 0)
+                                    @if($resum->incoming_payement == null)
+                                    <td>0</td>
+                                    @endif
 
-                                                <td>0 mois</td>
+                                    @if($resum->incoming_payement != null)
+                                     <td>{{ number_format($resum->incoming_payement) .'  '. $operator->currency }}</td>
+                                    @endif
 
-                                            @else
-                                                <td>{{ $nbr_mois }} mois</td>
-                                            @endif
 
-                                            <td>{{ $compte->created_at }}</td>
+                                    @if($resum->operation2->invoice->invoice_type == 'estimated') 
 
-                                            <td style="width:28%">
+                                        @if($resum->debt == null)
+                                            <td>0</td>
+                                        @endif
+
+                                        @if($resum->debt != null &&  $resum->service != 'Facture de service voix')
+                                        <td>  {{ number_format($resum->debt) .'  '. $operator->currency  }} </td>
+
+                        
+                                            
+                                        @endif 
+
+                                        @if($resum->debt != null &&  $resum->service == 'Facture de service voix')
+                                        <td style="background-color: #fcca29;" >
+
+                            
+                                           
+                                                <div style="display:block;" data-toggle="modal"
+                                                data-target="{{ '#update_invoiceModal' . $resum->id }}"> 
+                                                    {{ number_format($resum->debt) .'  '. $operator->currency  }}
+                                                </div> 
+                                          
+                                            
+                                        </td>
+                                            
+                                        @endif 
+
+                                    @endif
+                                    
+                                    @if($resum->operation2->invoice->invoice_type != 'estimated') 
+
+                                        @if($resum->debt == null)
+                                            <td>0</td>
+                                        @endif
+
+                                        @if($resum->debt != null)
+                                            <td>{{ number_format($resum->debt) .'  '. $operator->currency }} </td>
+                                        @endif 
+
+                                    @endif
+                                    
+                                    
+                                    @if($resum->payout == null)
+                                    <td>0</td>
+                                    @endif
+
+                                    @if($resum->payout != null)
+                                    <td>{{ number_format($resum->payout) .'  '. $operator->currency }}
+                                    @endif 
+
+                                      <td>{{ number_format($resum->netting) .'  '. $operator->currency }}</td>
+                                            <td>{{ $resum->created_at }}</td>
+
+                                           
+
+                                            <td style="width:10%">
+
+                                                @if($resum->operation2->operation_type != '3' )
                                                 <span data-toggle="tooltip" data-placement="top"
-                                                    title="Voir les informations du compte en détail">
-                                                    <a class=" mb-2 btn btn-sm btn-success" data-toggle="modal"
-                                                        data-target="{{ '#voirTontineModal' . $compte->id }}">
-                                                        <i class="fas fa-eye text-white "> </i>
-                                                    </a>
-                                                </span>
-
-                                                @if (getUserType()->type_user == 2)
-
-
-                                                    <span data-toggle="tooltip" data-placement="top"
-                                                        title="Modifier les informations du compte ">
-                                                        <a class=" mb-2 btn btn-sm btn-info"
-                                                            href="{{ url('update_tontine/' . $compte->id) }}">
-                                                            <i class="fas fas fa-user-cog text-white "> </i>
-                                                        </a>
-                                                    </span>
-
-                                                @endif
-
-                                                <span data-toggle="tooltip" data-placement="top"
-                                                    title="Ajouter une cotisation au comptee">
+                                                    title="Voir la facture de créance">
                                                     <a class=" mb-2 btn btn-sm btn-primary" data-toggle="modal"
-                                                        data-target="{{ '#cotisationTontineModal' . $compte->id }}">
-                                                        <i class="fas fa-donate text-white "> </i>
+                                                        data-target="{{ '#invoice' . $resum->operation1->id }}">
+                                                        <i class="fas fa-receipt text-white "> </i>
                                                     </a>
                                                 </span>
-
-                                                @if (getUserType()->type_user == 2)
-
-                                                    <span data-toggle="tooltip" data-placement="top"
-                                                        title="Faire un retrait sur le comptee">
-                                                        <a class=" mb-2 btn btn-sm btn-warning" data-toggle="modal"
-                                                            data-target="{{ '#retraitModal' . $compte->id }}">
-                                                            <i class="fas fa-hand-holding-usd text-white "> </i>
-                                                        </a>
-                                                    </span>
-
-                                                @endif
-
-                                                <span data-toggle="tooltip" data-placement="top"
-                                                    title="Tous les operations du compte">
-                                                    <a class=" mb-2 btn btn-sm btn-info"
-                                                        href="{{ route('liste_operations', ['id_client' => $compte->client->id, 'id_compte' => $compte->id]) }}">
-                                                        <i class="fas fa-layer-group text-white "> </i>
-                                                    </a>
-                                                </span>
-
-                                                @if (getUserType()->type_user == 2 || getUserType()->type_user == 3)
-
+                                                @endif   
+                                                
+                                                @if($resum->operation2->operation_type == '3' )
 
                                                     <span data-toggle="tooltip" data-placement="top"
-                                                        title="Ajouter les frais du carnet sur ce compte">
-                                                        <a class=" carnet-confirm mb-2 btn btn-sm btn-warning"
-                                                            href="{{ url('new_carnet/' . $compte->id) }}">
-                                                            <i class="fas far fas fa-fill text-white"> </i>
+                                                        title="Voir la facture du règlement">
+                                                        <a class=" mb-2 btn btn-sm btn-primary" data-toggle="modal"
+                                                            data-target="{{ '#invoice' . $resum->operation2->id }}">
+                                                            <i class="fas fa-receipt text-white "> </i>
                                                         </a>
                                                     </span>
+                                                @endif    
 
-                                                @endif
-
-                                                @if (getUserType()->type_user == 2)
+                                                @if($resum->operation2->id != $resum->operation1->id )
 
                                                     <span data-toggle="tooltip" data-placement="top"
-                                                        title="Supprimer cet compte ">
-                                                        <a class=" delete-confirm mb-2 btn btn-sm btn-danger"
-                                                            href="{{ url('delete_tontine/' . $compte->id) }}">
-                                                            <i class="fas far fa-times-circle text-white"> </i>
+                                                        title="Voir la facture de la dette">
+                                                        <a class=" mb-2 btn btn-sm btn-dark" data-toggle="modal"
+                                                            data-target="{{ '#invoice' . $resum->operation2->id }}">
+                                                            <i class="fas fa-receipt text-white "> </i>
                                                         </a>
                                                     </span>
+                                                @endif    
 
-                                                @endif
-
-
-
-
+                                           
 
                                             </td>
                                         </tr>
+                                        <?php $n = $n + 1; ?>
                                     @endforeach
 
 
@@ -366,8 +372,8 @@
             event.preventDefault();
             const url = $(this).attr('href');
             swal({
-                title: 'Voulez-vous vraiment supprimer cet compte ?',
-                text: 'Toutes les opérations reliées à ce compte seront automatiquement supprimées!',
+                title: 'Voulez-vous vraiment annuler cette opération?',
+                text: 'Tout ce qui concerne cette opération va être supprimé',
                 icon: 'warning',
                 buttons: ["Annuler", "Oui!"],
             }).then(function(value) {
@@ -377,20 +383,6 @@
             });
         });
 
-        $('.carnet-confirm').on('click', function(event) {
-            event.preventDefault();
-            const url = $(this).attr('href');
-            swal({
-                title: 'Voulez-vous vraiment créer un nouveau carnet pour cet compte ?',
-                text: 'Vous devriez recupérer 300fr Cfa chez le client!',
-                icon: 'warning',
-                buttons: ["Annuler", "Oui!"],
-            }).then(function(value) {
-                if (value) {
-                    window.location.href = url;
-                }
-            });
-        });
 
         new SlimSelect({
             select: '.demo'

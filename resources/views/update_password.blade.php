@@ -56,6 +56,7 @@
                             @enderror
                         </div>
 
+
                         <div class="form-group col-md-4">
                             <label for="inputEmail4"> Confirmer le mot de passe </label>
                             <input type="password" name="password_confirmation"
