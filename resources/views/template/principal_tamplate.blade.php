@@ -42,7 +42,8 @@
     <link rel="stylesheet" href="{{ asset('assets/bundles/codemirror/theme/duotone-dark.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/bundles/jquery-selectric/selectric.css') }}">
 
-
+    <link rel="stylesheet" href="{{ asset('assets/bundles/chocolat/dist/css/chocolat.css') }}">
+    
 
 
     <!-- Datatable style CSS -->
@@ -219,12 +220,12 @@
                                     <li class="{{ Request::is('all_invoice_list') ? 'active' : '' }}"><a
                                             class="nav-link " href="{{ route('all_invoice_list') }}">Toutes les factures
                                         </a></li>
+                                  
+
                                     <li class="{{ Request::is('all_invoice_list') ? 'active' : '' }}"><a
-                                            class="nav-link " href="{{ route('all_invoice_list') }}">Factures estimés</a>
+                                        class="nav-link " href="{{ route('all_invoice_list') }}">Créances & Dettes</a>
                                     </li>
-                                    <li class="{{ Request::is('all_invoice_list') ? 'active' : '' }}"><a
-                                            class="nav-link " href="{{ route('all_invoice_list') }}">Factures litigieuse</a>
-                                    </li>
+
                                     <li class="{{ Request::is('all_invoice_list') ? 'active' : '' }}"><a
                                         class="nav-link " href="{{ route('all_invoice_list') }}">Factures supprimées</a>
                                 </li>
@@ -258,6 +259,10 @@
 
                                 </ul>
                             </li>
+                            <li class="dropdown  {{ Request::is('sta_dashboard') ? 'active' : '' }}">
+                                <a href="{{ route('sta_dashboard') }}" class="nav-link"><i
+                                        data-feather="package"></i><span>Statistiques</span></a>
+                            </li>
                         @endif
 
                         @if (getUserType()->type_user == 3)
@@ -287,6 +292,7 @@
                             </li>
                         @endif
 
+                        
                         <li class="dropdown  {{ Request::is('logs') ? 'active' : '' }}">
                             <a href="{{ route('logs') }}" class="nav-link"><i
                                     data-feather="package"></i><span>Journal des Actions</span></a>

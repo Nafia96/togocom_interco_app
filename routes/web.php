@@ -3,6 +3,7 @@
 use App\Http\Controllers\OperatorController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\OperationController;
+use App\Http\Controllers\StaController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\superAdmin;
@@ -58,6 +59,7 @@ Route::middleware([NotConnected::class])->group(function () {
 
 		//Operator route
 		Route::get('add_operator', [OperatorController::class, 'add_operator'])->name('add_operator');
+		Route::get('ope_dashboard/{id}', [OperatorController::class, 'ope_dashboard'])->name('ope_dashboard');
 		Route::post('add_operator', [OperatorController::class, 'operator_register'])->name('operator_register');
 		Route::get('liste_operator', [OperatorController::class, 'liste_operator'])->name('liste_operator');
 		Route::get('delete_operator_liste', [OperatorController::class, 'delete_operator_liste'])->name('delete_operator_liste');
@@ -96,6 +98,10 @@ Route::middleware([NotConnected::class])->group(function () {
 
 
 	//Fin route operations
+
+	//stactistique route
+	Route::get('sta_dashboard', [StaController::class, 'sta_dashboard'])->name('sta_dashboard');
+
 
 
 

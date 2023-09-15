@@ -8,6 +8,7 @@ use App\Models\Client;
 use App\Models\Account;
 use App\Models\Journal;
 use App\Models\Operation;
+use App\Models\Resum;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -19,6 +20,23 @@ class OperatorController extends Controller
         return view('operator/add_operator');
     }
 
+    public function ope_dashboard($id_operator)
+    {
+        
+        $operator = Operator::where('id', $id_operator)->first();
+        $op_account = Account::where('id_operator', $operator->id)->first();
+
+        $resums = Resum::where(['id_operator' => $id_operator, 'is_delete' => 0])
+        ->orderBy('updated_at', 'DESC')
+        ->get();
+
+    $operations = Operation::where(['id_operator' => $id_operator, 'is_delete' => 0])
+        ->orderBy('updated_at', 'DESC')
+        ->get();
+
+        return view('operator/ope_dashboard', compact('operations', 'op_account','resums', 'operator'))->render();
+
+    }
     public function operator_register(Request $request)
     {
 

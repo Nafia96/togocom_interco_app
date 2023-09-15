@@ -55,9 +55,11 @@
 
                                     <td style="width:25%">
                                         <span data-toggle="tooltip" data-placement="top" title="Voir les informations de l'opérateur en détail">
-                                            <a class=" mb-2 btn btn-sm btn-dark" data-toggle="modal" data-target="{{'#voirOperatorModal'.$operator->id}}">
-                                                <i class="fas fa-eye text-white "> </i>
-                                            </a>
+                                          
+                                            <a class=" mb-2 btn btn-sm btn-dark" href="{{url('ope_dashboard/'.$operator->id)}}">
+                                               
+                                            <i class="fas fa-eye text-white "> </i>
+                                        </a>
                                         </span>
 
                                         <span data-toggle="tooltip" data-placement="top"
