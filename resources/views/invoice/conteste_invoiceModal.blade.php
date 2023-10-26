@@ -22,14 +22,15 @@
                     @if (isset($operation->operator))
                         <div class="mt-3  col-12 text-center  m-auto">
                             <div class="author-box-name mb-3" style="color: #03a04f; font-weight: bold;">
-                                <h5>{{ $operation->operator->name }} - {{ $operation->operator->tel }} - {{ $operation->operator->email }}</h5>
+                                <h5>{{ $operation->operator->name }} - {{ $operation->operator->tel }} -
+                                    {{ $operation->operator->email }}</h5>
                             </div>
                         </div>
 
 
 
                         <div class="tab-content tab-bordered" id="myTab3Content">
-                           
+
 
 
                             <input type="hidden" name="id_operator" value="{{ $operation->operator->id }}">
@@ -38,7 +39,7 @@
 
                             <br>
 
-                        
+
 
                             <div class="form-row">
 
@@ -50,7 +51,7 @@
                                                 {{ $operation->operator->currency }}
                                             </div>
                                         </div>
-                                        <input name="amount" type="numeric"
+                                        <input name="amount" type="number" step="0.01" min="0" lang="en"
                                             class="form-control  @error('amount') is-invalid @enderror"
                                             value="{{ @old('amount') }}" placeholder="" required>
 
@@ -84,19 +85,19 @@
                                 </div>
 
                                 <div class="form-group col-md-4">
-                                    <label>Date de contestation  :</label>
+                                    <label>Date de contestation :</label>
                                     <input name="contesation_date" type="text" class="form-control datepicker">
                                 </div>
 
 
-                               
+
 
                             </div>
                             <div class="form-row">
 
                                 <div class="form-group col-md-12">
                                     <label>Commentaire sur la contestation</label>
-                                    <textarea  name="comment" class="form-control ">{{ $operation->invoice->comment }}</textarea>
+                                    <textarea name="comment" class="form-control ">{{ $operation->invoice->comment }}</textarea>
 
 
                                 </div>

@@ -1,5 +1,5 @@
 @extends('template.principal_tamplate')
-@section('title', 'Liste des opérations ' )
+@section('title', 'Liste des opérations ')
 @section('breadcrumb')
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
@@ -27,46 +27,48 @@
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
-                            <table class="table table-striped table-hover" id="tableExpor" style="width:100%;">
-                                <thead>
+                            @if (getUserType()->type_user == 3 || getUserType()->type_user == 2 || getUserType()->type_user == 1)
+                                <table class="table table-striped table-hover category" id="tableExpor" style="width:100%;">
+                                @else
+                                    <table class="table table-striped table-hover category" id="save-stage"
+                                        style="width:100%;">
+                            @endif
+                            <thead>
+                                <tr>
+                                    <th class="recherche">N°</th>
+                                    <th class="recherche">Opérateur</th>
+                                    <th class="recherche">Libellé</th>
+                                    <th class="recherche">N° FACTURE</th>
+                                    <th class="recherche">Montant</th>
+                                    <th class="recherche">Devise</th>
+                                    <th class="recherche">Ajouter par:</th>
+                                    <th class="recherche">Date d'ajout</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php $n = 1; ?>
+
+                                @foreach ($operations as $operation)
                                     <tr>
-                                        <th class="recherche">N°</th>
-                                        <th class="recherche">Opérateur</th>
-                                        <th class="recherche">Libellé</th>
-                                        <th class="recherche">N° FACTURE</th>
-                                        <th class="recherche">Montant</th>
-                                        <th class="recherche">Devise</th>
-                                        <th class="recherche">Ajouter par:</th>
-                                        <th class="recherche">Date d'ajout</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php $n = 1; ?>
+                                        <td>{{ $n }} </td>
+                                        <td style="width:15%">{{ $operation->operator->name }} </td>
+                                        <td style="width:15%">{{ $operation->operation_name }} </td>
+                                        <td style="width:15%">{{ $operation->invoice->invoice_number }} </td>
+                                        <td>{{ $operation->amount }}</td>
+                                        <td>{{ $operation->operator->currency }}</td>
+                                        <td>{{ $operation->user->last_name . ' ' . $operation->user->first_name }}</td>
+                                        <td>{{ $operation->created_at }}</td>
 
-                                    @foreach ($operations as $operation)
-                                        <tr>
-                                            <td>{{ $n }} </td>
-                                            <td style="width:15%">{{ $operation->operator->name }} </td>
-                                            <td style="width:15%">{{ $operation->operation_name }} </td>
-                                            <td style="width:15%">{{ $operation->invoice->invoice_number }} </td>
-                                            <td>{{ $operation->amount }}</td>
-                                            <td>{{  $operation->operator->currency }}</td>
-                                            <td>{{ $operation->user->last_name .' '. $operation->user->first_name }}</td>
-                                            <td>{{ $operation->created_at }}</td>
+                                        <td style="width:10%">
+                                            <span data-toggle="tooltip" data-placement="top" title="Voir la facture">
+                                                <a class=" mb-2 btn btn-sm btn-primary" data-toggle="modal"
+                                                    data-target="{{ '#invoice' . $operation->id }}">
+                                                    <i class="fas fa-eye text-white "> </i>
+                                                </a>
+                                            </span>
 
-                                            <td style="width:10%">
-                                                <span data-toggle="tooltip" data-placement="top"
-                                                    title="Voir la facture">
-                                                    <a class=" mb-2 btn btn-sm btn-primary" data-toggle="modal"
-                                                        data-target="{{ '#invoice' . $operation->id }}">
-                                                        <i class="fas fa-eye text-white "> </i>
-                                                    </a>
-                                                </span>
-
-
-
-
+                                            @if (getUserType()->type_user == 3 || getUserType()->type_user == 2)
                                                 <span data-toggle="tooltip" data-placement="top"
                                                     title="Annuler l'opération">
                                                     <a class=" delete-confirm mb-2 btn btn-sm btn-danger"
@@ -74,19 +76,18 @@
                                                         <i class="fas far fa-times-circle text-white"> </i>
                                                     </a>
                                                 </span>
+                                            @endif
 
 
 
-
-
-                                            </td>
-                                        </tr>
-                                        <?php $n = $n + 1; ?>
-                                    @endforeach
+                                        </td>
+                                    </tr>
+                                    <?php $n = $n + 1; ?>
+                                @endforeach
 
 
 
-                                </tbody>
+                            </tbody>
                             </table>
                         </div>
                     </div>

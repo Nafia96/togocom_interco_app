@@ -27,7 +27,7 @@ class CreateContestationTable extends Migration
             $table->unsignedBigInteger('operation_id');
             $table->foreign('operation_id')->references('id')->on('operation');
 
-            $table->bigInteger('amount')->nullable();
+            $table->decimal('amount', 16, 2)->nullable();
             $table->date('contesation_date')->nullable();
             $table->string('comment')->nullable();
             $table->string('is_delete')->default(0);

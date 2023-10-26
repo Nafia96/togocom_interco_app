@@ -116,7 +116,7 @@
                         <div class="row clearfix">
                             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 col-6">
                                 <div class="table-responsive">
-                                    <table class="table table-striped table-hover revenu" id="tableExpor1"
+                                    <table class="table table-striped table-hover revenu" id="save-stage"
                                         style="width:100%;">
                                         <thead>
                                             <tr>
@@ -132,11 +132,11 @@
                                             @foreach ($results as $result)
                                                 <tr>
                                                     <td>{{ periodePrint($result->year . '-' . $result->month) }}</td>
-                                                    <td>{{ number_format($result->total_debt, 2, ',', ' ') }}</td>
-                                                    <td>{{ number_format($result->total_receivable, 2, ',', ' ') }}</td>
-                                                    <td>{{ number_format($result->total_receivable - $result->total_debt, 2, ',', ' ') }}
+                                                    <td>{{ number_format($result->total_debt, 2, ',', '.') }}</td>
+                                                    <td>{{ number_format($result->total_receivable, 2, ',', '.') }}</td>
+                                                    <td>{{ number_format($result->total_receivable - $result->total_debt, 2, ',', '.') }}
                                                     </td>
-                                                    <td>{{ number_format(($result->total_receivable - $result->total_debt) / 655.957, 2, ',', ' ') }}
+                                                    <td>{{ number_format(($result->total_receivable - $result->total_debt) / 655.957, 2, ',', '.') }}
                                                     </td>
 
                                                 </tr>
@@ -145,13 +145,13 @@
                                             @if (isset($curent_year_result))
                                                 <tr>
                                                     <td>TOTAL</td>
-                                                    <td>{{ number_format($curent_year_result->total_year_debt, 2, ',', ' ') }}
+                                                    <td>{{ number_format($curent_year_result->total_year_debt, 2, ',', '.') }}
                                                     </td>
-                                                    <td>{{ number_format($curent_year_result->total_year_receivable, 2, ',', ' ') }}
+                                                    <td>{{ number_format($curent_year_result->total_year_receivable, 2, ',', '.') }}
                                                     </td>
-                                                    <td>{{ number_format($curent_year_result->total_year_receivable - $curent_year_result->total_year_debt, 2, ',', ' ') }}
+                                                    <td>{{ number_format($curent_year_result->total_year_receivable - $curent_year_result->total_year_debt, 2, ',', '.') }}
                                                     </td>
-                                                    <td>{{ number_format(($curent_year_result->total_year_receivable - $curent_year_result->total_year_debt) / 655.957, 2, ',', ' ') }}
+                                                    <td>{{ number_format(($curent_year_result->total_year_receivable - $curent_year_result->total_year_debt) / 655.957, 2, ',', '.') }}
                                                     </td>
 
                                                 </tr>
@@ -209,7 +209,7 @@
                         <div class="row clearfix">
                             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 col-6">
                                 <div class="table-responsive">
-                                    <table class="table table-striped table-hover revenu" id="tableExpor2"
+                                    <table class="table table-striped table-hover revenu" id="save-stage"
                                         style="width:100%;">
                                         <thead>
                                             <tr>
@@ -224,10 +224,10 @@
                                                 <tr>
                                                     <td>{{ periodePrint($recouvrement_result->year . '-' . $recouvrement_result->month) }}
                                                     </td>
-                                                    <td>{{ number_format($recouvrement_result->total_incoming_payement, 2, ',', ' ') }}
+                                                    <td>{{ number_format($recouvrement_result->total_incoming_payement, 2, ',', '.') }}
                                                     </td>
 
-                                                    <td>{{ number_format($recouvrement_result->total_incoming_payement / 655.957, 2, ',', ' ') }}
+                                                    <td>{{ number_format($recouvrement_result->total_incoming_payement / 655.957, 2, ',', '.') }}
                                                     </td>
 
                                                 </tr>
@@ -236,10 +236,10 @@
                                             @if (isset($curent_year_recouvrement))
                                                 <tr>
                                                     <td>TOTAL</td>
-                                                    <td>{{ number_format($curent_year_recouvrement->total_year_incoming_payement, 2, ',', ' ') }}
+                                                    <td>{{ number_format($curent_year_recouvrement->total_year_incoming_payement, 2, ',', '.') }}
                                                     </td>
 
-                                                    <td>{{ number_format($curent_year_recouvrement->total_year_incoming_payement / 655.957, 2, ',', ' ') }}
+                                                    <td>{{ number_format($curent_year_recouvrement->total_year_incoming_payement / 655.957, 2, ',', '.') }}
                                                     </td>
 
                                                 </tr>
@@ -300,7 +300,7 @@
                         <div class="row clearfix">
                             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 col-6">
                                 <div class="table-responsive">
-                                    <table class="table table-striped table-hover revenu" id="tableExpor3"
+                                    <table class="table table-striped table-hover revenu" id="save-stage"
                                         style="width:100%;">
                                         <thead>
                                             <tr>
@@ -320,7 +320,7 @@
                                             @foreach ($results as $result)
                                                 <tr>
                                                     <td>{{ periodePrint($result->year . '-' . $result->month) }}</td>
-                                                    <td>{{ number_format($result->total_receivable, 2, ',', ' ') }}</td>
+                                                    <td>{{ number_format($result->total_receivable, 2, ',', '.') }}</td>
                                                     @php
                                                         $all_of_curent += $result->total_receivable;
                                                     @endphp
@@ -330,21 +330,21 @@
                                                         @endphp
                                                         @if ($result->month == $year_befor->month)
                                                             @if ($year_befor->total_receivable == null)
-                                                                <td>{{ number_format(0, 2, ',', ' ') }}</td>
-                                                                <td style="width:5%">{{ number_format(0, 2, ',', ' ') }}%
+                                                                <td>{{ number_format(0, 2, ',', '.') }}</td>
+                                                                <td style="width:5%">{{ number_format(0, 2, ',', '.') }}%
                                                                 </td>
-                                                                <td>{{ number_format(0, 2, ',', ' ') }}%</td>
+                                                                <td>{{ number_format(0, 2, ',', '.') }}%</td>
                                                             @else
-                                                                <td>{{ number_format($year_befor->total_receivable, 2, ',', ' ') }}
+                                                                <td>{{ number_format($year_befor->total_receivable, 2, ',', '.') }}
                                                                 </td>
                                                                 <td style="width:5%">
-                                                                    {{ number_format((($result->total_receivable - $year_befor->total_receivable) / $year_befor->total_receivable) * 100, 2, ',', ' ') }}%
+                                                                    {{ number_format((($result->total_receivable - $year_befor->total_receivable) / $year_befor->total_receivable) * 100, 2, ',', '.') }}%
                                                                 </td>
                                                                 @if (isset($curent_year_result))
-                                                                    <td>{{ number_format((($all_of_curent - $all_of_last) / $all_of_last) * 100, 2, ',', ' ') }}
+                                                                    <td>{{ number_format((($all_of_curent - $all_of_last) / $all_of_last) * 100, 2, ',', '.') }}
                                                                         %</td>
                                                                 @else
-                                                                    <td>{{ number_format(0, 2, ',', ' ') }}%</td>
+                                                                    <td>{{ number_format(0, 2, ',', '.') }}%</td>
                                                                 @endif
                                                             @endif
                                                         @endif
@@ -364,7 +364,7 @@
 
                             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 col-6">
                                 <div class="table-responsive">
-                                    <table class="table table-striped table-hover revenu" id="tableExpor4"
+                                    <table class="table table-striped table-hover revenu" id="save-stage"
                                         style="width:100%;">
                                         <thead>
                                             <tr>
@@ -384,7 +384,7 @@
                                             @foreach ($results as $result)
                                                 <tr>
                                                     <td>{{ periodePrint($result->year . '-' . $result->month) }}</td>
-                                                    <td>{{ number_format($result->total_debt, 2, ',', ' ') }}</td>
+                                                    <td>{{ number_format($result->total_debt, 2, ',', '.') }}</td>
                                                     @php
                                                         $all_of_curent += $result->total_debt;
                                                     @endphp
@@ -394,20 +394,20 @@
                                                         @endphp
                                                         @if ($result->month == $year_befor->month)
                                                             @if ($year_befor->total_debt == null)
-                                                                <td>{{ number_format(0, 2, ',', ' ') }}</td>
-                                                                <td>{{ number_format(0, 2, ',', ' ') }}%</td>
-                                                                <td>{{ number_format(0, 2, ',', ' ') }}%</td>
+                                                                <td>{{ number_format(0, 2, ',', '.') }}</td>
+                                                                <td>{{ number_format(0, 2, ',', '.') }}%</td>
+                                                                <td>{{ number_format(0, 2, ',', '.') }}%</td>
                                                             @else
-                                                                <td>{{ number_format($year_befor->total_debt, 2, ',', ' ') }}
+                                                                <td>{{ number_format($year_befor->total_debt, 2, ',', '.') }}
                                                                 </td>
                                                                 <td style="width:5%">
-                                                                    {{ number_format((($result->total_debt - $year_befor->total_debt) / $year_befor->total_debt) * 100, 2, ',', ' ') }}%
+                                                                    {{ number_format((($result->total_debt - $year_befor->total_debt) / $year_befor->total_debt) * 100, 2, ',', '.') }}%
                                                                 </td>
                                                                 @if (isset($curent_year_result))
-                                                                    <td>{{ number_format((($all_of_curent - $all_of_last) / $all_of_last) * 100, 2, ',', ' ') }}
+                                                                    <td>{{ number_format((($all_of_curent - $all_of_last) / $all_of_last) * 100, 2, ',', '.') }}
                                                                         %</td>
                                                                 @else
-                                                                    <td>{{ number_format(0, 2, ',', ' ') }}%</td>
+                                                                    <td>{{ number_format(0, 2, ',', '.') }}%</td>
                                                                 @endif
                                                             @endif
                                                         @endif
@@ -484,7 +484,7 @@
                         <div class="row clearfix">
                             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 col-6">
                                 <div class="table-responsive">
-                                    <table class="table table-striped table-hover revenu" id="tableExpor5"
+                                    <table class="table table-striped table-hover revenu" id="save-stage"
                                         style="width:100%;">
                                         <thead>
                                             <tr>
@@ -504,7 +504,7 @@
                                             @foreach ($volumEntrant_results as $result)
                                                 <tr>
                                                     <td>{{ periodePrint($result->year . '-' . $result->month) }}</td>
-                                                    <td>{{ number_format($result->volume, 2, ',', ' ') }}</td>
+                                                    <td>{{ number_format($result->volume, 2, ',', '.') }}</td>
                                                     @php
                                                         $all_of_curent += $result->volume;
                                                     @endphp
@@ -514,21 +514,21 @@
                                                                 $all_of_last += $year_befor->volume;
                                                             @endphp
                                                             @if ($year_befor->volume == null)
-                                                                <td>{{ number_format(0, 2, ',', ' ') }}</td>
-                                                                <td style="width:5%">{{ number_format(0, 2, ',', ' ') }}%
+                                                                <td>{{ number_format(0, 2, ',', '.') }}</td>
+                                                                <td style="width:5%">{{ number_format(0, 2, ',', '.') }}%
                                                                 </td>
-                                                                <td>{{ number_format(0, 2, ',', ' ') }}%</td>
+                                                                <td>{{ number_format(0, 2, ',', '.') }}%</td>
                                                             @else
-                                                                <td>{{ number_format($year_befor->volume, 2, ',', ' ') }}
+                                                                <td>{{ number_format($year_befor->volume, 2, ',', '.') }}
                                                                 </td>
                                                                 <td style="width:5%">
-                                                                    {{ number_format((($result->volume - $year_befor->volume) / $year_befor->volume) * 100, 2, ',', ' ') }}%
+                                                                    {{ number_format((($result->volume - $year_befor->volume) / $year_befor->volume) * 100, 2, ',', '.') }}%
                                                                 </td>
                                                                 @if (isset($year_befor))
-                                                                    <td>{{ number_format((($all_of_curent - $all_of_last) / $all_of_last) * 100, 2, ',', ' ') }}
+                                                                    <td>{{ number_format((($all_of_curent - $all_of_last) / $all_of_last) * 100, 2, ',', '.') }}
                                                                         %</td>
                                                                 @else
-                                                                    <td>{{ number_format(0, 2, ',', ' ') }}%</td>
+                                                                    <td>{{ number_format(0, 2, ',', '.') }}%</td>
                                                                 @endif
                                                             @endif
                                                         @endif
@@ -547,7 +547,7 @@
 
                             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 col-6">
                                 <div class="table-responsive">
-                                    <table class="table table-striped table-hover revenu" id="tableExpor6"
+                                    <table class="table table-striped table-hover revenu" id="save-stage"
                                         style="width:100%;">
                                         <thead>
                                             <tr>
@@ -567,7 +567,7 @@
                                             @foreach ($volumSortant_results as $result)
                                                 <tr>
                                                     <td>{{ periodePrint($result->year . '-' . $result->month) }}</td>
-                                                    <td>{{ number_format($result->volume, 2, ',', ' ') }}</td>
+                                                    <td>{{ number_format($result->volume, 2, ',', '.') }}</td>
                                                     @php
                                                         $all_of_curent += $result->volume;
                                                     @endphp
@@ -577,22 +577,22 @@
                                                                 $all_of_last += $year_befor->volume;
                                                             @endphp
                                                             @if ($year_befor->volume == null)
-                                                                <td>{{ number_format(0, 2, ',', ' ') }}</td>
-                                                                <td style="width:5%">{{ number_format(0, 2, ',', ' ') }}%
+                                                                <td>{{ number_format(0, 2, ',', '.') }}</td>
+                                                                <td style="width:5%">{{ number_format(0, 2, ',', '.') }}%
                                                                 </td>
-                                                                <td>{{ number_format(0, 2, ',', ' ') }}%</td>
+                                                                <td>{{ number_format(0, 2, ',', '.') }}%</td>
                                                             @else
-                                                                <td>{{ number_format($year_befor->volume, 2, ',', ' ') }}
+                                                                <td>{{ number_format($year_befor->volume, 2, ',', '.') }}
                                                                 </td>
                                                                 <td style="width:5%">
-                                                                    {{ number_format((($result->volume - $year_befor->volume) / $year_befor->volume) * 100, 2, ',', ' ') }}%
+                                                                    {{ number_format((($result->volume - $year_befor->volume) / $year_befor->volume) * 100, 2, ',', '.') }}%
                                                                 </td>
 
                                                                 @if (isset($year_befor))
-                                                                    <td>{{ number_format((($all_of_curent - $all_of_last) / $all_of_last) * 100, 2, ',', ' ') }}
+                                                                    <td>{{ number_format((($all_of_curent - $all_of_last) / $all_of_last) * 100, 2, ',', '.') }}
                                                                         %</td>
                                                                 @else
-                                                                    <td>{{ number_format(0, 2, ',', ' ') }}%</td>
+                                                                    <td>{{ number_format(0, 2, ',', '.') }}%</td>
                                                                 @endif
                                                             @endif
                                                         @endif
@@ -669,7 +669,7 @@
                         <div class="row clearfix">
                             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 col-6">
                                 <div class="table-responsive">
-                                    <table class="table table-striped table-hover revenu" id="tableExpor7"
+                                    <table class="table table-striped table-hover revenu" id="save-stage"
                                         style="width:100%;">
                                         <thead>
                                             <tr>
@@ -691,7 +691,7 @@
                                                 <tr>
                                                     <td style="width:10%">{{ $befor->operator_name }}</td>
                                                     <td style="width:5%">
-                                                        {{ number_format($befor->total_receivable, 2, ',', ' ') }}</td>
+                                                        {{ number_format($befor->total_receivable, 2, ',', '.') }}</td>
                                                     @php
                                                         $all_of_prvious += $befor->total_receivable;
                                                     @endphp
@@ -703,18 +703,18 @@
                                                                 $all_gcca += $result->total_receivable - $befor->total_receivable;
                                                             @endphp
                                                             @if ($befor->total_receivable == null)
-                                                                <td style="width:5%">{{ number_format(0, 2, ',', ' ') }}
+                                                                <td style="width:5%">{{ number_format(0, 2, ',', '.') }}
                                                                 </td>
-                                                                <td style="width:5%">{{ number_format(0, 2, ',', ' ') }}
+                                                                <td style="width:5%">{{ number_format(0, 2, ',', '.') }}
                                                                 </td>
-                                                                <td style="width:5%">{{ number_format(0, 2, ',', ' ') }}
+                                                                <td style="width:5%">{{ number_format(0, 2, ',', '.') }}
                                                                 </td>
                                                             @else
                                                                 <td style="width:5%">
-                                                                    {{ number_format($result->total_receivable, 2, ',', ' ') }}
+                                                                    {{ number_format($result->total_receivable, 2, ',', '.') }}
                                                                 </td>
                                                                 <td style="width:5%">
-                                                                    {{ number_format($result->total_receivable - $befor->total_receivable, 2, ',', ' ') }}
+                                                                    {{ number_format($result->total_receivable - $befor->total_receivable, 2, ',', '.') }}
                                                                 </td>
                                                                 @if ($result->total_receivable - $befor->total_receivable == null)
                                                                     <td style="width:2%; color:#03a04f;">
@@ -722,7 +722,7 @@
                                                                                 class="
                                                                             fas fa-arrow-up text-green">
                                                                             </i> </span>
-                                                                        {{ number_format(0, 2, ',', ' ') }}%
+                                                                        {{ number_format(0, 2, ',', '.') }}%
                                                                     </td>
                                                                 @else
                                                                     @if ((($result->total_receivable - $befor->total_receivable) / $befor->total_receivable) * 100 > 0)
@@ -752,9 +752,9 @@
                                             @if (isset($comparaison_current_month_afq) || isset($comparaison_month_befor_afq))
                                                 <tr>
                                                     <td>TOTAL</td>
-                                                    <td>{{ number_format($all_of_prvious, 2, ',', ' ') }} </td>
-                                                    <td>{{ number_format($all_of_current, 2, ',', ' ') }} </td>
-                                                    <td>{{ number_format($all_gcca, 2, ',', ' ') }} </td>
+                                                    <td>{{ number_format($all_of_prvious, 2, ',', '.') }} </td>
+                                                    <td>{{ number_format($all_of_current, 2, ',', '.') }} </td>
+                                                    <td>{{ number_format($all_gcca, 2, ',', '.') }} </td>
                                                     @if ($all_of_prvious > 0)
 
                                                         @if (($all_gcca / $all_of_prvious) * 100 < 0)
@@ -788,7 +788,7 @@
 
                             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 col-6">
                                 <div class="table-responsive">
-                                    <table class="table table-striped table-hover revenu" id="tableExpor8"
+                                    <table class="table table-striped table-hover revenu" id="save-stage"
                                         style="width:100%;">
                                         <thead>
                                             <tr>
@@ -811,7 +811,7 @@
                                                 <tr>
                                                     <td style="width:10%">{{ $befor->operator_name }}</td>
                                                     <td style="width:5%">
-                                                        {{ number_format($befor->total_receivable, 2, ',', ' ') }}</td>
+                                                        {{ number_format($befor->total_receivable, 2, ',', '.') }}</td>
                                                     @php
                                                         $all_of_prvious += $befor->total_receivable;
                                                     @endphp
@@ -823,18 +823,18 @@
                                                                 $all_gcca += $result->total_receivable - $befor->total_receivable;
                                                             @endphp
                                                             @if ($befor->total_receivable == null)
-                                                                <td style="width:5%">{{ number_format(0, 2, ',', ' ') }}
+                                                                <td style="width:5%">{{ number_format(0, 2, ',', '.') }}
                                                                 </td>
-                                                                <td style="width:5%">{{ number_format(0, 2, ',', ' ') }}
+                                                                <td style="width:5%">{{ number_format(0, 2, ',', '.') }}
                                                                 </td>
-                                                                <td style="width:5%">{{ number_format(0, 2, ',', ' ') }}
+                                                                <td style="width:5%">{{ number_format(0, 2, ',', '.') }}
                                                                 </td>
                                                             @else
                                                                 <td style="width:5%">
-                                                                    {{ number_format($result->total_receivable, 2, ',', ' ') }}
+                                                                    {{ number_format($result->total_receivable, 2, ',', '.') }}
                                                                 </td>
                                                                 <td style="width:5%">
-                                                                    {{ number_format($result->total_receivable - $befor->total_receivable, 2, ',', ' ') }}
+                                                                    {{ number_format($result->total_receivable - $befor->total_receivable, 2, ',', '.') }}
                                                                 </td>
                                                                 @if ($result->total_receivable - $befor->total_receivable == null)
                                                                     <td style="width:2%; color:#03a04f;">
@@ -842,7 +842,7 @@
                                                                                 class="
                                                                             fas fa-arrow-up text-green">
                                                                             </i> </span>
-                                                                        {{ number_format(0, 2, ',', ' ') }}%
+                                                                        {{ number_format(0, 2, ',', '.') }}%
                                                                     </td>
                                                                 @else
                                                                     @if ((($result->total_receivable - $befor->total_receivable) / $befor->total_receivable) * 100 > 0)
@@ -872,9 +872,9 @@
                                             @if (isset($comparaison_current_month) || isset($comparaison_month_befor))
                                                 <tr>
                                                     <td>TOTAL</td>
-                                                    <td>{{ number_format($all_of_prvious, 2, ',', ' ') }} </td>
-                                                    <td>{{ number_format($all_of_current, 2, ',', ' ') }} </td>
-                                                    <td>{{ number_format($all_gcca, 2, ',', ' ') }} </td>
+                                                    <td>{{ number_format($all_of_prvious, 2, ',', '.') }} </td>
+                                                    <td>{{ number_format($all_of_current, 2, ',', '.') }} </td>
+                                                    <td>{{ number_format($all_gcca, 2, ',', '.') }} </td>
 
                                                     @if ($all_of_prvious > 0)
                                                         @if (($all_gcca / $all_of_prvious) * 100 < 0)

@@ -133,7 +133,7 @@
 
                                         <td class="text-center">{{ $operation->invoice->number_of_call }}</td>
                                         <td class="text-center">{{ $operation->invoice->call_volume }}</td>
-                                        <td class="text-center">{{ number_format($operation->invoice->amount) }}
+                                        <td class="text-center">{{ number_format($operation->invoice->amount, 2, ',', '.') }}
                                             {{ $operation->operator->currency }}</td>
                                     </tr>
 
@@ -148,7 +148,7 @@
 
                                         <td class="text-center">---------</td>
                                         <td class="text-center">---------</td>
-                                        <td class="text-center">{{ number_format($operation->invoice->amount) }}
+                                        <td class="text-center">{{ number_format($operation->invoice->amount, 2, ',', '.') }}
                                             {{ $operation->operator->currency }}</td>
                                     </tr>
                                 @endif
@@ -164,16 +164,16 @@
                             <div class="col-4 text-center">
                                 <strong>CREANCE TOGCOCOM: <br></strong> <span
                                     style="color: #ec1f28; font-weight: bold;">
-                                    {{ number_format($operation->new_receivable) }} {{ $operation->operator->currency }}</span>
+                                    {{ number_format($operation->new_receivable, 2, ',', '.') }} {{ $operation->operator->currency }}</span>
                             </div>
                             <div class="col-4 text-center">
                                 <strong>DETTE TOGOCOM: <br></strong> <span style="color: #ec1f28; font-weight: bold;">
-                                    {{ number_format($operation->new_debt) }} {{ $operation->operator->currency }}</span>
+                                    {{ number_format($operation->new_debt, 2, ',', '.') }} {{ $operation->operator->currency }}</span>
                             </div>
                             <div class="col-4 text-center">
                                 <strong>NETTING :
                                 </strong> <br><span style="color: #ec1f28; font-weight: bold;">
-                                    {{ number_format($operation->new_netting) }} {{ $operation->operator->currency }}</span>
+                                    {{ number_format($operation->new_netting, 2, ',', '.') }} {{ $operation->operator->currency }}</span>
                             </div>
 
                         </div>
@@ -204,18 +204,18 @@
                                         style="background-color: #fcca29; border: 1px solid white;
                                             border-collapse: collapse;">
 
-                                        <td class="text-center">{{number_format( $operation->invoice->contestation->amount) }} {{ $operation->operator->currency }}</td>
+                                        <td class="text-center">{{number_format( $operation->invoice->contestation->amount, 2, ',', '.') }} {{ $operation->operator->currency }}</td>
 
-                                        @if (isset($operation->invoice->creditnote->debt))
+                                        @if (isset($operation->invoice->creditnote->debt) || isset($operation->invoice->creditnote->receivable))
 
                                         @if ( $operation->invoice->creditnote->debt != null)
-                                        <td class="text-center">{{ number_format($operation->invoice->creditnote->debt) }} {{ $operation->operator->currency }}</td>
+                                        <td class="text-center">{{ number_format($operation->invoice->creditnote->debt, 2, ',', '.') }} {{ $operation->operator->currency }}</td>
                                         <td class="text-center">DETTE</td>
 
                                         @endif
 
                                         @if ( $operation->invoice->creditnote->receivable != null)
-                                        <td class="text-center">{{ number_format($operation->invoice->creditnote->receivable) }} {{ $operation->operator->currency }}</td>
+                                        <td class="text-center">{{ number_format($operation->invoice->creditnote->receivable, 2, ',', '.') }} {{ $operation->operator->currency }}</td>
                                         <td class="text-center">CREANCE</td>
 
                                         @endif

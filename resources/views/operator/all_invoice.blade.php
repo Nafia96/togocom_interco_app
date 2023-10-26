@@ -27,74 +27,79 @@
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
-                            <table class="table table-striped table-hover category" id="tableExpor" style="width:100%;">
-                                <thead>
-                                    <tr>
-                                        <th class="recherche">N°</th>
-                                        <th class="recherche">OPERATEUR</th>
-                                        <th class="recherche">PRESTATION</th>
-                                        <th class="recherche">N° FACTURE</th>
-                                        <th class="recherche">PERIODES</th>
-                                        <th class="recherche">TYPE</th>
-                                        <th class="recherche">MONTANT</th>
-                                        <th class="recherche">CREANCES TOGOCOM</th>
+                            @if (getUserType()->type_user == 3 || getUserType()->type_user == 2 || getUserType()->type_user == 1)
+                                <table class="table table-striped table-hover category" id="tableExpor" style="width:100%;">
+                                @else
+                                    <table class="table table-striped table-hover category" id="save-stage"
+                                        style="width:100%;">
+                            @endif
+                            <thead>
+                                <tr>
+                                    <th class="recherche">N°</th>
+                                    <th class="recherche">OPERATEUR</th>
+                                    <th class="recherche">PRESTATION</th>
+                                    <th class="recherche">N° FACTURE</th>
+                                    <th class="recherche">PERIODES</th>
+                                    <th class="recherche">TYPE</th>
+                                    <th class="recherche">MONTANT</th>
+                                    <th class="recherche">CREANCES TOGOCOM</th>
 
-                                        <th class="recherche">DETTES TOGOCOM</th>
-                                        <th class="recherche">SOLDE</th>
-                                        <th class="recherche">DATE FACTURE</th>
-                                        <th class="recherche">DATE D'AJOUT</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php $n = 1; ?>
+                                    <th class="recherche">DETTES TOGOCOM</th>
+                                    <th class="recherche">SOLDE</th>
+                                    <th class="recherche">DATE FACTURE</th>
+                                    <th class="recherche">DATE D'AJOUT</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php $n = 1; ?>
 
-                                    @foreach ($operations as $operation)
-                                        @if ($operation->invoice->invoice_type == 'litigious')
-                                            <tr style="background-color: #03a04f; color:aliceblue;">
-                                                <td>{{ $n }} </td>
-                                                <td>{{ $operation->operator->name }} </td>
-                                                <td style="width:15%">{{ $operation->operation_name }} </td>
-
-
-
-                                                @if ($operation->invoice->invoice_number != null)
-                                                    <td style="width:15%">{{ $operation->invoice->invoice_number }} </td>
-                                                @endif
-
-                                                @if ($operation->invoice->invoice_number == null)
-                                                    <td style="width:15%">------------ </td>
-                                                @endif
-
-                                                @if ($operation->invoice->period != null)
-                                                    <td>{{ $operation->invoice->period }}</td>
-                                                @endif
-
-                                                @if ($operation->invoice->period == null)
-                                                    <td>-------</td>
-                                                @endif
-
-                                                <td>Facture Litigieuse</td>
+                                @foreach ($operations as $operation)
+                                    @if ($operation->invoice->invoice_type == 'litigious')
+                                        <tr style="background-color: #03a04f; color:aliceblue;">
+                                            <td>{{ $n }} </td>
+                                            <td>{{ $operation->operator->name }} </td>
+                                            <td style="width:15%">{{ $operation->operation_name }} </td>
 
 
-                                                <td>{{ $operation->amount }}</td>
-                                                <td>{{ $operation->new_receivable . '  ' . $operation->operator->currency }}
-                                                </td>
-                                                <td>{{ $operation->new_debt . '  ' . $operation->operator->currency }}</td>
-                                                <td>{{ $operation->new_receivable - $operation->new_debt . '  ' . $operation->operator->currency }}
-                                                </td>
-                                                <td>{{ $operation->invoice->invoice_date }}</td>
-                                                <td>{{ $operation->created_at }}</td>
 
-                                                <td style="width:10%">
-                                                    <span data-toggle="tooltip" data-placement="top"
-                                                        title="Voir la facture">
-                                                        <a class=" mb-2 btn btn-sm btn-warning" data-toggle="modal"
-                                                            data-target="{{ '#invoice' . $operation->id }}">
-                                                            <i class="fas fa-eye text-white "> </i>
-                                                        </a>
-                                                    </span>
+                                            @if ($operation->invoice->invoice_number != null)
+                                                <td style="width:15%">{{ $operation->invoice->invoice_number }} </td>
+                                            @endif
 
+                                            @if ($operation->invoice->invoice_number == null)
+                                                <td style="width:15%">------------ </td>
+                                            @endif
+
+                                            @if ($operation->invoice->period != null)
+                                                <td>{{ $operation->invoice->period }}</td>
+                                            @endif
+
+                                            @if ($operation->invoice->period == null)
+                                                <td>-------</td>
+                                            @endif
+
+                                            <td>Facture Litigieuse</td>
+
+
+                                            <td>{{ $operation->amount }}</td>
+                                            <td>{{ $operation->new_receivable . '  ' . $operation->operator->currency }}
+                                            </td>
+                                            <td>{{ $operation->new_debt . '  ' . $operation->operator->currency }}</td>
+                                            <td>{{ $operation->new_receivable - $operation->new_debt . '  ' . $operation->operator->currency }}
+                                            </td>
+                                            <td>{{ $operation->invoice->invoice_date }}</td>
+                                            <td>{{ $operation->created_at }}</td>
+
+                                            <td style="width:10%">
+                                                <span data-toggle="tooltip" data-placement="top" title="Voir la facture">
+                                                    <a class=" mb-2 btn btn-sm btn-warning" data-toggle="modal"
+                                                        data-target="{{ '#invoice' . $operation->id }}">
+                                                        <i class="fas fa-eye text-white "> </i>
+                                                    </a>
+                                                </span>
+
+                                                @if (getUserType()->type_user == 3 || getUserType()->type_user == 2)
                                                     <span data-toggle="tooltip" data-placement="top"
                                                         title="Mettre à jour les informations  de la facture">
                                                         <a class=" mb-2 btn btn-sm btn-info" data-toggle="modal"
@@ -110,62 +115,60 @@
                                                             <i class="fas fa-handshake text-white "> </i>
                                                         </a>
                                                     </span>
-
-
-
-
-
-
-
-                                                </td>
-                                            </tr>
-                                        @endif
-
-
-                                        @if ($operation->invoice->invoice_type == 'estimated')
-                                            <tr style="background-color: #fcca29;">
-                                                <td>{{ $n }} </td>
-                                                <td>{{ $operation->operator->name }} </td>
-
-                                                <td style="width:15%">{{ $operation->operation_name }} </td>
-                                                @if ($operation->invoice->invoice_number != null)
-                                                    <td style="width:15%">{{ $operation->invoice->invoice_number }} </td>
                                                 @endif
 
-                                                @if ($operation->invoice->invoice_number == null)
-                                                    <td style="width:15%">------------ </td>
-                                                @endif
-
-                                                @if ($operation->invoice->period != null)
-                                                    <td>{{ $operation->invoice->period }}</td>
-                                                @endif
-
-                                                @if ($operation->invoice->period == null)
-                                                    <td>-------</td>
-                                                @endif
-
-                                                <td>Facture Estimée</td>
 
 
-                                                <td>{{ $operation->amount }}</td>
-                                                <td>{{ $operation->new_receivable . '  ' . $operation->operator->currency }}
-                                                </td>
-                                                <td>{{ $operation->new_debt . '  ' . $operation->operator->currency }}</td>
-                                                <td>{{ $operation->new_receivable - $operation->new_debt . '  ' . $operation->operator->currency }}
-                                                </td>
-                                                <td>{{ $operation->invoice->invoice_date }}</td>
 
-                                                <td>{{ $operation->created_at }}</td>
+                                            </td>
+                                        </tr>
+                                    @endif
 
-                                                <td style="width:10%">
-                                                    <span data-toggle="tooltip" data-placement="top"
-                                                        title="Voir la facture">
-                                                        <a class=" mb-2 btn btn-sm btn-primary" data-toggle="modal"
-                                                            data-target="{{ '#invoice' . $operation->id }}">
-                                                            <i class="fas fa-eye text-white "> </i>
-                                                        </a>
-                                                    </span>
 
+                                    @if ($operation->invoice->invoice_type == 'estimated')
+                                        <tr style="background-color: #fcca29;">
+                                            <td>{{ $n }} </td>
+                                            <td>{{ $operation->operator->name }} </td>
+
+                                            <td style="width:15%">{{ $operation->operation_name }} </td>
+                                            @if ($operation->invoice->invoice_number != null)
+                                                <td style="width:15%">{{ $operation->invoice->invoice_number }} </td>
+                                            @endif
+
+                                            @if ($operation->invoice->invoice_number == null)
+                                                <td style="width:15%">------------ </td>
+                                            @endif
+
+                                            @if ($operation->invoice->period != null)
+                                                <td>{{ $operation->invoice->period }}</td>
+                                            @endif
+
+                                            @if ($operation->invoice->period == null)
+                                                <td>-------</td>
+                                            @endif
+
+                                            <td>Facture Estimée</td>
+
+
+                                            <td>{{ $operation->amount }}</td>
+                                            <td>{{ $operation->new_receivable . '  ' . $operation->operator->currency }}
+                                            </td>
+                                            <td>{{ $operation->new_debt . '  ' . $operation->operator->currency }}</td>
+                                            <td>{{ $operation->new_receivable - $operation->new_debt . '  ' . $operation->operator->currency }}
+                                            </td>
+                                            <td>{{ $operation->invoice->invoice_date }}</td>
+
+                                            <td>{{ $operation->created_at }}</td>
+
+                                            <td style="width:10%">
+                                                <span data-toggle="tooltip" data-placement="top" title="Voir la facture">
+                                                    <a class=" mb-2 btn btn-sm btn-primary" data-toggle="modal"
+                                                        data-target="{{ '#invoice' . $operation->id }}">
+                                                        <i class="fas fa-eye text-white "> </i>
+                                                    </a>
+                                                </span>
+
+                                                @if (getUserType()->type_user == 3 || getUserType()->type_user == 2)
                                                     <span data-toggle="tooltip" data-placement="top"
                                                         title="Mettre à jour les informations  de la facture">
                                                         <a class=" mb-2 btn btn-sm btn-info" data-toggle="modal"
@@ -173,67 +176,67 @@
                                                             <i class=" fas fa-file-signature text-white "> </i>
                                                         </a>
                                                     </span>
-
-
-
-
-                                                </td>
-                                            </tr>
-                                        @endif
-
-
-                                        @if ($operation->invoice->invoice_type != 'litigious' && $operation->invoice->invoice_type != 'estimated')
-                                            <tr>
-                                                <td>{{ $n }} </td>
-                                                <td>{{ $operation->operator->name }} </td>
-
-                                                <td style="width:15%">{{ $operation->operation_name }} </td>
-                                                @if ($operation->invoice->invoice_number != null)
-                                                    <td style="width:15%">{{ $operation->invoice->invoice_number }} </td>
-                                                @endif
-
-                                                @if ($operation->invoice->invoice_number == null)
-                                                    <td style="width:15%">------------ </td>
-                                                @endif
-
-                                                @if ($operation->invoice->period != null)
-                                                    <td>{{ $operation->invoice->period }}</td>
-                                                @endif
-
-                                                @if ($operation->invoice->period == null)
-                                                    <td>-------</td>
-                                                @endif
-                                                @if ($operation->invoice_type == 'real')
-                                                    <td>Facture réelle</td>
                                                 @endif
 
 
-                                                @if (
-                                                    $operation->invoice_type != 'litigious' &&
-                                                        $operation->invoice_type != 'estimated' &&
-                                                        $operation->invoice_type != 'real')
-                                                    <td>{{ $operation->invoice_type }}</td>
-                                                @endif
 
-                                                <td>{{ $operation->amount }}</td>
-                                                <td>{{ $operation->new_receivable . '  ' . $operation->operator->currency }}
-                                                </td>
-                                                <td>{{ $operation->new_debt . '  ' . $operation->operator->currency }}</td>
-                                                <td>{{ $operation->new_receivable - $operation->new_debt . '  ' . $operation->operator->currency }}
-                                                </td>
-                                                <td>{{ $operation->invoice->invoice_date }}</td>
+                                            </td>
+                                        </tr>
+                                    @endif
 
-                                                <td>{{ $operation->created_at }}</td>
 
-                                                <td style="width:10%">
-                                                    <span data-toggle="tooltip" data-placement="top"
-                                                        title="Voir la facture">
-                                                        <a class=" mb-2 btn btn-sm btn-primary" data-toggle="modal"
-                                                            data-target="{{ '#invoice' . $operation->id }}">
-                                                            <i class="fas fa-eye text-white "> </i>
-                                                        </a>
-                                                    </span>
+                                    @if ($operation->invoice->invoice_type != 'litigious' && $operation->invoice->invoice_type != 'estimated')
+                                        <tr>
+                                            <td>{{ $n }} </td>
+                                            <td>{{ $operation->operator->name }} </td>
 
+                                            <td style="width:15%">{{ $operation->operation_name }} </td>
+                                            @if ($operation->invoice->invoice_number != null)
+                                                <td style="width:15%">{{ $operation->invoice->invoice_number }} </td>
+                                            @endif
+
+                                            @if ($operation->invoice->invoice_number == null)
+                                                <td style="width:15%">------------ </td>
+                                            @endif
+
+                                            @if ($operation->invoice->period != null)
+                                                <td>{{ $operation->invoice->period }}</td>
+                                            @endif
+
+                                            @if ($operation->invoice->period == null)
+                                                <td>-------</td>
+                                            @endif
+                                            @if ($operation->invoice_type == 'real')
+                                                <td>Facture réelle</td>
+                                            @endif
+
+
+                                            @if (
+                                                $operation->invoice_type != 'litigious' &&
+                                                    $operation->invoice_type != 'estimated' &&
+                                                    $operation->invoice_type != 'real')
+                                                <td>{{ $operation->invoice_type }}</td>
+                                            @endif
+
+                                            <td>{{ $operation->amount }}</td>
+                                            <td>{{ $operation->new_receivable . '  ' . $operation->operator->currency }}
+                                            </td>
+                                            <td>{{ $operation->new_debt . '  ' . $operation->operator->currency }}</td>
+                                            <td>{{ $operation->new_receivable - $operation->new_debt . '  ' . $operation->operator->currency }}
+                                            </td>
+                                            <td>{{ $operation->invoice->invoice_date }}</td>
+
+                                            <td>{{ $operation->created_at }}</td>
+
+                                            <td style="width:10%">
+                                                <span data-toggle="tooltip" data-placement="top" title="Voir la facture">
+                                                    <a class=" mb-2 btn btn-sm btn-primary" data-toggle="modal"
+                                                        data-target="{{ '#invoice' . $operation->id }}">
+                                                        <i class="fas fa-eye text-white "> </i>
+                                                    </a>
+                                                </span>
+
+                                                @if (getUserType()->type_user == 3 || getUserType()->type_user == 2)
                                                     <span data-toggle="tooltip" data-placement="top"
                                                         title="Mettre à jour les informations  de la facture">
                                                         <a class=" mb-2 btn btn-sm btn-info" data-toggle="modal"
@@ -252,36 +255,35 @@
 
                                                         </a>
                                                     </span>
+                                                @endif
 
 
 
+                                            </td>
+                                        </tr>
+                                    @endif
+                                    <?php $n = $n + 1; ?>
+                                @endforeach
+                            <tfoot>
 
+                                <tr>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td id="area_total"></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                            </tfoot>
 
-                                                </td>
-                                            </tr>
-                                        @endif
-                                        <?php $n = $n + 1; ?>
-                                    @endforeach
-                                <tfoot>
-
-                                    <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td id="area_total"></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                    </tr>
-                                </tfoot>
-
-                                </tbody>
+                            </tbody>
 
                             </table>
                         </div>
@@ -507,6 +509,5 @@
         }, 0);
 
         document.getElementById('area_total').innerText = total;
-        
     </script>
 @stop

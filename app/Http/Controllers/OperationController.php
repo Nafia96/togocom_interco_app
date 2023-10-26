@@ -25,8 +25,8 @@ class OperationController extends Controller
         $request->validate([
 
             'invoice_number' => 'required|string',
-            'amount' => 'required|integer',
-            'call_volume' => 'required|integer',
+            'amount' => 'required|numeric|between:0,99999999999999999999.99',
+            'call_volume' => 'required|numeric|between:0,9999999999999999999999.99',
             'number_of_call' => 'required|integer',
             'description' => 'nullable|string|max:500',
 
@@ -43,6 +43,7 @@ class OperationController extends Controller
 
         $resum = Resum::where([
             'id_operator' =>  $operator->id,
+            'is_delete' =>  0,
             'period' => $data['period']
         ])->first();
 
@@ -59,6 +60,8 @@ class OperationController extends Controller
                 'invoice_type' => $data['invoice_type'],
                 'invoice_number' => $data['invoice_number'],
                 'period' =>  $data['period'],
+                'periodDate' => periodeDate($data['period']),
+
                 'invoice_date' =>  $data['invoice_date'],
                 'call_volume' =>  $data['call_volume'],
                 'number_of_call' =>  $data['number_of_call'],
@@ -109,20 +112,81 @@ class OperationController extends Controller
 
                 ]);
 
+                if ($operator->currency == 'EUR') {
+                    $resum = Resum::create([
 
-                $resum = Resum::create([
+                        'service' => 'Facture de service voix',
+                        'id_operator' => $operator->id,
+                        'period' => $data['period'],
+                        'periodDate' => periodeDate($data['period']),
+                        'receivable' =>  $data['amount'],
+                        'receivable_cfa' =>  $data['amount'] * $tgc_account->operator->euro_conversion,
 
-                    'service' => 'Facture de service voix',
-                    'id_operator' => $operator->id,
-                    'period' => $data['period'],
-                    'receivable' =>  $data['amount'],
-                    'netting' => $operation->new_netting,
-                    'id_invoice_1' =>  $invoice->id,
-                    'id_invoice_2' =>  $invoice->id,
-                    'id_operation_1' =>  $operation->id,
-                    'id_operation_2' =>  $operation->id,
+                        'netting' => $operation->new_netting,
+                        'id_invoice_1' =>  $invoice->id,
+                        'id_invoice_2' =>  $invoice->id,
+                        'id_operation_1' =>  $operation->id,
+                        'id_operation_2' =>  $operation->id,
 
-                ]);
+                    ]);
+                } elseif ($operator->currency == 'USD') {
+                    $resum = Resum::create([
+
+                        'service' => 'Facture de service voix',
+                        'id_operator' => $operator->id,
+                        'period' => $data['period'],
+                        'periodDate' => periodeDate($data['period']),
+
+                        'receivable' =>  $data['amount'],
+                        'receivable_cfa' =>  $data['amount'] * $tgc_account->operator->dollar_conversion,
+
+                        'netting' => $operation->new_netting,
+                        'id_invoice_1' =>  $invoice->id,
+                        'id_invoice_2' =>  $invoice->id,
+                        'id_operation_1' =>  $operation->id,
+                        'id_operation_2' =>  $operation->id,
+
+                    ]);
+                } elseif ($operator->currency == 'XAF') {
+                    $resum = Resum::create([
+
+                        'service' => 'Facture de service voix',
+                        'id_operator' => $operator->id,
+                        'period' => $data['period'],
+                        'periodDate' => periodeDate($data['period']),
+
+                        'receivable' =>  $data['amount'],
+                        'receivable_cfa' =>  $data['amount'] * $tgc_account->operator->xaf_conversion,
+
+                        'netting' => $operation->new_netting,
+                        'id_invoice_1' =>  $invoice->id,
+                        'id_invoice_2' =>  $invoice->id,
+                        'id_operation_1' =>  $operation->id,
+                        'id_operation_2' =>  $operation->id,
+
+                    ]);
+                } elseif ($operator->currency == 'XOF') {
+                    $resum = Resum::create([
+
+                        'service' => 'Facture de service voix',
+                        'id_operator' => $operator->id,
+                        'period' => $data['period'],
+                        'periodDate' => periodeDate($data['period']),
+
+                        'receivable' =>  $data['amount'],
+                        'receivable_cfa' =>  $data['amount'],
+
+                        'netting' => $operation->new_netting,
+                        'id_invoice_1' =>  $invoice->id,
+                        'id_invoice_2' =>  $invoice->id,
+                        'id_operation_1' =>  $operation->id,
+                        'id_operation_2' =>  $operation->id,
+
+                    ]);
+                } else {
+
+                    dd('la conversion concernant la devise de cet opérteur est inexistante. Mais la facture est enregisré...');
+                }
             } elseif ($data['invoice_type'] == 'estimated') {
 
                 $operation = Operation::create([
@@ -158,40 +222,78 @@ class OperationController extends Controller
                 ]);
 
 
-                $resum = Resum::create([
+                if ($operator->currency == 'EUR') {
+                    $resum = Resum::create([
 
-                    'service' => 'Facture de service voix',
-                    'id_operator' => $operator->id,
-                    'period' => $data['period'],
-                    'receivable' =>  $data['amount'],
-                    'netting' => $operation->new_netting,
-                    'id_invoice_1' =>  $invoice->id,
-                    'id_invoice_2' =>  $invoice->id,
-                    'id_operation_1' =>  $operation->id,
-                    'id_operation_2' =>  $operation->id,
+                        'service' => 'Facture de service voix',
+                        'id_operator' => $operator->id,
+                        'period' => $data['period'],
+                        'periodDate' => periodeDate($data['period']),
 
-                ]);
-            } else {
+                        'receivable' =>  $data['amount'],
+                        'receivable_cfa' =>  $data['amount'] * $tgc_account->operator->euro_conversion,
 
+                        'netting' => $operation->new_netting,
 
-                $operation = Operation::create([
-                    //Operation type 1 it meen that the facturation is receivable
-                    'operation_type' => 1,
-                    'account_number' => $op_account->account_number,
-                    'operation_name' =>  'Facture de service voix (CREANCE)',
-                    'comment' =>  $data['comment'],
-                    'id_op_account' =>  $op_account->id,
-                    'id_operator' =>  $operator->id,
-                    'add_by' => session('id'),
-                    'amount' => $data['amount'],
-                    'invoice_type' => $data['invoice_type'],
-                    'id_invoice' =>  $invoice->id,
+                        'id_operation_1' =>  $operation->id,
+                        'id_operation_2' =>  $operation->id,
 
+                    ]);
+                } elseif ($operator->currency == 'USD') {
+                    $resum = Resum::create([
 
+                        'service' => 'Facture de service voix',
+                        'id_operator' => $operator->id,
+                        'period' => $data['period'],
+                        'periodDate' => periodeDate($data['period']),
 
+                        'receivable' =>  $data['amount'],
+                        'receivable_cfa' =>  $data['amount'] * $tgc_account->operator->dollar_conversion,
 
+                        'netting' => $operation->new_netting,
 
-                ]);
+                        'id_operation_1' =>  $operation->id,
+                        'id_operation_2' =>  $operation->id,
+
+                    ]);
+                } elseif ($operator->currency == 'XAF') {
+                    $resum = Resum::create([
+
+                        'service' => 'Facture de service voix',
+                        'id_operator' => $operator->id,
+                        'period' => $data['period'],
+                        'periodDate' => periodeDate($data['period']),
+
+                        'receivable' =>  $data['amount'],
+                        'receivable_cfa' =>  $data['amount'] * $tgc_account->operator->xaf_conversion,
+
+                        'netting' => $operation->new_netting,
+
+                        'id_operation_1' =>  $operation->id,
+                        'id_operation_2' =>  $operation->id,
+
+                    ]);
+                } elseif ($operator->currency == 'XOF') {
+                    $resum = Resum::create([
+
+                        'service' => 'Facture de service voix',
+                        'id_operator' => $operator->id,
+                        'period' => $data['period'],
+                        'periodDate' => periodeDate($data['period']),
+
+                        'receivable' =>  $data['amount'],
+                        'receivable_cfa' =>  $data['amount'],
+
+                        'netting' => $operation->new_netting,
+
+                        'id_operation_1' =>  $operation->id,
+                        'id_operation_2' =>  $operation->id,
+
+                    ]);
+                } else {
+
+                    dd('la conversion concernant la devise de cet opérteur est inexistante. Mais la facture est enregisré...');
+                }
             }
 
 
@@ -204,7 +306,7 @@ class OperationController extends Controller
             ]);
 
 
-            return redirect()->route('receivable_debt', ['id_operator' => $operator->id])->with('flash_message_success', 'Facture ajouté avec succès!');
+            return redirect()->route('ope_dashboard', ['id' => $operator->id])->with('flash_message_success', 'Facture ajouté avec succès!');
         } else {
 
             return redirect()->back()->with('error', 'Cette facture existe déjà!');
@@ -220,8 +322,8 @@ class OperationController extends Controller
         $request->validate([
 
             'invoice_number' => 'required|string',
-            'amount' => 'required|integer',
-            'call_volume' => 'required|integer',
+            'amount' => 'required|numeric|between:0,99999999999999999999.99',
+            'call_volume' => 'required|numeric|between:0,99999999999999999999.99',
             'description' => 'nullable|string|max:500',
 
         ]);
@@ -255,6 +357,8 @@ class OperationController extends Controller
                     'invoice_type' => $data['invoice_type'],
                     'invoice_number' => $data['invoice_number'],
                     'period' =>  $data['period'],
+                    'periodDate' => periodeDate($data['period']),
+
                     'invoice_date' =>  $data['invoice_date'],
                     'call_volume' =>  $data['call_volume'],
                     'number_of_call' =>  $data['number_of_call'],
@@ -303,15 +407,73 @@ class OperationController extends Controller
                     ]);
 
 
-                    Resum::where([
-                        'id_operator' =>  $operator->id,
-                        'period' => $data['period']
-                    ])->update([
-                        'debt' =>  $data['amount'],
-                        'netting' => $resum->netting - $data['amount'],
-                        'id_operation_2' =>  $operation->id,
+                    if ($operator->currency == 'EUR') {
+                        Resum::where([
+                            'id_operator' =>  $operator->id,
+                            'period' => $data['period'],
+                            'is_delete' => 0
 
-                    ]);
+                        ])->update([
+
+                            'debt' =>  $data['amount'],
+                            'debt_cfa' =>  $data['amount'] * $tgc_account->operator->euro_conversion,
+
+
+                            'netting' => $resum->netting - $data['amount'],
+                            'id_operation_2' =>  $operation->id,
+
+
+                        ]);
+                    } elseif ($operator->currency == 'USD') {
+                        Resum::where([
+                            'id_operator' =>  $operator->id,
+                            'period' => $data['period'],
+                            'is_delete' => 0
+
+                        ])->update([
+                            'debt' =>  $data['amount'],
+                            'debt_cfa' =>  $data['amount'] * $tgc_account->operator->dollar_conversion,
+
+
+                            'netting' => $resum->netting - $data['amount'],
+                            'id_operation_2' =>  $operation->id,
+
+
+                        ]);
+                    } elseif ($operator->currency == 'XAF') {
+                        Resum::where([
+                            'id_operator' =>  $operator->id,
+                            'period' => $data['period'],
+                            'is_delete' => 0
+                        ])->update([
+
+                            'debt' =>  $data['amount'],
+                            'debt_cfa' =>  $data['amount'] * $tgc_account->operator->xaf_conversion,
+
+
+                            'netting' => $resum->netting - $data['amount'],
+                            'id_operation_2' =>  $operation->id,
+
+
+                        ]);
+                    } elseif ($operator->currency == 'XOF') {
+                        Resum::where([
+                            'id_operator' =>  $operator->id,
+                            'period' => $data['period'],
+                            'is_delete' => 0
+                        ])->update([
+
+                            'debt' =>  $data['amount'],
+                            'debt_cfa' =>  $data['amount'],
+
+
+                            'netting' => $resum->netting - $data['amount'],
+                            'id_operation_2' =>  $operation->id,
+                        ]);
+                    } else {
+
+                        dd('la conversion concernant la devise de cet opérteur est inexistante. Mais la facture est enregisré...');
+                    }
                 } elseif ($data['invoice_type'] == 'estimated') {
 
                     $operation = Operation::create([
@@ -346,35 +508,77 @@ class OperationController extends Controller
                     ]);
 
 
-                    Resum::where([
-                        'id_operator' =>  $operator->id,
-                        'period' => $data['period']
-                    ])->update([
-                        'debt' =>  $data['amount'],
-                        'netting' => $resum->netting - $data['amount'],
-                        'id_operation_2' =>  $operation->id,
+                    if ($operator->currency == 'EUR') {
+                        Resum::where([
 
-                    ]);
-                } else {
+                            
+                            'id_operator' =>  $operator->id,
+                            'period' => $data['period'],
+                            'is_delete' => 0
+                        ])->update([
 
-
-                    $operation = Operation::create([
-                        //Operation type 2 it mees that the facturation is debt
-                        'operation_type' => 2,
-                        'account_number' => $op_account->account_number,
-                        'operation_name' =>  'Facture de service voix (DETTE)',
-                        'comment' =>  $data['comment'],
-                        'id_invoice' =>  $invoice->id,
-
-                        'id_op_account' =>  $op_account->id,
-                        'id_operator' =>  $operator->id,
-                        'add_by' => session('id'),
-                        'amount' => $data['amount'],
-                        'invoice_type' => $data['invoice_type'],
+                            'debt' =>  $data['amount'],
+                            'debt_cfa' =>  $data['amount'] * $tgc_account->operator->euro_conversion,
 
 
+                            'netting' => $resum->netting - $data['amount'],
+                            'id_operation_2' =>  $operation->id,
 
-                    ]);
+                        ]);
+                    } elseif ($operator->currency == 'USD') {
+                        Resum::where([
+                            'id_operator' =>  $operator->id,
+                            'period' => $data['period'],
+                            'is_delete' => 0
+
+                        ])->update([
+
+                            
+                            'debt' =>  $data['amount'],
+                            'debt_cfa' =>  $data['amount'] * $tgc_account->operator->dollar_conversion,
+
+
+                            'netting' => $resum->netting - $data['amount'],
+                            'id_operation_2' =>  $operation->id,
+
+
+                        ]);
+                    } elseif ($operator->currency == 'XAF') {
+                        Resum::where([
+                            'id_operator' =>  $operator->id,
+                            'period' => $data['period'],
+                            'is_delete' => 0
+
+                        ])->update([
+                            'debt' =>  $data['amount'],
+                            'debt_cfa' =>  $data['amount'] * $tgc_account->operator->xaf_conversion,
+
+
+                            'netting' => $resum->netting - $data['amount'],
+                            'id_operation_2' =>  $operation->id,
+
+
+
+                        ]);
+                    } elseif ($operator->currency == 'XOF') {
+                        Resum::where([
+                            'id_operator' =>  $operator->id,
+                            'period' => $data['period'],
+                            'is_delete' => 0
+                        ])->update([
+
+                            'debt' =>  $data['amount'],
+                            'debt_cfa' =>  $data['amount'],
+
+
+                            'netting' => $resum->netting - $data['amount'],
+                            'id_operation_2' =>  $operation->id,
+
+                        ]);
+                    } else {
+
+                        dd('la conversion concernant la devise de cet opérteur est inexistante. Mais la facture est enregisré...');
+                    }
                 }
 
 
@@ -388,7 +592,7 @@ class OperationController extends Controller
                 ]);
 
 
-                return redirect()->route('receivable_debt', ['id_operator' => $operator->id])->with('flash_message_success', 'Facture ajouté avec succès!');
+                return redirect()->route('ope_dashboard', ['id' => $operator->id])->with('flash_message_success', 'Facture ajouté avec succès!');
             } else {
 
                 return redirect()->back()->with('error', 'Cette facture existe déjà!');
@@ -416,6 +620,8 @@ class OperationController extends Controller
 
             Invoice::where([
                 'id' =>  $operation->invoice->id,
+                'is_delete' => 0
+
             ])->update([
                 'is_delete' =>  1,
 
@@ -423,21 +629,13 @@ class OperationController extends Controller
 
             Operation::where([
                 'id' =>  $operation->id,
+                'is_delete' => 0
+
             ])->update([
                 'is_delete' =>  1,
 
             ]);
-
-
-            Resum::where([
-                'id' =>  $operation->resum2->id,
-            ])->update([
-                'debt' =>  null,
-                'netting' => $operation->resum2->netting + $operation->amount,
-
-            ]);
-
-
+            
             Account::where(['id' => $tgc_account->id])->update([
                 'debt' => $tgc_account->debt - $operation->amount,
 
@@ -448,6 +646,20 @@ class OperationController extends Controller
                 'netting' => $op_account->netting + $operation->amount,
 
             ]);
+
+            Resum::where([
+                'id' =>  $operation->resum2->id,
+                'is_delete' => 0
+
+            ])->update([
+                'debt' =>  null,
+                'debt_cfa' =>  null,
+                'netting' => $operation->resum2->netting + $operation->amount,
+
+            ]);
+
+
+           
         } elseif ($operation->operation_type == 1) {
 
             $resum = Resum::where('id', $operation->resum->id)->first();
@@ -492,29 +704,28 @@ class OperationController extends Controller
                     'id' =>  $resum->operation2->invoice->id,
                 ])->update([
                     'is_delete' =>  1,
-    
+
                 ]);
-    
+
                 Operation::where([
                     'id' =>  $resum->operation2->id,
                 ])->update([
                     'is_delete' =>  1,
-    
+
                 ]);
-    
-   
+
+
                 Account::where(['id' => $tgc_account->id])->update([
                     'debt' => $tgc_account->debt - $resum->operation2->amount,
-    
+
                 ]);
-    
+
                 Account::where(['id' => $op_account->id])->update([
                     'debt' => $op_account->debt - $resum->operation2->amount,
                     'netting' => $op_account->netting + $resum->operation2->amount,
-    
+
                 ]);
             }
-
         } elseif ($operation->operation_type == 3) {
 
             if ($operation->invoice_type == 'Encaissement') {
@@ -552,8 +763,6 @@ class OperationController extends Controller
                     'netting' => $op_account->netting + $operation->amount,
 
                 ]);
-
-
             } else {
 
                 Invoice::where([
@@ -590,9 +799,7 @@ class OperationController extends Controller
                 ]);
             }
         } elseif ($operation->operation_type == 4) {
-
-            
-
+            //Si c'est une note de credit
         }
 
         Journal::create([
@@ -612,7 +819,7 @@ class OperationController extends Controller
 
         $request->validate([
 
-            'amount' => 'required|integer',
+            'amount' => 'required|numeric|between:0,99999999999999999999.99',
 
         ]);
 
@@ -637,17 +844,62 @@ class OperationController extends Controller
         //dd($resum->netting + $resum->debt -  $data['amount']);
 
 
-        Resum::where([
-            'id' =>  $data['id_resum'],
-        ])->update([
-            'debt' =>  $data['amount'],
-            'netting' => $resum->netting + $resum->debt -  $data['amount'],
 
-        ]);
 
+        if ($operator->currency == 'EUR') {
+            Resum::where([
+                'id' =>  $data['id_resum'],
+                'is_delete' => 0
+
+            ])->update([
+                'debt' =>  $data['amount'],
+                'debt_cfa' =>  $data['amount'] * $tgc_account->operator->euro_conversion,
+
+                'netting' => $resum->netting + $resum->debt -  $data['amount'],
+
+            ]);
+        } elseif ($operator->currency == 'USD') {
+            Resum::where([
+                'id' =>  $data['id_resum'],
+                'is_delete' => 0
+
+            ])->update([
+                'debt' =>  $data['amount'],
+                'debt_cfa' =>  $data['amount'] * $tgc_account->operator->dollar_conversion,
+
+                'netting' => $resum->netting + $resum->debt -  $data['amount'],
+
+            ]);
+        } elseif ($operator->currency == 'XAF') {
+            Resum::where([
+                'id' =>  $data['id_resum'],
+                'is_delete' => 0
+
+            ])->update([
+                'debt' =>  $data['amount'],
+                'debt_cfa' =>  $data['amount'] * $tgc_account->operator->xaf_conversion,
+
+                'netting' => $resum->netting + $resum->debt -  $data['amount'],
+
+            ]);
+        } elseif ($operator->currency == 'XOF') {
+            Resum::where([
+                'id' =>  $data['id_resum'],
+                'is_delete' => 0
+
+            ])->update([
+                'debt' =>  $data['amount'],
+                'debt_cfa' =>  $data['amount'],
+
+                'netting' => $resum->netting + $resum->debt -  $data['amount'],
+
+            ]);
+        }
 
         Invoice::where([
             'id' =>  $data['invoice_id'],
+            'is_delete' => 0
+
         ])->update([
             'amount' =>  $data['amount'],
             'invoice_type' => 'real',
@@ -658,6 +910,8 @@ class OperationController extends Controller
 
         Operation::where([
             'id' =>  $data['operation_id'],
+            'is_delete' => 0
+
         ])->update([
             'invoice_type' => 'real',
             'new_debt' => ($op_account->debt - $operation->amount) + $data['amount'],
@@ -686,7 +940,7 @@ class OperationController extends Controller
         ]);
 
 
-        return redirect()->route('receivable_debt', ['id_operator' => $operator->id])->with('flash_message_success', 'Mises à jour effectuées avec succès!');
+        return redirect()->route('ope_dashboard', ['id' => $operator->id])->with('flash_message_success', 'Mises à jour effectuées avec succès!');
     }
 
     //Mise à jour de la facture estimé
@@ -697,7 +951,7 @@ class OperationController extends Controller
 
         $request->validate([
 
-            'amount' => 'required|integer',
+            'amount' => 'required|numeric|between:0,99999999999999999999.99',
 
         ]);
 
@@ -724,14 +978,57 @@ class OperationController extends Controller
             $invoice = Invoice::where('id', $data['invoice_id'])->first();
 
 
-            Resum::where([
-                'id' =>  $id_resum,
-            ])->update([
-                'debt' =>  $data['amount'],
-                'netting' => $resum->netting + $resum->debt -  $data['amount'],
 
-            ]);
 
+            if ($operator->currency == 'EUR') {
+                Resum::where([
+                    'id' =>   $id_resum,
+                    'is_delete' => 0
+
+                ])->update([
+                    'debt' =>  $data['amount'],
+                    'debt_cfa' =>  $data['amount'] * $tgc_account->operator->euro_conversion,
+
+                    'netting' => $resum->netting + $resum->debt -  $data['amount'],
+
+                ]);
+            } elseif ($operator->currency == 'USD') {
+                Resum::where([
+                    'id' =>   $id_resum,
+                    'is_delete' => 0
+
+                ])->update([
+                    'debt' =>  $data['amount'],
+                    'debt_cfa' =>  $data['amount'] * $tgc_account->operator->dollar_conversion,
+
+                    'netting' => $resum->netting + $resum->debt -  $data['amount'],
+
+                ]);
+            } elseif ($operator->currency == 'XAF') {
+                Resum::where([
+                    'id' =>   $id_resum,
+                    'is_delete' => 0
+
+                ])->update([
+                    'debt' =>  $data['amount'],
+                    'debt_cfa' =>  $data['amount'] * $tgc_account->operator->xaf_conversion,
+
+                    'netting' => $resum->netting + $resum->debt -  $data['amount'],
+
+                ]);
+            } elseif ($operator->currency == 'XOF') {
+                Resum::where([
+                    'id' =>   $id_resum,
+                    'is_delete' => 0
+
+                ])->update([
+                    'debt' =>  $data['amount'],
+                    'debt_cfa' =>  $data['amount'],
+
+                    'netting' => $resum->netting + $resum->debt -  $data['amount'],
+
+                ]);
+            }
 
             Invoice::where([
                 'id' =>  $data['invoice_id'],
@@ -739,6 +1036,8 @@ class OperationController extends Controller
                 'amount' =>  $data['amount'],
                 'invoice_number' =>  $data['invoice_number'],
                 'period' =>  $data['period'],
+                'periodDate' => periodeDate($data['period']),
+
                 'invoice_date' =>  $data['invoice_date'],
                 'call_volume' =>  $data['call_volume'],
                 'comment' =>  $data['comment'],
@@ -785,14 +1084,56 @@ class OperationController extends Controller
             $invoice = Invoice::where('id', $data['invoice_id'])->first();
 
 
-            Resum::where([
-                'id' =>  $id_resum,
-            ])->update([
-                'receivable' =>  $data['amount'],
-                'netting' => $resum->netting - $resum->receivable +  $data['amount'],
 
-            ]);
+            if ($operator->currency == 'EUR') {
+                Resum::where([
+                    'id' =>   $id_resum,
+                    'is_delete' => 0
 
+                ])->update([
+                    'receivable' =>  $data['amount'],
+                    'receivable_cfa' =>  $data['amount'] * $tgc_account->operator->euro_conversion,
+
+                    'netting' => $resum->netting - $resum->receivable +  $data['amount'],
+
+                ]);
+            } elseif ($operator->currency == 'USD') {
+                Resum::where([
+                    'id' =>   $id_resum,
+                    'is_delete' => 0
+
+                ])->update([
+                    'receivable' =>  $data['amount'],
+                    'receivable_cfa' =>  $data['amount'] * $tgc_account->operator->dollar_conversion,
+
+                    'netting' => $resum->netting - $resum->receivable +  $data['amount'],
+
+                ]);
+            } elseif ($operator->currency == 'XAF') {
+                Resum::where([
+                    'id' =>   $id_resum,
+                    'is_delete' => 0
+
+                ])->update([
+                    'receivable' =>  $data['amount'],
+                    'receivable_cfa' =>  $data['amount'] * $tgc_account->operator->xaf_conversion,
+
+                    'netting' => $resum->netting - $resum->receivable +  $data['amount'],
+
+                ]);
+            } elseif ($operator->currency == 'XOF') {
+                Resum::where([
+                    'id' =>   $id_resum,
+                    'is_delete' => 0
+
+                ])->update([
+                    'receivable' =>  $data['amount'],
+                    'receivable_cfa' =>  $data['amount'],
+
+                    'netting' => $resum->netting - $resum->receivable +  $data['amount'],
+
+                ]);
+            }
 
             Invoice::where([
                 'id' =>  $data['invoice_id'],
@@ -800,6 +1141,8 @@ class OperationController extends Controller
                 'amount' =>  $data['amount'],
                 'invoice_number' =>  $data['invoice_number'],
                 'period' =>  $data['period'],
+                'periodDate' => periodeDate($data['period']),
+
                 'invoice_date' =>  $data['invoice_date'],
                 'call_volume' =>  $data['call_volume'],
                 'comment' =>  $data['comment'],
@@ -853,7 +1196,7 @@ class OperationController extends Controller
 
         $request->validate([
 
-            'amount' => 'required|integer',
+            'amount' => 'required|numeric|between:0,99999999999999999999.99',
             'description' => 'nullable|string|max:500',
 
 
@@ -914,7 +1257,7 @@ class OperationController extends Controller
 
         $request->validate([
 
-            'amount' => 'required|integer',
+            'amount' => 'required|numeric|between:0,99999999999999999999.99',
             'description' => 'nullable|string|max:500',
 
 
@@ -975,18 +1318,80 @@ class OperationController extends Controller
 
             ]);
 
-            Resum::create([
-                'id_operator' => $data['id_operator'],
-                'id_operation_1' => $data['operation_id'],
-                'id_operation_2' => $data['operation_id'],
-                'debt' =>  -$data['amount'],
-                'comment' =>  $data['comment'],
-                'service' =>  'Note de crédit ' . $invoice->period,
-                'period' =>  $invoice->period,
-                'netting' => $op_account->netting + $data['amount'],
 
 
-            ]);
+            if ($operator->currency == 'EUR') {
+                Resum::create([
+                    'id_operator' => $data['id_operator'],
+                    'id_operation_1' => $data['operation_id'],
+                    'id_operation_2' => $data['operation_id'],
+                    'debt' =>  -$data['amount'],
+                    'debt_cfa' =>  -$data['amount'] * $tgc_account->operator->euro_conversion,
+
+                    'comment' =>  $data['comment'],
+                    'service' =>  'Note de crédit ' . $invoice->period,
+                    'period' =>  $invoice->period,
+                    'periodDate' => periodeDate($invoice->period),
+
+                    'netting' => $op_account->netting + $data['amount'],
+
+
+                ]);
+            } elseif ($operator->currency == 'USD') {
+                Resum::create([
+                    'id_operator' => $data['id_operator'],
+                    'id_operation_1' => $data['operation_id'],
+                    'id_operation_2' => $data['operation_id'],
+                    'debt' =>  -$data['amount'],
+                    'debt_cfa' => -$data['amount'] * $tgc_account->operator->dollar_conversion,
+
+                    'comment' =>  $data['comment'],
+                    'service' =>  'Note de crédit ' . $invoice->period,
+                    'period' =>  $invoice->period,
+                    'periodDate' => periodeDate($invoice->period),
+
+                    'netting' => $op_account->netting + $data['amount'],
+
+
+                ]);
+            } elseif ($operator->currency == 'XAF') {
+                Resum::create([
+                    'id_operator' => $data['id_operator'],
+                    'id_operation_1' => $data['operation_id'],
+                    'id_operation_2' => $data['operation_id'],
+                    'debt' =>  -$data['amount'],
+                    'debt_cfa' =>  -$data['amount'] * $tgc_account->operator->xaf_conversion,
+
+                    'comment' =>  $data['comment'],
+                    'service' =>  'Note de crédit ' . $invoice->period,
+                    'period' =>  $invoice->period,
+                    'periodDate' => periodeDate($invoice->period),
+
+                    'netting' => $op_account->netting + $data['amount'],
+
+
+                ]);
+            } elseif ($operator->currency == 'XOF') {
+                Resum::create([
+                    'id_operator' => $data['id_operator'],
+                    'id_operation_1' => $data['operation_id'],
+                    'id_operation_2' => $data['operation_id'],
+                    'debt' =>  -$data['amount'],
+                    'debt_cfa' =>  -$data['amount'],
+
+                    'comment' =>  $data['comment'],
+                    'service' =>  'Note de crédit ' . $invoice->period,
+                    'period' =>  $invoice->period,
+                    'periodDate' => periodeDate($invoice->period),
+
+                    'netting' => $op_account->netting + $data['amount'],
+
+
+                ]);
+            }
+
+
+
 
 
 
@@ -1040,18 +1445,77 @@ class OperationController extends Controller
 
             ]);
 
-            Resum::create([
-                'id_operator' => $data['id_operator'],
-                'id_operation_1' => $data['operation_id'],
-                'id_operation_2' => $data['operation_id'],
-                'receivable' =>  -$data['amount'],
-                'comment' =>  $data['comment'],
-                'service' =>  'Note de crédit ' . $invoice->period,
-                'period' =>  $invoice->period,
-                'netting' => $op_account->netting - $data['amount'],
 
 
-            ]);
+            if ($operator->currency == 'EUR') {
+                Resum::create([
+                    'id_operator' => $data['id_operator'],
+                    'id_operation_1' => $data['operation_id'],
+                    'id_operation_2' => $data['operation_id'],
+                    'receivable' =>  -$data['amount'],
+                    'receivable_cfa' =>  -$data['amount'] * $tgc_account->operator->euro_conversion,
+
+                    'comment' =>  $data['comment'],
+                    'service' =>  'Note de crédit ' . $invoice->period,
+                    'period' =>  $invoice->period,
+                    'periodDate' => periodeDate($invoice->period),
+
+                    'netting' => $op_account->netting - $data['amount'],
+
+
+                ]);
+            } elseif ($operator->currency == 'USD') {
+                Resum::create([
+                    'id_operator' => $data['id_operator'],
+                    'id_operation_1' => $data['operation_id'],
+                    'id_operation_2' => $data['operation_id'],
+                    'receivable' =>  -$data['amount'],
+                    'receivable_cfa' =>  -$data['amount'] * $tgc_account->operator->dollar_conversion,
+
+                    'comment' =>  $data['comment'],
+                    'service' =>  'Note de crédit ' . $invoice->period,
+                    'period' =>  $invoice->period,
+                    'periodDate' => periodeDate($invoice->period),
+
+                    'netting' => $op_account->netting - $data['amount'],
+
+
+                ]);
+            } elseif ($operator->currency == 'XAF') {
+                Resum::create([
+                    'id_operator' => $data['id_operator'],
+                    'id_operation_1' => $data['operation_id'],
+                    'id_operation_2' => $data['operation_id'],
+                    'receivable' =>  -$data['amount'],
+                    'receivable_cfa' =>  -$data['amount'] * $tgc_account->operator->xaf_conversion,
+
+                    'comment' =>  $data['comment'],
+                    'service' =>  'Note de crédit ' . $invoice->period,
+                    'period' =>  $invoice->period,
+                    'periodDate' => periodeDate($invoice->period),
+
+                    'netting' => $op_account->netting - $data['amount'],
+
+
+                ]);
+            } elseif ($operator->currency == 'XOF') {
+                Resum::create([
+                    'id_operator' => $data['id_operator'],
+                    'id_operation_1' => $data['operation_id'],
+                    'id_operation_2' => $data['operation_id'],
+                    'receivable' =>  -$data['amount'],
+                    'receivable_cfa' => -$data['amount'],
+
+                    'comment' =>  $data['comment'],
+                    'service' =>  'Note de crédit ' . $invoice->period,
+                    'period' =>  $invoice->period,
+                    'periodDate' => periodeDate($invoice->period),
+
+                    'netting' => $op_account->netting - $data['amount'],
+
+
+                ]);
+            }
 
 
 
@@ -1063,7 +1527,7 @@ class OperationController extends Controller
         }
 
 
-        return redirect()->route('receivable_debt', ['id_operator' => $operator->id])->with('flash_message_success', 'Note de crédit ajouté avec avec succès!');
+        return redirect()->route('ope_dashboard', ['id' => $operator->id])->with('flash_message_success', 'Note de crédit ajouté avec avec succès!');
     }
 
 
@@ -1073,7 +1537,7 @@ class OperationController extends Controller
 
         $request->validate([
 
-            'amount' => 'required|integer',
+            'amount' => 'required|numeric|between:0,99999999999999999999.99',
             'description' => 'nullable|string|max:500',
 
         ]);
@@ -1140,19 +1604,68 @@ class OperationController extends Controller
             ]);
 
 
-            $resum = Resum::create([
-                'id_operator' => $operator->id,
-                'incoming_payement' =>  $data['amount'],
-                'netting' =>  $operation->new_netting,
-                'id_invoice_1' =>  $invoice->id,
-                'id_invoice_2' =>  $invoice->id,
-                'id_operation_1' =>  $operation->id,
-                'id_operation_2' =>  $operation->id,
-                'service' =>  'Paiement netting ' . $data['invoice_date'],
+
+
+            if ($operator->currency == 'EUR') {
+                Resum::create([
+                    'id_operator' => $operator->id,
+                    'incoming_payement' =>  $data['amount'],
+                    'incoming_payement_cfa' =>  $data['amount'] * $tgc_account->operator->euro_conversion,
+                    'netting' =>  $operation->new_netting,
+                    'id_invoice_1' =>  $invoice->id,
+                    'id_invoice_2' =>  $invoice->id,
+                    'id_operation_1' =>  $operation->id,
+                    'id_operation_2' =>  $operation->id,
+                    'service' =>  'Paiement netting ' . $data['invoice_date'],
+                    'periodDate' =>  $data['invoice_date'],
+
+                ]);
+            } elseif ($operator->currency == 'USD') {
+                Resum::create([
+                    'id_operator' => $operator->id,
+                    'incoming_payement' =>  $data['amount'],
+                    'incoming_payement_cfa' =>  $data['amount'] * $tgc_account->operator->dollar_conversion,
+                    'netting' =>  $operation->new_netting,
+                    'id_invoice_1' =>  $invoice->id,
+                    'id_invoice_2' =>  $invoice->id,
+                    'id_operation_1' =>  $operation->id,
+                    'id_operation_2' =>  $operation->id,
+                    'service' =>  'Paiement netting ' . $data['invoice_date'],
+                    'periodDate' =>  $data['invoice_date'],
+
+                ]);
+            } elseif ($operator->currency == 'XAF') {
+                Resum::create([
+                    'id_operator' => $operator->id,
+                    'incoming_payement' =>  $data['amount'],
+                    'incoming_payement_cfa' =>  $data['amount'] * $tgc_account->operator->xaf_conversion,
+                    'netting' =>  $operation->new_netting,
+                    'id_invoice_1' =>  $invoice->id,
+                    'id_invoice_2' =>  $invoice->id,
+                    'id_operation_1' =>  $operation->id,
+                    'id_operation_2' =>  $operation->id,
+                    'service' =>  'Paiement netting ' . $data['invoice_date'],
+                    'periodDate' =>  $data['invoice_date'],
+
+                ]);
+            } elseif ($operator->currency == 'XOF') {
+                Resum::create([
+                    'id_operator' => $operator->id,
+                    'incoming_payement' =>  $data['amount'],
+                    'incoming_payement_cfa' =>  $data['amount'],
+                    'netting' =>  $operation->new_netting,
+                    'id_invoice_1' =>  $invoice->id,
+                    'id_invoice_2' =>  $invoice->id,
+                    'id_operation_1' =>  $operation->id,
+                    'id_operation_2' =>  $operation->id,
+                    'service' =>  'Paiement netting ' . $data['invoice_date'],
+                    'periodDate' =>  $data['invoice_date'],
+
+                ]);
+            }
 
 
 
-            ]);
 
 
 
@@ -1163,12 +1676,12 @@ class OperationController extends Controller
             ]);
 
 
-            return redirect()->route('receivable_debt', ['id_operator' => $operator->id])->with('flash_message_success', 'Encaissement ajouté avec succès!');
+            return redirect()->route('ope_dashboard', ['id' => $operator->id])->with('flash_message_success', 'Encaissement ajouté avec succès!');
         } else {
 
             $invoice = Invoice::create([
-                //tgc_invoice is 3 if the invoice is Reglement 
-                'tgc_invoice' => 3,
+                //tgc_invoice is 4 if the invoice is disbursement  
+                'tgc_invoice' => 4,
                 'invoice_type' => 'Decaissement',
                 'invoice_date' =>  $data['invoice_date'],
                 'add_by' => session('id'),
@@ -1180,8 +1693,8 @@ class OperationController extends Controller
 
 
             $operation = Operation::create([
-                //Operation type 3 it mees that it is the settlement
-                'operation_type' => 3,
+                //Operation type 4 it mees that it is the disbursement 
+                'operation_type' => 4,
                 'account_number' => $op_account->account_number,
                 'operation_name' =>  'Paiement netting ' . $data['invoice_date'],
                 'comment' =>  $data['comment'],
@@ -1213,17 +1726,65 @@ class OperationController extends Controller
 
             ]);
 
-            $resum = Resum::create([
-                'id_operator' => $operator->id,
-                'payout' =>  $data['amount'],
-                'netting' => $operation->new_netting,
-                'id_invoice_1' =>  $invoice->id,
-                'id_invoice_2' =>  $invoice->id,
-                'service' =>  'Paiement netting ' . $data['invoice_date'],
-                'id_operation_1' =>  $operation->id,
-                'id_operation_2' =>  $operation->id,
 
-            ]);
+            if ($operator->currency == 'EUR') {
+                Resum::create([
+                    'id_operator' => $operator->id,
+                    'payout' =>  $data['amount'],
+                    'payout_cfa' =>  $data['amount'] * $tgc_account->operator->euro_conversion,
+                    'netting' =>  $operation->new_netting,
+                    'id_invoice_1' =>  $invoice->id,
+                    'id_invoice_2' =>  $invoice->id,
+                    'id_operation_1' =>  $operation->id,
+                    'id_operation_2' =>  $operation->id,
+                    'service' =>  'Paiement netting ' . $data['invoice_date'],
+                    'periodDate' =>  $data['invoice_date'],
+
+                ]);
+            } elseif ($operator->currency == 'USD') {
+                Resum::create([
+                    'id_operator' => $operator->id,
+                    'payout' =>  $data['amount'],
+                    'payout_cfa' =>  $data['amount'] * $tgc_account->operator->dollar_conversion,
+                    'netting' =>  $operation->new_netting,
+                    'id_invoice_1' =>  $invoice->id,
+                    'id_invoice_2' =>  $invoice->id,
+                    'id_operation_1' =>  $operation->id,
+                    'id_operation_2' =>  $operation->id,
+                    'service' =>  'Paiement netting ' . $data['invoice_date'],
+                    'periodDate' =>  $data['invoice_date'],
+
+                ]);
+            } elseif ($operator->currency == 'XAF') {
+                Resum::create([
+                    'id_operator' => $operator->id,
+                    'payout' =>  $data['amount'],
+                    'payout_cfa' =>  $data['amount'] * $tgc_account->operator->xaf_conversion,
+                    'netting' =>  $operation->new_netting,
+                    'id_invoice_1' =>  $invoice->id,
+                    'id_invoice_2' =>  $invoice->id,
+                    'id_operation_1' =>  $operation->id,
+                    'id_operation_2' =>  $operation->id,
+                    'service' =>  'Paiement netting ' . $data['invoice_date'],
+                    'periodDate' =>  $data['invoice_date'],
+
+                ]);
+            } elseif ($operator->currency == 'XOF') {
+                Resum::create([
+                    'id_operator' => $operator->id,
+                    'payout' =>  $data['amount'],
+                    'payout_cfa' =>  $data['amount'],
+                    'netting' =>  $operation->new_netting,
+                    'id_invoice_1' =>  $invoice->id,
+                    'id_invoice_2' =>  $invoice->id,
+                    'id_operation_1' =>  $operation->id,
+                    'id_operation_2' =>  $operation->id,
+                    'service' =>  'Paiement netting ' . $data['invoice_date'],
+                    'periodDate' =>  $data['invoice_date'],
+
+                ]);
+            }
+
 
 
 
@@ -1233,7 +1794,7 @@ class OperationController extends Controller
             ]);
 
 
-            return redirect()->route('receivable_debt', ['id_operator' => $operator->id])->with('flash_message_success', 'Decaissement ajouté avec succès!');
+            return redirect()->route('ope_dashboard', ['id' => $operator->id])->with('flash_message_success', 'Decaissement ajouté avec succès!');
         }
     }
 
@@ -1286,6 +1847,42 @@ class OperationController extends Controller
 
         return view('operator.all_invoice', compact('operations'))->render();
     }
+
+
+    //Operator invoice list
+
+    public function all_resum_list()
+    {
+
+
+      
+        $resums = Resum::where(['is_delete' => 0])
+            ->orderBy('updated_at', 'DESC')
+            ->get();
+
+       
+      //  dd($resums[1]->operator->name);
+
+
+        return view('operator.all_resum_list', compact('resums'))->render();
+    }
+
+
+    //Operator invoice list
+
+    public function delete_invoice_list()
+    {
+
+
+        $operations = Operation::where('is_delete', 1)
+            ->orderBy('updated_at', 'DESC')
+            ->get();
+
+        //  dd(gettype($operations[1]->invoice->amount));
+
+        return view('operator.all_delete_invoice', compact('operations'))->render();
+    }
+
 
 
     //All Operator operations list

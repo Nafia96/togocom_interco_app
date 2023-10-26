@@ -1,13 +1,13 @@
 @extends('template.principal_tamplate')
-@section('title', 'Liste des opérateurs')
+@section('title', 'Liste des créances et dettes')
 @section('breadcrumb')
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
 
-            <li class="breadcrumb-item active" aria-current="page">Liste des Opérateurs</li>
-            <div class="d-flex justify-content-end container-fluid mt-n3">
-                <a href="{{ route('add_operator') }}" class="btn btn-primary ">Ajouter un opérateur </a>
+            <li class="breadcrumb-item active" aria-current="page">Liste de toutes les créances et dettes </li>
+            <div class="d-flex justify-content-end container-fluid mt-n3 ">
+                <a href="{{ route('liste_operator') }}" class="btn btn-primary">Liste des opérateurs</a>
             </div>
         </ol>
 
@@ -23,136 +23,121 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-header">
-                        <h4>Liste des opérateurs</h4>
+                        <h4>Liste de toutes les créances et dettes </h4>
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
                             @if (getUserType()->type_user == 3 || getUserType()->type_user == 2 || getUserType()->type_user == 1)
-                                <table class="table table-striped table-hover category" id="tableExpor" style="width:100%;">
-                                @else
-                                    <table class="table table-striped table-hover category" id="save-stage"
-                                        style="width:100%;">
-                            @endif
-                            <thead>
-                                <tr>
-                                    <th class="recherche">N°</th>
-                                    <th class="recherche">Nom de l'opérateur</th>
-                                    <th class="recherche">Email</th>
-                                    <th class="recherche">Tel</th>
-                                    <th class="recherche">Pays</th>
-                                    <th class="recherche">Devise</th>
-                                    <th class="recherche">Date d'ajout</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php $n = 1; ?>
-
-                                @foreach ($operators as $operator)
+                            <table class="table table-striped table-hover category" id="tableExpor" style="width:100%;">
+                            @else
+                                <table class="table table-striped table-hover category" id="save-stage"
+                                    style="width:100%;">
+                        @endif                                <thead>
                                     <tr>
-                                        <td style="width:3%">{{ $n }} </td>
-                                        <td style="width:15%">{{ $operator->name }} </td>
-                                        <td>{{ $operator->email }}</td>
-                                        <td>{{ $operator->tel }}</td>
-                                        <td>{{ $operator->country }}</td>
-                                        <td style="width:4%">{{ $operator->currency }}</td>
-                                        <td>{{ $operator->created_at }}</td>
+                                        <th class="recherche">N°</th>
+                                        <th class="recherche">OPÉRATEUR</th>
+                                        <th class="recherche">PRESTATIONS</th>
+                                        <th class="recherche">PERIODES</th>
+                                        <th class="recherche">CREANCES</th>
+                                        <th class="recherche">ENCAISSEMENT</th>
+                                        <th class="recherche">DETTES</th>
+                                        <th class="recherche">DECAISSEMENT</th>
+                                        <th class="recherche">SOLDE</th>
+                                        <th class="recherche">DATE D'AJOUT</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php $n = 1; ?>
 
-                                        <td style="width:25%">
-                                            <span data-toggle="tooltip" data-placement="top"
-                                                title="Voir les informations de l'opérateur en détail">
+                                    @foreach ($resums as $resum)
+                                        <tr>
+                                            <td>{{ $n }} </td>
+                                            <td>{{ $resum->operator->name }} </td>
+                                            <td style="width:18%">{{ $resum->service }} </td>
 
-                                                <a class=" mb-2 btn btn-sm btn-dark"
-                                                    href="{{ url('ope_dashboard/' . $operator->id) }}">
-
-                                                    <i class="fas fa-eye text-white "> </i>
-                                                </a>
-                                            </span>
-
-                                            @if (getUserType()->type_user == 3 || getUserType()->type_user == 2)
-
-                                            <span data-toggle="tooltip" data-placement="top" title="Ajouter une créance">
-                                                <a class=" mb-2 btn btn-sm btn-primary" data-toggle="modal"
-                                                    data-target="{{ '#invoiceModal' . $operator->id }}">
-                                                    <i class="fas fa-donate text-white "> </i>
-                                                </a>
-                                            </span>
-
-                                            <span data-toggle="tooltip" data-placement="top" title="Ajouter une dette">
-                                                <a class=" mb-2 btn btn-sm btn-warning" data-toggle="modal"
-                                                    data-target="{{ '#addInvoiceModal' . $operator->id }}">
-                                                    <i class="fas fa-hand-holding-usd text-white "> </i>
-                                                </a>
-                                            </span>
-
-                                            <span data-toggle="tooltip" data-placement="top" title="Réglement">
-                                                <a class=" mb-2 btn btn-sm btn-info" data-toggle="modal"
-                                                    data-target="{{ '#settlementModal' . $operator->id }}">
-                                                    <i class="fas fa-chart-pie text-white"></i>
-                                                </a>
-
-                                            </span>
-
+                                            @if ($resum->period == null)
+                                                <td>---------</td>
                                             @endif
 
-                                            <span data-toggle="tooltip" data-placement="top" title="Toutes les opérations">
-                                                <a class=" mb-2 btn btn-sm btn-success"
-                                                    href="{{ url('operations_list/' . $operator->id) }}">
-                                                    <i class="fas far fas fa-copy green-color"> </i>
-                                                </a>
-                                            </span>
+                                            @if ($resum->period != null)
+                                                <td>{{ periodePrint($resum->period) }}</td>
+                                            @endif
+
+                                            @if ($resum->receivable == null)
+                                                <td>0</td>
+                                            @endif
+
+                                            @if ($resum->receivable != null)
+                                                <td>{{ number_format($resum->receivable) . '  ' . $resum->operator->currency }}</td>
+                                            @endif
+
+
+                                            @if ($resum->incoming_payement == null)
+                                                <td>0</td>
+                                            @endif
+
+                                            @if ($resum->incoming_payement != null)
+                                                <td>{{ number_format($resum->incoming_payement) . '  ' . $resum->operator->currency }}
+                                                </td>
+                                            @endif
+
+
+                                            @if ($resum->operation2->invoice->invoice_type == 'estimated')
+                                                @if ($resum->debt == null)
+                                                    <td>0</td>
+                                                @endif
+
+                                                @if ($resum->debt != null && $resum->service != 'Facture de service voix')
+                                                    <td> {{ number_format($resum->debt) . '  ' . $resum->operator->currency }} </td>
+                                                @endif
+
+                                                @if ($resum->debt != null && $resum->service == 'Facture de service voix')
+                                                    <td style="background-color: #fcca29;">
 
 
 
-
-                                            <span data-toggle="tooltip" data-placement="top"
-                                                title="Créances et dettes (Résumé)">
-                                                <a class="mb-2 btn btn-sm btn-warning"
-                                                    href="{{ url('receivable_debt/' . $operator->id) }}">
-                                                    <i class="fas fa-list text-white"> </i>
-                                                </a>
-                                            </span>
-
-                                            <span data-toggle="tooltip" data-placement="top" title="Toutes les factures">
-                                                <a class="mb-2 btn btn-sm  btn-dark"
-                                                    href="{{ url('invoice_list/' . $operator->id) }}">
-                                                    <i class="fas fa-receipt"></i>
-                                                </a>
-                                            </span>
-
-                                            @if (getUserType()->type_user == 3 || getUserType()->type_user == 2)
+                                                        <div style="display:block;" data-toggle="modal"
+                                                            data-target="{{ '#update_invoiceModal' . $resum->id }}">
+                                                            {{ number_format($resum->debt) . '  ' . $resum->operator->currency }}
+                                                        </div>
 
 
-                                            <span data-toggle="tooltip" data-placement="top"
-                                                title="Modifier les informations de l'opérateur">
-                                                <a class=" mb-2 btn btn-sm btn-info"
-                                                    href="{{ url('update_operator/' . $operator->id) }}">
-                                                    <i class="fas fas fa-user-cog text-white "> </i>
-                                                </a>
-                                            </span>
+                                                    </td>
+                                                @endif
+                                            @endif
+
+                                            @if ($resum->operation2->invoice->invoice_type != 'estimated')
+                                                @if ($resum->debt == null)
+                                                    <td>0</td>
+                                                @endif
+
+                                                @if ($resum->debt != null)
+                                                    <td>{{ number_format($resum->debt) . '  ' . $resum->operator->currency }} </td>
+                                                @endif
+                                            @endif
 
 
+                                            @if ($resum->payout == null)
+                                                <td>0</td>
+                                            @endif
 
-                                            <span data-toggle="tooltip" data-placement="top"
-                                                title="Supprimer cet opérateur">
-                                                <a class=" delete-confirm mb-2 btn btn-sm btn-danger"
-                                                    href="/delete_operator/{{ $operator->id }}">
-                                                    <i class="fas far fa-times-circle text-white"> </i>
-                                                </a>
-                                            </span>
+                                            @if ($resum->payout != null)
+                                                <td>{{ number_format($resum->payout) . '  ' . $resum->operator->currency }}
+                                            @endif
+
+                                            <td>{{ number_format($resum->netting) . '  ' . $resum->operator->currency }}</td>
+                                            <td>{{ $resum->created_at }}</td>
 
 
 
-
-@endif
-                                        </td>
-                                    </tr>
-                                    <?php $n = $n + 1; ?>
-                                @endforeach
+                                         
+                                        </tr>
+                                        <?php $n = $n + 1; ?>
+                                    @endforeach
 
 
 
-                            </tbody>
+                                </tbody>
                             </table>
                         </div>
                     </div>
@@ -349,8 +334,8 @@
             event.preventDefault();
             const url = $(this).attr('href');
             swal({
-                title: 'Voulez-vous vraiment supprimer cet opérateur?',
-                text: 'Cet opérateur sera supprimé définitivement de cette liste!',
+                title: 'Voulez-vous vraiment annuler cette opération?',
+                text: 'Tout ce qui concerne cette opération va être supprimé',
                 icon: 'warning',
                 buttons: ["Annuler", "Oui!"],
             }).then(function(value) {

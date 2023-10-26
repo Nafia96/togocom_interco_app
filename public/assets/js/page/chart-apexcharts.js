@@ -3,11 +3,14 @@ $(function () {
     chart1();
     chart2();
     chart3();
-    chart4();
+    chart33();
+    chart333();
+    chart99();
     chart5();
     chart6();
     chart7();
     chart8();
+    chart90();
 });
 
 function chart1() {
@@ -277,7 +280,180 @@ function chart3() {
 
     chart.render();
 }
-function chart4() {
+
+function chart33() {
+    var options = {
+        chart: {
+            height: 350,
+            type: 'line',
+            shadow: {
+                enabled: true,
+                color: '#000',
+                top: 18,
+                left: 7,
+                blur: 10,
+                opacity: 1
+            }
+
+        },
+        colors: ['#77B6EA', '#545454'],
+        dataLabels: {
+            enabled: true,
+        },
+        stroke: {
+            curve: 'smooth'
+        },
+        series: [{
+                name: "High - 2013",
+                data: [28, 29, 33, 36, 32, 32, 33]
+            },
+            {
+                name: "Low - 2013",
+                data: [12, 11, 14, 18, 17, 13, 13]
+            }
+        ],
+        title: {
+            text: 'Average High & Low Temperature',
+            align: 'left'
+        },
+        grid: {
+            borderColor: '#e7e7e7',
+            row: {
+                colors: ['#f3f3f3', 'transparent'], // takes an array which will be repeated on columns
+                opacity: 0.5
+            },
+        },
+        markers: {
+
+            size: 6
+        },
+        xaxis: {
+            categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+            title: {
+                text: 'Month'
+            },
+            labels: {
+                style: {
+                    colors: '#9aa0ac',
+                }
+            }
+        },
+        yaxis: {
+            title: {
+                text: 'Temperature'
+            },
+            labels: {
+                style: {
+                    color: '#9aa0ac',
+                }
+            },
+            min: 5,
+            max: 40
+        },
+        legend: {
+            position: 'top',
+            horizontalAlign: 'right',
+            floating: true,
+            offsetY: -25,
+            offsetX: -5
+        }
+    }
+
+    var chart = new ApexCharts(
+        document.querySelector("#chart33"),
+        options
+    );
+
+    chart.render();
+}
+
+function chart333() {
+    var options = {
+        chart: {
+            height: 350,
+            type: 'line',
+            shadow: {
+                enabled: true,
+                color: '#000',
+                top: 18,
+                left: 7,
+                blur: 10,
+                opacity: 1
+            }
+
+        },
+        colors: ['#77B6EA', '#545454'],
+        dataLabels: {
+            enabled: true,
+        },
+        stroke: {
+            curve: 'smooth'
+        },
+        series: [{
+                name: "High - 2013",
+                data: [28, 29, 33, 36, 32, 32, 33]
+            },
+            {
+                name: "Low - 2013",
+                data: [12, 11, 14, 18, 17, 13, 13]
+            }
+        ],
+        title: {
+            text: 'Average High & Low Temperature',
+            align: 'left'
+        },
+        grid: {
+            borderColor: '#e7e7e7',
+            row: {
+                colors: ['#f3f3f3', 'transparent'], // takes an array which will be repeated on columns
+                opacity: 0.5
+            },
+        },
+        markers: {
+
+            size: 6
+        },
+        xaxis: {
+            categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+            title: {
+                text: 'Month'
+            },
+            labels: {
+                style: {
+                    colors: '#9aa0ac',
+                }
+            }
+        },
+        yaxis: {
+            title: {
+                text: 'Temperature'
+            },
+            labels: {
+                style: {
+                    color: '#9aa0ac',
+                }
+            },
+            min: 5,
+            max: 40
+        },
+        legend: {
+            position: 'top',
+            horizontalAlign: 'right',
+            floating: true,
+            offsetY: -25,
+            offsetX: -5
+        }
+    }
+
+    var chart = new ApexCharts(
+        document.querySelector("#chart333"),
+        options
+    );
+
+    chart.render();
+}
+
+function chart99() {
     var options = {
         chart: {
             height: 350,
@@ -354,12 +530,97 @@ function chart4() {
     }
 
     var chart = new ApexCharts(
-        document.querySelector("#chart4"),
+        document.querySelector("#chart99"),
         options
     );
 
     chart.render();
 }
+
+function chart90() {
+    var options = {
+        chart: {
+            height: 350,
+            type: 'line',
+            shadow: {
+                enabled: false,
+                color: '#bbb',
+                top: 3,
+                left: 2,
+                blur: 3,
+                opacity: 1
+            },
+        },
+        stroke: {
+            width: 7,
+            curve: 'smooth'
+        },
+        series: [{
+            name: 'Likes',
+            data: [4, 3, 10, 9, 29, 19, 22, 9, 12, 7, 19, 5, 13, 9, 17, 2, 7, 5]
+        }],
+        xaxis: {
+            type: 'datetime',
+            categories: ['1/11/2000', '2/11/2000', '3/11/2000', '4/11/2000', '5/11/2000', '6/11/2000', '7/11/2000', '8/11/2000', '9/11/2000', '10/11/2000', '11/11/2000', '12/11/2000', '1/11/2001', '2/11/2001', '3/11/2001', '4/11/2001', '5/11/2001', '6/11/2001'],
+            labels: {
+                style: {
+                    colors: '#9aa0ac',
+                }
+            }
+        },
+        title: {
+            text: 'Social Media',
+            align: 'left',
+            style: {
+                fontSize: "16px",
+                color: '#666'
+            }
+        },
+        fill: {
+            type: 'gradient',
+            gradient: {
+                shade: 'dark',
+                gradientToColors: ['#FDD835'],
+                shadeIntensity: 1,
+                type: 'horizontal',
+                opacityFrom: 1,
+                opacityTo: 1,
+                stops: [0, 100, 100, 100]
+            },
+        },
+        markers: {
+            size: 4,
+            opacity: 0.9,
+            colors: ["#FFA41B"],
+            strokeColor: "#fff",
+            strokeWidth: 2,
+
+            hover: {
+                size: 7,
+            }
+        },
+        yaxis: {
+            min: -10,
+            max: 40,
+            title: {
+                text: 'Engagement',
+            },
+            labels: {
+                style: {
+                    color: '#9aa0ac',
+                }
+            }
+        }
+    }
+
+    var chart = new ApexCharts(
+        document.querySelector("#chart90"),
+        options
+    );
+
+    chart.render();
+}
+
 function chart5() {
     var options = {
         chart: {
@@ -476,8 +737,10 @@ function chart6() {
 function chart7() {
     var options = {
         chart: {
-            width: 360,
+            width: 400,
             type: 'pie',
+            exportEnabled: true,
+	animationEnabled: true,
         },
         labels: ['Team A', 'Team B', 'Team C', 'Team D', 'Team E'],
         series: [44, 55, 13, 43, 22],
@@ -485,11 +748,9 @@ function chart7() {
             breakpoint: 480,
             options: {
                 chart: {
-                    width: 200
+                    width: 400
                 },
-                legend: {
-                    position: 'bottom'
-                }
+                
             }
         }]
     }

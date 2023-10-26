@@ -115,7 +115,7 @@
                                                 {{ $operator->currency }}
                                             </div>
                                         </div>
-                                        <input name="amount" type="numeric"
+                                        <input name="amount" type="number" step="0.01" min="0" lang="en"
                                             class="form-control  @error('amount') is-invalid @enderror"
                                             value="{{ @old('amount') }}" placeholder="" required>
 

@@ -19,8 +19,8 @@ class DatabaseSeeder extends Seeder
         //création de l'utilisateur principal:Admin
         DB::table('users')->insert([
 
-            'last_name' => 'DJIRE',
-            'first_name' => 'Nahfiou',
+            'last_name' => 'KOUDAYA ',
+            'first_name' => 'Patrick Kossi Coco',
             'email' =>"superadmin@gmail.com",
             'type_user' => 3,
             'avatar' => "/avatar/default.png",
@@ -38,6 +38,9 @@ class DatabaseSeeder extends Seeder
             'adresse' => 'Lomé, cacaveli',
             'country' => 'Togo',
             'is_delete' => '3',
+            'euro_conversion' => 655.957 ,
+            'dollar_conversion' =>610,
+            'xaf_conversion' => 1,
 
         ]);
 

@@ -17,16 +17,21 @@ class CreateOperatorTable extends Migration
             $table->id();
             $table->string('name');
             $table->string('currency')->nullable();
+            $table->float('euro_conversion', 10, 3)->nullable();
+            $table->integer('dollar_conversion')->nullable();
+            $table->integer('xaf_conversion')->nullable();
             $table->string('tel')->nullable();
             $table->string('tel2')->nullable();
             $table->string('email')->nullable();
             $table->string('email2')->nullable();
             $table->string('email3')->nullable();
             $table->integer('cedeao')->nullable();
+            $table->integer('afrique')->nullable();
+            $table->integer('is_carrier')->nullable();
             $table->string('adresse')->nullable();
             $table->string('country')->nullable();
             $table->string('description')->nullable();
-            $table->string('is_delete')->default(0);
+            $table->integer('is_delete')->default(0);
             $table->timestamps();
         });
     }

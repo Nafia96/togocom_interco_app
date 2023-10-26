@@ -26,7 +26,7 @@ class CreateAccountTable extends Migration
             $table->string('debt')->nullable();
             $table->integer('delete_by')->nullable();
             $table->integer('reactive_by')->nullable();
-            $table->bigInteger('netting')->nullable();
+            $table->decimal('netting', 16, 2)->nullable();
             $table->integer('is_delete')->default(0);
             $table->timestamps();
         });

@@ -16,7 +16,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                <form action="add_settlement" enctype="multipart/form-data" method="post">
+                <form action="{{ url('add_settlement') }}" enctype="multipart/form-data" method="post">
                     @csrf
 
                     @if (isset($operator))
@@ -87,7 +87,8 @@
                                                 {{ $operator->currency }}
                                             </div>
                                         </div>
-                                        <input name="amount" type="numeric" class="form-control  @error('amount') is-invalid @enderror" value="{{ @old('amount') }}"
+                                        <input name="amount" type="number" step="0.01" min="0" lang="en"
+                                         class="form-control  @error('amount') is-invalid @enderror" value="{{ @old('amount') }}"
                                             placeholder="" required>
 
                                         @error('amount')

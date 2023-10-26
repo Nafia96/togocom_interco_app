@@ -136,7 +136,7 @@
 
                                                 <td class="text-center">{{$operation->invoice->number_of_call}}</td>
                                                 <td class="text-center">{{$operation->invoice->call_volume}}</td>
-                                                <td class="text-center">{{number_format($operation->invoice->amount)}} {{$operator->currency}}</td>
+                                                <td class="text-center">{{number_format($operation->invoice->amount, 2, ',', '.')}} {{$operator->currency}}</td>
                                             </tr>
                                           
                                             @endif
@@ -151,7 +151,7 @@
                                                
                                                 <td class="text-center">---------</td>
                                                 <td class="text-center">---------</td>
-                                                <td class="text-center">{{number_format($operation->invoice->amount)}} {{$operator->currency}}</td>
+                                                <td class="text-center">{{number_format($operation->invoice->amount, 2, ',', '.')}} {{$operator->currency}}</td>
                                             </tr>
                                           
                                             @endif
@@ -165,14 +165,14 @@
                                   
                                     <div class="row">
                                         <div class="col-4 text-center">
-                                            <strong>CREANCE TOGCOCOM: <br></strong> <span  style="color: #ec1f28; font-weight: bold;"> {{number_format($operation->new_receivable)}}  {{$operator->currency}}</span>
+                                            <strong>CREANCE TOGCOCOM: <br></strong> <span  style="color: #ec1f28; font-weight: bold;"> {{number_format($operation->new_receivable, 2, ',', '.')}}  {{$operator->currency}}</span>
                                         </div>
                                         <div class="col-4 text-center">
-                                            <strong>DETTE TOGOCOM: <br></strong>  <span  style="color: #ec1f28; font-weight: bold;"> {{number_format($operation->new_debt)}}  {{$operator->currency}}</span> 
+                                            <strong>DETTE TOGOCOM: <br></strong>  <span  style="color: #ec1f28; font-weight: bold;"> {{number_format($operation->new_debt, 2, ',', '.')}}  {{$operator->currency}}</span> 
                                         </div>
                                         <div class="col-4 text-center">
                                             <strong>NETTING : 
-                                             </strong> <br><span  style="color: #ec1f28; font-weight: bold;">  {{number_format($operation->new_netting)}}   {{$operator->currency}}</span>
+                                             </strong> <br><span  style="color: #ec1f28; font-weight: bold;">  {{number_format($operation->new_netting, 2, ',', '.')}}   {{$operator->currency}}</span>
                                         </div>
 
                                     </div>

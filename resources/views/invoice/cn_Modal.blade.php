@@ -52,7 +52,7 @@
                                                 {{ $operation->operator->currency }}
                                             </div>
                                         </div>
-                                        <input disabled name="amount" type="numeric"
+                                        <input disabled name="amount" type="number" step="0.01" min="0" lang="en"
                                             class="form-control  @error('amount') is-invalid @enderror"
                                             value="{{ $operation->invoice->contestation->amount }}" placeholder=""
                                             required>
@@ -76,7 +76,7 @@
                                                 {{ $operation->operator->currency }}
                                             </div>
                                         </div>
-                                        <input disabled name="olde_amount" type="numeric"
+                                        <input disabled name="olde_amount" type="number" step="0.01" min="0" lang="en"
                                             class="form-control  @error('olde_amount') is-invalid @enderror"
                                             value="{{ $operation->invoice->amount }}" placeholder="" required>
 
@@ -114,7 +114,7 @@
                                                 {{ $operation->operator->currency }}
                                             </div>
                                         </div>
-                                        <input name="amount" type="numeric"
+                                        <input name="amount" type="number" step="0.01" min="0" lang="en"
                                             class="form-control  @error('amount') is-invalid @enderror" value=""
                                             placeholder="" required>
 

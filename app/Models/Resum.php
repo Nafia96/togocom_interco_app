@@ -30,9 +30,13 @@ class Resum extends Model
 	*
 	* @var arrayclient
 	*/
-	protected $fillable = ['id_operator','period','receivable','debt' ,'incoming_payement','payout','netting','id_operation_1','id_operation_2','service',];
+	protected $fillable = ['incoming_payement_cfa','payout_cfa','receivable_cfa','debt_cfa','id_operator','period','periodDate','receivable','debt' ,'incoming_payement','payout','netting','id_operation_1','id_operation_2','service',];
 
  
+	public function operator(){
+        return $this->belongsTo(Operator::class,'id_operator');
+    }
+
 	public function operation1(){
         return $this->belongsTo(Operation::class,'id_operation_1');
     }

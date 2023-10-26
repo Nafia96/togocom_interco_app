@@ -385,6 +385,37 @@ if (!function_exists('periodePrint')) {
     }
 }
 
+if (!function_exists('periodeDate')) {
+    function periodeDate($period)
+    {
+        $date = strtotime ( $period );
+        $newDate = date ( 'Y-m-d' , $date ) ;
+        return $newDate;
+
+    }
+}
+
+if (!function_exists('DashboardPeriodePrint')) {
+    function DashboardPeriodePrint($period)
+    {
+        $date = strtotime ( $period );
+        $newDate = date ( 'M-Y' , $date ) ;
+        return $newDate;
+
+    }
+}
+
+if (!function_exists('previous_Month')) {
+    function previous_Month()
+    {
+        $date = strtotime (date('m-Y') );
+        $newDate = date ( 'M-Y' , $date ) ;
+        return $newDate;
+
+    }
+}
+
+
 
 if (!function_exists('getAllZones')) {
     function getAllZones()

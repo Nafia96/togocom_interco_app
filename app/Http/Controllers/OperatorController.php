@@ -15,6 +15,8 @@ use Illuminate\Http\Request;
 class OperatorController extends Controller
 {
 
+   
+
     public function add_operator()
     {
         return view('operator/add_operator');
@@ -66,7 +68,9 @@ class OperatorController extends Controller
             'adresse' => $data['adresse'],
             'country' => $data['country'],
             'currency' => $data['currency'],
+            'is_carrier' => $data['is_carrier'],
             'cedeao' => $data['cedeao'],
+            'afrique' => $data['afrique'],
             'description' => $data['description'],
 
         ]);

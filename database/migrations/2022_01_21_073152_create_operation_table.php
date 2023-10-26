@@ -16,7 +16,7 @@ class CreateOperationTable extends Migration
         Schema::create('operation', function (Blueprint $table) {
             $table->id();
             //1 for tgc to opperator, 2 for operator to tgc
-            $table->string('operation_type')->nullable();
+            $table->integer('operation_type')->nullable();
             $table->string('repayment_type')->nullable();
             $table->string('invoice_type')->nullable();
             $table->string('operation_name')->nullable();
@@ -33,12 +33,12 @@ class CreateOperationTable extends Migration
 
             $table->integer('is_delete')->default(0);
             $table->integer('id_op_account')->nullable();
-            $table->bigInteger('incoming_balance')->nullable();
-            $table->bigInteger('output_balance')->nullable();
-            $table->bigInteger('new_netting')->nullable();
-            $table->bigInteger('amount')->nullable();
-            $table->bigInteger('new_debt')->nullable();
-            $table->bigInteger('new_receivable')->nullable();
+            $table->decimal('incoming_balance', 16, 2)->nullable();
+            $table->decimal('output_balance', 16, 2)->nullable();
+            $table->decimal('new_netting', 16, 2)->nullable();
+            $table->decimal('amount', 16, 2)->nullable();
+            $table->decimal('new_debt', 16, 2)->nullable();
+            $table->decimal('new_receivable', 16, 2)->nullable();
             $table->bigInteger('account_number');
             $table->timestamps();
         });

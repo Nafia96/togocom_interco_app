@@ -17,6 +17,7 @@ class CreateResumTable extends Migration
             $table->id();
 
             $table->string('period')->nullable();
+            $table->date('periodDate')->nullable();
             $table->string('service')->nullable();
 
     
@@ -30,18 +31,22 @@ class CreateResumTable extends Migration
             $table->unsignedBigInteger('id_operator');
             $table->foreign('id_operator')->references('id')->on('operator');
 
-            //Receivable c'est ce que l'operateur doit à Togocom
-            $table->string('receivable')->nullable();
+            //Receivable c'est ce que l'operateur doit à Togocom decimal('amount', 16, 2)
+            $table->decimal('receivable', 16, 2)->nullable();
+            $table->decimal('receivable_cfa', 16, 2)->nullable();
             //Debt c'est ce que TOGOCOM doit à l'operateur
-            $table->string('debt')->nullable();
+            $table->decimal('debt', 16, 2)->nullable();
+            $table->decimal('debt_cfa', 16, 2)->nullable();
 
-            $table->bigInteger('incoming_payement')->nullable();
+            $table->decimal('incoming_payement', 16, 2)->nullable();
+            $table->decimal('incoming_payement_cfa', 16, 2)->nullable();
 
-            $table->bigInteger('payout')->nullable();
+            $table->decimal('payout', 16, 2)->nullable();
+            $table->decimal('payout_cfa', 16, 2)->nullable();
 
-            $table->string('is_delete')->default(0);
+            $table->integer('is_delete')->default(0);
 
-            $table->bigInteger('netting')->nullable();
+            $table->decimal('netting', 16, 2)->nullable();
             
             $table->timestamps();
         });

@@ -27,8 +27,12 @@
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
-                            <table class="table table-striped table-hover" id="tableExpor" style="width:100%;">
-                                <thead>
+                            @if (getUserType()->type_user == 3 || getUserType()->type_user == 2 || getUserType()->type_user == 1)
+                            <table class="table table-striped table-hover category" id="tableExpor" style="width:100%;">
+                            @else
+                                <table class="table table-striped table-hover category" id="save-stage"
+                                    style="width:100%;">
+                        @endif                                <thead>
                                     <tr>
                                         <th class="recherche">N°</th>
                                         <th class="recherche">PRESTATIONS</th>

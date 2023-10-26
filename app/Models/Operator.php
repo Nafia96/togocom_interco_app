@@ -23,7 +23,7 @@ class Operator extends Model
 	*
 	* @var array
 	*/
-	protected $fillable = ['name','tel','tel2','email','email2','email3','cedeao','adresse','country','currency','description','is_delete'];
+	protected $fillable = ['is_carrier','afrique','xaf_conversion','euro_conversion','dollar_conversion','name','tel','tel2','email','email2','email3','cedeao','adresse','country','currency','description','is_delete'];
 
     public function account()
     {

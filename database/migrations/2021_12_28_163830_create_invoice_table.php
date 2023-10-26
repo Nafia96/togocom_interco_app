@@ -17,9 +17,11 @@ class CreateInvoiceTable extends Migration
             $table->id();
             $table->string('invoice_number')->nullable();
             $table->string('period')->nullable();
+            $table->date('periodDate')->nullable();
+
             $table->date('invoice_date')->nullable();
 
-            $table->string('call_volume')->nullable();
+            $table->decimal('call_volume', 16, 2)->nullable();
             $table->string('number_of_call')->nullable();
             $table->string('invoice_type')->nullable();
             $table->integer('add_by')->nullable();
@@ -27,8 +29,8 @@ class CreateInvoiceTable extends Migration
             $table->string('is_delete')->default(0);
 
 
-            $table->integer('tgc_invoice')->nullable();
-            $table->bigInteger('amount')->nullable();
+            $table->integer('tgc_invoice')->nullable(); 
+            $table->decimal('amount', 16, 2)->nullable();
             $table->string('comment')->nullable();
 
             $table->timestamps();

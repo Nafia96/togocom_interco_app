@@ -44,6 +44,7 @@ Route::middleware([NotConnected::class])->group(function () {
 
 	Route::middleware([superAdmin::class])->group(function () {
 
+
 		//User route
 		Route::get('add_user', [UserController::class, 'add_user'])->name('add_user');
 		Route::post('user_register', [UserController::class, 'user_register'])->name('user_register');
@@ -59,9 +60,7 @@ Route::middleware([NotConnected::class])->group(function () {
 
 		//Operator route
 		Route::get('add_operator', [OperatorController::class, 'add_operator'])->name('add_operator');
-		Route::get('ope_dashboard/{id}', [OperatorController::class, 'ope_dashboard'])->name('ope_dashboard');
 		Route::post('add_operator', [OperatorController::class, 'operator_register'])->name('operator_register');
-		Route::get('liste_operator', [OperatorController::class, 'liste_operator'])->name('liste_operator');
 		Route::get('delete_operator_liste', [OperatorController::class, 'delete_operator_liste'])->name('delete_operator_liste');
 		Route::get('update_operator/{id}', [OperatorController::class, 'update_operator'])->name('update_operator');
 		Route::post('update_operator', [OperatorController::class, 'save_update'])->name('save_update');
@@ -73,11 +72,16 @@ Route::middleware([NotConnected::class])->group(function () {
 		Route::get('admin_operations', [OperationController::class, 'admin_operations'])->name('admin_operations');
 	});
 
+	Route::get('ope_dashboard/{id}', [OperatorController::class, 'ope_dashboard'])->name('ope_dashboard');
+
+
 	Route::get('delete_operation/{id}', [OperationController::class, 'delete_operation'])->name('delete_operation');
 
 
 	Route::get('operator_dashboard', [OperatorController::class, 'operator_dashboard'])->name('operator_dashboard');
 
+
+	Route::get('liste_operator', [OperatorController::class, 'liste_operator'])->name('liste_operator');
 
 	//Route des operations
 
@@ -91,6 +95,8 @@ Route::middleware([NotConnected::class])->group(function () {
 	Route::get('operations_list/{id_operator}', [OperationController::class, 'operations_list'])->name('operations_list');
 	Route::get('invoice_list/{id_operator}', [OperationController::class, 'invoice_list'])->name('invoice_list');
 	Route::get('all_invoice_list', [OperationController::class, 'all_invoice_list'])->name('all_invoice_list');
+	Route::get('all_resum_list', [OperationController::class, 'all_resum_list'])->name('all_resum_list');
+	Route::get('delete_invoice_list', [OperationController::class, 'delete_invoice_list'])->name('delete_invoice_list');
 	Route::get('all_operations', [OperationController::class, 'all_operations'])->name('all_operations');
 	Route::get('all_cancel_operations', [OperationController::class, 'all_cancel_operations'])->name('all_cancel_operations');
 	Route::get('cancel_operation/{id_operation}', [OperationController::class, 'cancel_operation'])->name('cancel_operation');

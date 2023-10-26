@@ -43,7 +43,7 @@
     <link rel="stylesheet" href="{{ asset('assets/bundles/jquery-selectric/selectric.css') }}">
 
     <link rel="stylesheet" href="{{ asset('assets/bundles/chocolat/dist/css/chocolat.css') }}">
-    
+
 
 
     <!-- Datatable style CSS -->
@@ -64,6 +64,11 @@
         #mapid {
             height: 500px;
             width: 100%;
+        }
+
+        .table.revenu tr:last-child {
+            background: #03a04f;
+            color: #fcca29;
         }
     </style>
 
@@ -122,17 +127,17 @@
                             @endif
 
                             @if (getUserType()->type_user == 2)
-                                <div class="dropdown-title">CHEF AGENCE : {{ getUserAuth()->first_name }}
+                                <div class="dropdown-title">ADMIN : {{ getUserAuth()->first_name }}
                                     {{ getUserAuth()->last_name }}</div>
                             @endif
 
                             @if (getUserType()->type_user == 1)
-                                <div class="dropdown-title"> AGENT : {{ getUserAuth()->first_name }}
+                                <div class="dropdown-title"> UTILISATEUR : {{ getUserAuth()->first_name }}
                                     {{ getUserAuth()->last_name }}</div>
                             @endif
 
-                            @if (getUserType()->type_user == 4)
-                                <div class="dropdown-title">CLIENT : {{ getUserAuth()->first_name }}
+                            @if (getUserType()->type_user == 0)
+                                <div class="dropdown-title">VISITEUR : {{ getUserAuth()->first_name }}
                                     {{ getUserAuth()->last_name }}</div>
                             @endif
                             <!--<a href="/profile" class="dropdown-item has-icon"> <i class="far
@@ -162,45 +167,45 @@
                     <ul class="sidebar-menu">
                         <li class="menu-header">Menu principal</li>
                         <li class="dropdown">
-                            @if (getUserType()->type_user == 3)
+                            
                                 <a href="{{ url('/dashboard') }}" class="nav-link"><i
                                         data-feather="monitor"></i><span>Tableau de Bord</span></a>
-                            @endif
-                            @if (getUserType()->type_user == 2)
-                                <a href="{{ url('/operator_dashboard') }}" class="nav-link"><i
-                                        data-feather="monitor"></i><span>Tableau de Bord</span></a>
-                            @endif
-                          
-                            @if (getUserType()->type_user == 4)
-                                <a href="{{ url('/client_dashboard') }}" class="nav-link"><i
-                                        data-feather="monitor"></i><span>Tableau de Bord</span></a>
-                            @endif
+                           
+                           
                         </li>
 
-                        @if (getUserType()->type_user == 3)
                             <li class="menu-header">Gestions des données</li>
                             <li
                                 class="dropdown  {{ Request::is('add_operator') ? 'active' : '' }}
                                   {{ Request::is('liste_operator') ? 'active' : '' }}
                                   {{ Request::is('delete_operator_liste') ? 'active' : '' }}
+                                  {{ Request::is('ope_dashboard') ? 'active' : '' }}
                                  ">
 
                                 <a href="#" class="menu-toggle nav-link has-dropdown"><i
                                         data-feather="briefcase"></i><span>Gestion des opérateurs</span></a>
                                 <ul class="dropdown-menu">
 
+                                    @if (getUserType()->type_user == 3 || getUserType()->type_user == 2)
+
                                     <li class="{{ Request::is('add_operator') ? 'active' : '' }}"><a
                                             class="nav-link " href="{{ route('add_operator') }}">Créer un opérateur
                                         </a></li>
+
+                                    @endif
                                     <li class="{{ Request::is('liste_operator') ? 'active' : '' }}"><a
                                             class="nav-link " href="{{ route('liste_operator') }}">Liste des
                                             opérateurs</a>
                                     </li>
+
+                                    @if (getUserType()->type_user == 3 || getUserType()->type_user == 2)
+
                                     <li class="{{ Request::is('delete_operator_liste') ? 'active' : '' }}"><a
                                             class="nav-link " href="{{ route('delete_operator_liste') }}">Opérateurs
                                             supprimées</a>
                                     </li>
 
+                                    @endif
 
 
                                 </ul>
@@ -209,8 +214,8 @@
 
                             <li
                                 class="dropdown  {{ Request::is('all_invoice_list') ? 'active' : '' }}
-                              {{ Request::is('all_invoice_list') ? 'active' : '' }}
-                              {{ Request::is('all_invoice_list') ? 'active' : '' }}
+                              {{ Request::is('all_resum_list') ? 'active' : '' }}
+                              {{ Request::is('delete_invoice_list') ? 'active' : '' }}
                              ">
 
                                 <a href="#" class="menu-toggle nav-link has-dropdown"><i
@@ -218,17 +223,20 @@
                                 <ul class="dropdown-menu">
 
                                     <li class="{{ Request::is('all_invoice_list') ? 'active' : '' }}"><a
-                                            class="nav-link " href="{{ route('all_invoice_list') }}">Toutes les factures
+                                            class="nav-link " href="{{ route('all_invoice_list') }}">Toutes les
+                                            factures
                                         </a></li>
-                                  
 
-                                    <li class="{{ Request::is('all_invoice_list') ? 'active' : '' }}"><a
-                                        class="nav-link " href="{{ route('all_invoice_list') }}">Créances & Dettes</a>
+
+                                    <li class="{{ Request::is('all_resum_list') ? 'active' : '' }}"><a
+                                            class="nav-link " href="{{ route('all_resum_list') }}">Créances &
+                                            Dettes</a>
                                     </li>
 
-                                    <li class="{{ Request::is('all_invoice_list') ? 'active' : '' }}"><a
-                                        class="nav-link " href="{{ route('all_invoice_list') }}">Factures supprimées</a>
-                                </li>
+                                    <li class="{{ Request::is('delete_invoice_list') ? 'active' : '' }}"><a
+                                            class="nav-link " href="{{ route('delete_invoice_list') }}">Factures
+                                            supprimées</a>
+                                    </li>
 
 
 
@@ -259,6 +267,8 @@
 
                                 </ul>
                             </li>
+                            @if (getUserType()->type_user == 3 || getUserType()->type_user == 2)
+
                             <li class="dropdown  {{ Request::is('sta_dashboard') ? 'active' : '' }}">
                                 <a href="{{ route('sta_dashboard') }}" class="nav-link"><i
                                         data-feather="package"></i><span>Statistiques</span></a>
@@ -292,13 +302,14 @@
                             </li>
                         @endif
 
-                        
+                        @if (getUserType()->type_user == 3 || getUserType()->type_user == 2)
+
                         <li class="dropdown  {{ Request::is('logs') ? 'active' : '' }}">
                             <a href="{{ route('logs') }}" class="nav-link"><i
                                     data-feather="package"></i><span>Journal des Actions</span></a>
                         </li>
 
-
+@endif
 
 
 
@@ -344,8 +355,13 @@
 
 
                 @endif
+                @if (isset($operator))
+                    @include('invoice.invoiceModal')
+                    @include('invoice.addInvoiceModal')
+                    @include('invoice.settlementModal')
+                @endif
 
-         
+
 
                 @if (isset($operations))
                     @foreach ($operations as $operation)
@@ -361,6 +377,7 @@
                 @if (isset($resums))
                     @foreach ($resums as $resum)
                         @include('invoice.update_invoiceModal')
+                        
                     @endforeach
 
 
@@ -397,7 +414,7 @@
             </div>
             <footer class="main-footer">
                 <div class="simple-footer" style="width: 100%; margin: auto  !important;">
-                    <a href="//www.kp10is.com"
+                    <a href="#"
                         style="color: #e90000fd;font-weight: bold; text-align: center !important; margin: auto !important;">
                         Copyright &copy; TOGOCOM {{ date('Y') }}</a>
                 </div>
@@ -412,6 +429,8 @@
     <script src={{ asset('assets/js/app.min.js') }}></script>
     <!-- JS Libraies -->
     <script src={{ asset('assets/bundles/apexcharts/apexcharts.min.js') }}></script>
+    <script src={{ asset('assets/js/page/chart-apexcharts.js') }}></script>
+
     <!-- Page Specific JS File -->
     <script src={{ asset('assets/js/page/index.js') }}></script>
     <!-- Template JS File -->
@@ -458,6 +477,14 @@
     <script src="{{ asset('assets/bundles/jquery-selectric/jquery.selectric.min.js') }}"></script>
     <!-- Page Specific JS File -->
     <script src="{{ asset('assets/js/page/forms-advanced-forms.js') }}"></script>
+
+    <script src="{{ asset('assets/bundles/amcharts4/core.js') }}"></script>
+  <script src="{{ asset('assets/bundles/amcharts4/charts.js') }}"></script>
+  <script src="{{ asset('assets/bundles/amcharts4/animated.js') }}"></script>
+  <script src="{{ asset('assets/bundles/amcharts4/worldLow.js') }}"></script>
+  <script src="{{ asset('assets/bundles/amcharts4/maps.js') }}"></script>
+  <!-- Page Specific JS File -->
+  <script src="{{ asset('assets/js/page/chart-amchart.js') }}"></script>
 
 
     <script src="{{ asset('assets/bundles/sweetalert/sweetalert.min.js') }}"></script>

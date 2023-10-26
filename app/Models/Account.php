@@ -33,16 +33,14 @@ class Account extends Model
 	protected $fillable = ['id_operator','account_number','receivable','debt'
     ,'delete_by','reactive_by','netting','is_delete'];
 
-    /*
-    public function latestAccount()
-    {
-        return $this->hasOne(Comptes::class)->latestOfMany();
+ 
+
+    public function operator(){
+        return $this->belongsTo(Operator::class,'id_operator');
     }
 
-    public function client(){
-        return $this->belongsTo(Client::class,'id_client');
-    }
-
+   /*
+   
     public function agence(){
         return $this->belongsTo(Agence::class,'id_agence');
     }

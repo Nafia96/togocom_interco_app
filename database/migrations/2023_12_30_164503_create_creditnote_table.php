@@ -30,9 +30,9 @@ class CreateCreditnoteTable extends Migration
             $table->unsignedBigInteger('contestation_id');
             $table->foreign('contestation_id')->references('id')->on('contestation');
 
-            $table->bigInteger('debt')->nullable();
+            $table->decimal('debt', 16, 2)->nullable();
 
-            $table->bigInteger('receivable')->nullable();
+            $table->decimal('receivable', 16, 2)->nullable();
             
             $table->string('is_delete')->default(0);
 

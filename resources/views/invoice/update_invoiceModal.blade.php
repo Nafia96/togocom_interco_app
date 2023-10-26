@@ -7,7 +7,7 @@
                 <div class="row container-fluid mt-3 ">
                     <div class="mt-3 col-12 text-center  m-auto">
                         <h6 class="modal-title" style="background-color:#03a04f; color: aliceblue ; "
-                            id="myLargeModalLabel">MISE A JOURS D'UNE FACTURATION DE {{ $operator->name }} A TOGOCOM  </h6>
+                            id="myLargeModalLabel">MISE A JOURS D'UNE FACTURATION DE {{ $resum->operator->name }} A TOGOCOM  </h6>
                     </div>
                 </div>
 
@@ -19,10 +19,10 @@
                 <form action="{{url('update_estimated_invoice')}}"  enctype="multipart/form-data" method="post">
                     @csrf
                   
-                    @if (isset($operator))
+                    @if (isset($resum->operator))
                         <div class="mt-3  col-12 text-center  m-auto">
                             <div class="author-box-name mb-3" style="color: #03a04f; font-weight: bold;">
-                                <h5>{{ $operator->name }} - {{ $operator->tel }} - {{ $operator->email }}</h5>
+                                <h5>{{ $resum->operator->name }} - {{ $resum->operator->tel }} - {{ $resum->operator->email }}</h5>
                             </div>
                         </div>
 
@@ -31,7 +31,7 @@
                         <div class="tab-content tab-bordered" id="myTab3Content">
                         
 
-                            <input type="hidden" name="id_operator" value="{{ $operator->id }}">
+                            <input type="hidden" name="id_operator" value="{{ $resum->operator->id }}">
                             <input type="hidden" name="operation_id" value="{{ $resum->operation2->id }}">
                             <input type="hidden" name="id_resum" value="{{ $resum->id }}">
                             <input type="hidden" name="invoice_id" value="{{ $resum->operation2->invoice->id }}">
@@ -83,10 +83,11 @@
                                     <div class="input-group">
                                         <div class="input-group-prepend">
                                             <div class="input-group-text">
-                                                {{ $operator->currency }}
+                                                {{ $resum->operator->currency }}
                                             </div>
                                         </div>
-                                        <input  name="amount" type="numeric" class="form-control  @error('amount') is-invalid @enderror" value="{{ @old('amount') }}"
+                                        <input  name="amount" type="number" step="0.01" min="0" lang="en"
+                                         class="form-control  @error('amount') is-invalid @enderror" value="{{ @old('amount') }}"
                                             placeholder="" required>
 
                                         @error('amount')

@@ -129,14 +129,31 @@
                             </span>
                         @enderror
                     </div>
+                    <div class="form-group col-md-1">
+                        <label for="inputEmail4">Un carrier ? </label>
+                        <select name="is_carrier" id="inputState" class="form-control">
+                            <option value="1"  >OUI</option>
+                            <option value="0" selected="selected">NON</option>
+                           
+                        </select>
+                    </div>
+                    <div class="form-group col-md-1">
+                        <label for="inputEmail4">En Afrique ? </label>
+                        <select name="afrique" id="inputState" class="form-control">
+                            <option value="1"  >OUI</option>
+                            <option value="0" selected="selected">NON</option>
+                           
+                        </select>
+                    </div>
 
-                    <div class="form-group col-md-4">
+                    <div class="form-group col-md-2">
                         <label for="inputEmail4">Pays de l'opérateur</label>
                         <select name="country" id="inputState" class="form-control">
                             <option value="Afghanistan">Afghanistan</option>
                             <option value="Åland Islands">Åland Islands</option>
                             <option value="Albania">Albania</option>
                             <option value="Algeria">Algeria</option>
+                            <option value="Allemagne">Allemagne</option>
                             <option value="American Samoa">American Samoa</option>
                             <option value="Andorra">Andorra</option>
                             <option value="Angola">Angola</option>
@@ -202,6 +219,7 @@
                             <option value="Equatorial Guinea">Equatorial Guinea</option>
                             <option value="Eritrea">Eritrea</option>
                             <option value="Estonia">Estonia</option>
+                            <option value="Etats Unis d'Amerique">Etats Unis d'Amerique</option>
                             <option value="Ethiopia">Ethiopia</option>
                             <option value="Falkland Islands (Malvinas)">Falkland Islands (Malvinas)</option>
                             <option value="Faroe Islands">Faroe Islands</option>
@@ -389,9 +407,9 @@
                     <div class="form-group col-md-2">
                         <label for="inputEmail4">Devise de l'opérateur </label>
                         <select name="currency" id="inputState" class="form-control">
-                            <option value="USD" selected="selected" label="US dollar">USD</option>
+                            <option value="USD"  label="US dollar">USD</option>
                             <option value="XOF" label="West African CFA franc">XOF</option>
-                            <option value="EUR" label="Euro">EUR</option>
+                            <option value="EUR" selected="selected" label="Euro">EUR</option>
                             <option value="AED" label="United Arab Emirates dirham">AED</option>
                             <option value="JPY" label="Japanese yen">JPY</option>
                             <option value="GBP" label="Pound sterling">GBP</option>
