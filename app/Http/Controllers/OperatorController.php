@@ -166,6 +166,51 @@ class OperatorController extends Controller
         return redirect('liste_operator')->with('flash_message_success', "Opérateur mise à jours avec succès!");
     }
 
+    public function save_setting(Request $request)
+    {
+
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'tel' => 'required|string',
+            'tel2' => 'nullable|string',
+            'email' => 'required|email',
+            'email2' => 'nullable|email',
+            'email3' => 'nullable|email',
+            'adresse' => 'nullable|string',
+            'country' => 'required|string',
+            'currency' => 'required|string',
+            'euro_conversion' => 'required|string',
+            'dollar_conversion' => 'required|string',
+            'xaf_conversion' => 'required|string',
+            'description' => 'nullable|string|max:500',
+
+        ]);
+
+        $data = $request->all();
+
+            Operator::where(['id' => $data['id']])->update([
+                'name' => $data['name'],
+                'tel' => $data['tel'],
+                'email' => $data['email'],
+                'adresse' => $data['adresse'],
+                'country' => $data['country'],
+                'currency' => $data['currency'],
+                'euro_conversion' => $data['euro_conversion'],
+                'dollar_conversion' => $data['dollar_conversion'],
+                'xaf_conversion' => $data['xaf_conversion'],
+                'description' => $data['description'],
+
+            ]);
+
+        Journal::create([
+            'action' => "Mise à jours des paramètres  " . $data['name'],
+            'user_id' => session('id'),
+        ]);
+
+        return redirect('dashboard')->with('flash_message_success', "Paramètres mise à jours avec succès!");
+    }
+
     public function delete_operator($id)
     {
         $operator = Operator::where(['id' => $id])->first();

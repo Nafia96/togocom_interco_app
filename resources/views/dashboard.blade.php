@@ -36,7 +36,7 @@
                                     <div class="card-content">
                                         <h5 class="font-15"> OPERATEURS</h5>
                                         <h2 class="mb-3 font-18">{{ $sum_of_ope }}</h2>
-                                        <p class="mb-0"><span class="col-orange">{{ $sum_of_ope_carrier }}</span> CARRIER</p>
+                                        <p class="mb-0"><span class="col-green">{{ $sum_of_ope_cdeao }}</span> CEDEAO</p>
                                     </div>
                                 </div>
                                 <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pl-0">
@@ -58,8 +58,6 @@
                                     <div class="card-content">
                                         <h5 class="font-15">OPERATEUR EN AFRIQUE</h5>
                                         <h2 class="mb-3 font-18">{{ $sum_of_ope_afrique }}</h2>
-                                        <p class="mb-0"><span class="col-green">{{ $sum_of_ope_cdeao }}</span>
-                                            dans la zone CEDEAO</p>
                                     </div>
                                 </div>
                                 <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pl-0">

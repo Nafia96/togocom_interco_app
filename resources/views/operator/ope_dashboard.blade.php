@@ -10,8 +10,7 @@
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('dashboard') }}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
             </li>
-            <li class="breadcrumb-item"><a href="{{ route('liste_operator') }}"><i class="far fa-file"></i> Liste de
-                    opérateurs</a></li>
+           
             <li class="breadcrumb-item active" aria-current="page"><i class="fas fa-list"></i> Situation actuelle de
                 {{ $operator->name }}</li>
 
@@ -217,11 +216,10 @@
                                 <th class="recherche">PRESTATIONS</th>
                                 <th class="recherche">PERIODES</th>
                                 <th class="recherche">CREANCES</th>
-                                <th class="recherche">ENCAISSEMENT</th>
+                                <th style="width:8%" class="recherche">ENCAISSEMENT</th>
                                 <th class="recherche">DETTES</th>
                                 <th class="recherche">DECAISSEMENT</th>
-                                <th class="recherche">SOLDE</th>
-                                <th class="recherche">DATE D'AJOUT</th>
+                                <th class="recherche"> NETTING</th>
                                 <th>ACTION</th>
                             </tr>
                         </thead>
@@ -251,11 +249,11 @@
 
 
                                     @if ($resum->incoming_payement == null)
-                                        <td>0</td>
+                                        <td style="width:8%">0</td>
                                     @endif
 
                                     @if ($resum->incoming_payement != null)
-                                        <td>{{ number_format($resum->incoming_payement,2,","," ") . '  ' . $operator->currency }}
+                                        <td style="width:8%">{{ number_format($resum->incoming_payement,2,","," ") . '  ' . $operator->currency }}
                                         </td>
                                     @endif
 
@@ -304,7 +302,6 @@
                                     @endif
 
                                     <td>{{ number_format($resum->netting,2,","," ") . '  ' . $operator->currency }}</td>
-                                    <td>{{ $resum->created_at }}</td>
 
 
 
@@ -384,7 +381,6 @@
 
                                 <th class="recherche">DETTES TOGOCOM</th>
                                 <th class="recherche">SOLDE</th>
-                                <th class="recherche">DATE D'AJOUT</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -423,7 +419,7 @@
                                         <td>{{ number_format($operation->new_debt ,2,","," "). '  ' . $operator->currency }}</td>
                                         <td>{{ number_format($operation->new_receivable - $operation->new_debt ,2,","," "). '  ' . $operator->currency }}
                                         </td>
-                                        <td>{{ $operation->created_at }}</td>
+                                       
 
                                         <td style="width:10%">
                                             <span data-toggle="tooltip" data-placement="top" title="Voir la facture">
@@ -489,7 +485,7 @@
                                         <td>{{ number_format($operation->new_debt,2,","," ") . '  ' . $operator->currency }}</td>
                                         <td>{{ number_format($operation->new_receivable - $operation->new_debt,2,","," ") . '  ' . $operator->currency }}
                                         </td>
-                                        <td>{{ $operation->created_at }}</td>
+                                       
 
                                         <td style="width:10%">
                                             <span data-toggle="tooltip" data-placement="top" title="Voir la facture">
@@ -552,7 +548,7 @@
                                         <td>{{ number_format($operation->new_debt ,2,","," "). '  ' . $operator->currency }}</td>
                                         <td>{{ number_format($operation->new_receivable - $operation->new_debt,2,","," ") . '  ' . $operator->currency }}
                                         </td>
-                                        <td>{{ $operation->created_at }}</td>
+                                       
 
                                         <td style="width:10%">
                                             <span data-toggle="tooltip" data-placement="top" title="Voir la facture">
@@ -626,7 +622,6 @@
                                 <th class="recherche">Montant</th>
                                 <th class="recherche">Devise</th>
                                 <th class="recherche">Ajouter par:</th>
-                                <th class="recherche">Date d'ajout</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -644,7 +639,7 @@
                                     <td>{{ $operator->currency }}</td>
                                     <td>{{ $operation->user->last_name .' '. $operation->user->first_name }}</td>
                                   
-                                    <td>{{ $operation->created_at }}</td>
+                                    
     
                                     <td style="width:10%">
                                         <span data-toggle="tooltip" data-placement="top"

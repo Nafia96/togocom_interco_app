@@ -20,6 +20,15 @@ class UserController extends Controller
         return view('user/add_user');
     }
 
+    public function setting()
+    {
+        $operator = Operator::where('id', 1)->first();
+
+        return view('setting', compact('operator'));
+
+      
+    }
+
     public function user_register(Request $request)
     {
 

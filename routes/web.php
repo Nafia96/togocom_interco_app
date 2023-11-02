@@ -47,6 +47,7 @@ Route::middleware([NotConnected::class])->group(function () {
 
 		//User route
 		Route::get('add_user', [UserController::class, 'add_user'])->name('add_user');
+		Route::get('setting', [UserController::class, 'setting'])->name('setting');
 		Route::post('user_register', [UserController::class, 'user_register'])->name('user_register');
 		Route::get('users_list', [UserController::class, 'users_list'])->name('users_list');
 		Route::get('delete_user_liste', [UserController::class, 'delete_user_liste'])->name('delete_user_liste');
@@ -64,6 +65,7 @@ Route::middleware([NotConnected::class])->group(function () {
 		Route::get('delete_operator_liste', [OperatorController::class, 'delete_operator_liste'])->name('delete_operator_liste');
 		Route::get('update_operator/{id}', [OperatorController::class, 'update_operator'])->name('update_operator');
 		Route::post('update_operator', [OperatorController::class, 'save_update'])->name('save_update');
+		Route::post('save_setting', [OperatorController::class, 'save_setting'])->name('save_setting');
 		Route::get('delete_operator/{id}', [OperatorController::class, 'delete_operator'])->name('delete_operator');
 		Route::get('activate_operator/{id}', [OperatorController::class, 'activate_operator'])->name('activate_operator');
 

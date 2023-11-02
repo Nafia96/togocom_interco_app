@@ -42,7 +42,7 @@
                                     <th class="recherche">Pays</th>
                                     <th class="recherche">Devise</th>
                                     <th class="recherche">Date d'ajout</th>
-                                    <th>Action</th>
+                                    <th>Action--</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -51,14 +51,14 @@
                                 @foreach ($operators as $operator)
                                     <tr>
                                         <td style="width:3%">{{ $n }} </td>
-                                        <td style="width:15%">{{ $operator->name }} </td>
-                                        <td>{{ $operator->email }}</td>
+                                        <td style="width:10%">{{ $operator->name }} </td>
+                                        <td style="width:10%">{{ $operator->email }}</td>
                                         <td>{{ $operator->tel }}</td>
                                         <td>{{ $operator->country }}</td>
                                         <td style="width:4%">{{ $operator->currency }}</td>
                                         <td>{{ $operator->created_at }}</td>
 
-                                        <td style="width:25%">
+                                        <td style="width:13%">
                                             <span data-toggle="tooltip" data-placement="top"
                                                 title="Voir les informations de l'opérateur en détail">
 
@@ -69,56 +69,10 @@
                                                 </a>
                                             </span>
 
-                                            @if (getUserType()->type_user == 3 || getUserType()->type_user == 2)
 
-                                            <span data-toggle="tooltip" data-placement="top" title="Ajouter une créance">
-                                                <a class=" mb-2 btn btn-sm btn-primary" data-toggle="modal"
-                                                    data-target="{{ '#invoiceModal' . $operator->id }}">
-                                                    <i class="fas fa-donate text-white "> </i>
-                                                </a>
-                                            </span>
-
-                                            <span data-toggle="tooltip" data-placement="top" title="Ajouter une dette">
-                                                <a class=" mb-2 btn btn-sm btn-warning" data-toggle="modal"
-                                                    data-target="{{ '#addInvoiceModal' . $operator->id }}">
-                                                    <i class="fas fa-hand-holding-usd text-white "> </i>
-                                                </a>
-                                            </span>
-
-                                            <span data-toggle="tooltip" data-placement="top" title="Réglement">
-                                                <a class=" mb-2 btn btn-sm btn-info" data-toggle="modal"
-                                                    data-target="{{ '#settlementModal' . $operator->id }}">
-                                                    <i class="fas fa-chart-pie text-white"></i>
-                                                </a>
-
-                                            </span>
-
-                                            @endif
-
-                                            <span data-toggle="tooltip" data-placement="top" title="Toutes les opérations">
-                                                <a class=" mb-2 btn btn-sm btn-success"
-                                                    href="{{ url('operations_list/' . $operator->id) }}">
-                                                    <i class="fas far fas fa-copy green-color"> </i>
-                                                </a>
-                                            </span>
+                                    
 
 
-
-
-                                            <span data-toggle="tooltip" data-placement="top"
-                                                title="Créances et dettes (Résumé)">
-                                                <a class="mb-2 btn btn-sm btn-warning"
-                                                    href="{{ url('receivable_debt/' . $operator->id) }}">
-                                                    <i class="fas fa-list text-white"> </i>
-                                                </a>
-                                            </span>
-
-                                            <span data-toggle="tooltip" data-placement="top" title="Toutes les factures">
-                                                <a class="mb-2 btn btn-sm  btn-dark"
-                                                    href="{{ url('invoice_list/' . $operator->id) }}">
-                                                    <i class="fas fa-receipt"></i>
-                                                </a>
-                                            </span>
 
                                             @if (getUserType()->type_user == 3 || getUserType()->type_user == 2)
 

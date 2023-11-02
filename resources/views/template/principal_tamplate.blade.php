@@ -183,7 +183,7 @@
                                  ">
 
                                 <a href="#" class="menu-toggle nav-link has-dropdown"><i
-                                        data-feather="briefcase"></i><span>Gestion des opérateurs</span></a>
+                                        data-feather="cpu"></i><span>Gestion des opérateurs</span></a>
                                 <ul class="dropdown-menu">
 
                                     @if (getUserType()->type_user == 3 || getUserType()->type_user == 2)
@@ -219,7 +219,7 @@
                              ">
 
                                 <a href="#" class="menu-toggle nav-link has-dropdown"><i
-                                        data-feather="briefcase"></i><span>Gestion des factures</span></a>
+                                        data-feather="file-text"></i><span>Gestion des factures</span></a>
                                 <ul class="dropdown-menu">
 
                                     <li class="{{ Request::is('all_invoice_list') ? 'active' : '' }}"><a
@@ -251,7 +251,7 @@
                              ">
 
                                 <a href="#" class="menu-toggle nav-link has-dropdown"><i
-                                        data-feather="briefcase"></i><span>Gestion des opérations</span></a>
+                                        data-feather="slack"></i><span>Gestion des opérations</span></a>
                                 <ul class="dropdown-menu">
 
                                     <li class="{{ Request::is('all_operations') ? 'active' : '' }}"><a
@@ -271,7 +271,7 @@
 
                             <li class="dropdown  {{ Request::is('sta_dashboard') ? 'active' : '' }}">
                                 <a href="{{ route('sta_dashboard') }}" class="nav-link"><i
-                                        data-feather="package"></i><span>Statistiques</span></a>
+                                        data-feather="aperture"></i><span>Statistiques</span></a>
                             </li>
                         @endif
 
@@ -282,7 +282,7 @@
                                         {{ Request::is('delete_user_liste') ? 'active' : '' }} ">
 
                                 <a href="#" class="menu-toggle nav-link has-dropdown"><i
-                                        data-feather="briefcase"></i><span>Gestion des utilisateurs</span></a>
+                                        data-feather="users"></i><span>Gestion des utilisateurs</span></a>
                                 <ul class="dropdown-menu">
 
                                     <li class="{{ Request::is('add_user') ? 'active' : '' }}"><a class="nav-link "
@@ -308,6 +308,15 @@
                             <a href="{{ route('logs') }}" class="nav-link"><i
                                     data-feather="package"></i><span>Journal des Actions</span></a>
                         </li>
+
+@endif
+
+@if (getUserType()->type_user == 3)
+
+<li style="position: fixed; bottom: 0;" class="dropdown  {{ Request::is('setting') ? 'active' : '' }}">
+    <a href="{{ route('setting') }}" class="nav-link"><i
+            data-feather="settings"></i><span>Paramètres </span></a>
+</li>
 
 @endif
 

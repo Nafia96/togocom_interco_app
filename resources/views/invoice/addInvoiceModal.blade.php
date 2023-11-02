@@ -40,7 +40,7 @@
                                         <strong>CREANCE TOGOCOM AVEC {{ $operator->name }} </strong>
                                         <br>
                                         <p class="text " style="color: #ec1f28; font-weight: bold;">
-                                            {{ $operator->account->receivable }}
+                                            {{ number_format($operator->account->receivable, 2, ',', ' ') }}
                                             {{ $operator->currency }}</p>
                                     </div>
 
@@ -48,7 +48,7 @@
                                         <strong>DETTE TOGOCOM AVEC {{ $operator->name }} </strong>
                                         <br>
                                         <p class="text " style="color: #ec1f28; font-weight: bold;">
-                                            {{ $operator->account->debt }}
+                                            {{ number_format($operator->account->debt, 2, ',', ' ') }}
                                             {{ $operator->currency }} </p>
                                     </div>
                                 </div>
@@ -82,7 +82,7 @@
                                     <label for="inputEmail4">Numeros de la facture</label>
                                     <input name="invoice_number" type="text"
                                         class="form-control  @error('invoice_number') is-invalid @enderror"
-                                        value="TGT/DG/2023/FREE SENEGAL" placeholder="" required>
+                                        value="" placeholder="" required>
 
                                     @error('invoice_number')
                                         <span class="invalid-feedback" role="alert">
