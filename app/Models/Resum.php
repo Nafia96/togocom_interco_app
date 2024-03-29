@@ -15,7 +15,7 @@ class Resum extends Model
 	*
 	* @var string
 	*/
-	protected $table = 'Resum';
+	protected $table = 'resum';
 
 	/**
 	* The primary key for the model.
@@ -35,7 +35,7 @@ class Resum extends Model
 	,'incoming_payement','payout','netting','id_operation_1',
 	'id_operation_2','service', 'facture_name1','facture_name2'];
 
- 
+
 	public function operator(){
         return $this->belongsTo(Operator::class,'id_operator');
     }
@@ -56,7 +56,7 @@ class Resum extends Model
         return $this->hasOne(Comptes::class)->latestOfMany();
     }
 
-    
+
 
     public function agence(){
         return $this->belongsTo(Agence::class,'id_agence');

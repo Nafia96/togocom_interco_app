@@ -15,7 +15,7 @@ class Contestation extends Model
 	*
 	* @var string
 	*/
-	protected $table = 'Contestation';
+	protected $table = 'contestation';
 
 	/**
 	* The primary key for the model.
@@ -32,7 +32,7 @@ class Contestation extends Model
 	*/
 	protected $fillable = ['id_operator','id_invoice','amount','contesation_date',  'comment','operation_id' ];
 
- 
+
 	public function invoice(){
         return $this->belongsTo(Invoice::class,'id_invoice');
     }
@@ -49,7 +49,7 @@ class Contestation extends Model
         return $this->hasOne(Comptes::class)->latestOfMany();
     }
 
-    
+
 
     public function agence(){
         return $this->belongsTo(Agence::class,'id_agence');
