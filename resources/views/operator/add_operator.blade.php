@@ -129,15 +129,8 @@
                             </span>
                         @enderror
                     </div>
-                    <div class="form-group col-md-1">
-                        <label for="inputEmail4">Un carrier ? </label>
-                        <select name="is_carrier" id="inputState" class="form-control">
-                            <option value="1"  >OUI</option>
-                            <option value="0" selected="selected">NON</option>
-                           
-                        </select>
-                    </div>
-                    <div class="form-group col-md-1">
+               
+                    <div class="form-group col-md-2">
                         <label for="inputEmail4">En Afrique ? </label>
                         <select name="afrique" id="inputState" class="form-control">
                             <option value="1"  >OUI</option>
@@ -147,7 +140,7 @@
                     </div>
 
                     <div class="form-group col-md-2">
-                        <label for="inputEmail4">Pays de l'opérateur</label>
+                        <label for="inputEmail4">Pays </label>
                         <select name="country" id="inputState" class="form-control">
                             <option value="Afghanistan">Afghanistan</option>
                             <option value="Åland Islands">Åland Islands</option>
@@ -585,6 +578,59 @@
 
 
 
+
+
+                </div>
+                <div class="form-row">
+                    <div class="form-group  col-md-2">
+                        <label>RIB </label>
+                        <input name="rib" type="text" class="form-control  @error('rib') is-invalid @enderror"
+                            placeholder="" value="{{ @old('rib') }}" >
+
+                        @error('rib')
+                            <span class="invalid-feedback" role="alert">
+                                <strong>{{ $message }}</strong>
+                            </span>
+                        @enderror
+
+                    </div>
+                    <div class="form-group  col-md-2">
+                        <label>N°Compte :  </label>
+                        <input name="ope_account_number" type="text" class="form-control  @error('ope_account_number') is-invalid @enderror"
+                            placeholder="" value="{{ @old('ope_account_number') }}" >
+
+                        @error('ope_account_number')
+                            <span class="invalid-feedback" role="alert">
+                                <strong>{{ $message }}</strong>
+                            </span>
+                        @enderror
+
+                    </div>
+                    <div class="form-group  col-md-4">
+                        <label>Adresse Banque : </label>
+                        <input name="banque_adresse" type="text" class="form-control  @error('banque_adresse') is-invalid @enderror"
+                            placeholder="" value="{{ @old('banque_adresse') }}" >
+
+                        @error('banque_adresse')
+                            <span class="invalid-feedback" role="alert">
+                                <strong>{{ $message }}</strong>
+                            </span>
+                        @enderror
+
+                    </div>
+
+                    <div class="form-group  col-md-4">
+                        <label>Code Swift </label>
+                        <input name="swift_code" type="text" class="form-control  @error('swift_code') is-invalid @enderror"
+                            placeholder="" value="{{ @old('swift_code') }}" >
+
+                        @error('swift_code')
+                            <span class="invalid-feedback" role="alert">
+                                <strong>{{ $message }}</strong>
+                            </span>
+                        @enderror
+
+                    </div>
 
 
                 </div>

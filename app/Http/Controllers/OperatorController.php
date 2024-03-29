@@ -6,6 +6,7 @@ use App\Models\Operator;
 use App\Models\Agent;
 use App\Models\Client;
 use App\Models\Account;
+use App\Models\Invoice;
 use App\Models\Journal;
 use App\Models\Operation;
 use App\Models\Resum;
@@ -15,7 +16,7 @@ use Illuminate\Http\Request;
 class OperatorController extends Controller
 {
 
-   
+
 
     public function add_operator()
     {
@@ -25,19 +26,43 @@ class OperatorController extends Controller
     public function ope_dashboard($id_operator)
     {
         
+            $sum_resum = Resum::selectRaw('year(resum.periodDate) year, SUM(receivable) as total_receivable,
+            SUM(debt) as total_debt,SUM(incoming_payement) as encaissement,SUM(payout) as decaissement')
+            ->Where(['id_operator' => $id_operator, 'is_delete' => 0])     
+            ->groupBy('year')
+            ->orderBy('year', 'desc')
+            ->get();
+
+            $sum_resum_total = Resum::selectRaw(' SUM(receivable) as total_receivable,
+            SUM(debt) as total_debt,SUM(incoming_payement) as encaissement,SUM(payout) as decaissement')
+            ->Where(['id_operator' => $id_operator, 'is_delete' => 0])     
+            ->first();
+
+          //  dd($sum_resum_total);
+
         $operator = Operator::where('id', $id_operator)->first();
         $op_account = Account::where('id_operator', $operator->id)->first();
 
         $resums = Resum::where(['id_operator' => $id_operator, 'is_delete' => 0])
-        ->orderBy('updated_at', 'DESC')
-        ->get();
+            ->orderBy('updated_at', 'DESC')
+            ->get();
 
-    $operations = Operation::where(['id_operator' => $id_operator, 'is_delete' => 0])
-        ->orderBy('updated_at', 'DESC')
-        ->get();
 
-        return view('operator/ope_dashboard', compact('operations', 'op_account','resums', 'operator'))->render();
+        $debt_invoices = Invoice::where(['operator_id' => $id_operator, 'is_delete' => 0, 'tgc_invoice' => 2])
+            ->whereYear('periodDate', '=', date('Y'))
+            ->get();
 
+        $receiv_invoices = Invoice::where(['operator_id' => $id_operator, 'is_delete' => 0, 'tgc_invoice' => 1])
+            ->whereYear('periodDate', '=', date('Y'))
+            ->get();
+
+        //dd($receiv_invoices->sum('amount'));
+
+        $operations = Operation::where(['id_operator' => $id_operator, 'is_delete' => 0])
+            ->orderBy('updated_at', 'DESC')
+            ->get();
+
+        return view('operator/ope_dashboard', compact('sum_resum_total','sum_resum','debt_invoices', 'receiv_invoices', 'operations', 'op_account', 'resums', 'operator'))->render();
     }
     public function operator_register(Request $request)
     {
@@ -53,6 +78,10 @@ class OperatorController extends Controller
             'country' => 'required|string',
             'currency' => 'required|string',
             'description' => 'nullable|string|max:500',
+            'rib' => 'nullable|string|max:500',
+            'ope_account_number' => 'nullable|string|max:500',
+            'banque_adresse' => 'nullable|string|max:800',
+            'swift_code' => 'nullable|string|max:500',
 
         ]);
 
@@ -68,16 +97,19 @@ class OperatorController extends Controller
             'adresse' => $data['adresse'],
             'country' => $data['country'],
             'currency' => $data['currency'],
-            'is_carrier' => $data['is_carrier'],
             'cedeao' => $data['cedeao'],
             'afrique' => $data['afrique'],
             'description' => $data['description'],
+            'rib' => $data['rib'],
+            'ope_account_number' => $data['ope_account_number'],
+            'banque_adresse' => $data['banque_adresse'],
+            'swift_code' => $data['swift_code'],
 
         ]);
 
-            Account::create([
+        Account::create([
             'id_operator' => $operator->id,
-            'account_number' =>$operator->id.'55',
+            'account_number' => $operator->id . '55',
             'receivable' => 0,
             'debt' => 0,
             'netting' => 0,
@@ -147,16 +179,16 @@ class OperatorController extends Controller
 
         $data = $request->all();
 
-            Operator::where(['id' => $data['id']])->update([
-                'name' => $data['name'],
-                'tel' => $data['tel'],
-                'email' => $data['email'],
-                'adresse' => $data['adresse'],
-                'country' => $data['country'],
-                'currency' => $data['currency'],
-                'description' => $data['description'],
+        Operator::where(['id' => $data['id']])->update([
+            'name' => $data['name'],
+            'tel' => $data['tel'],
+            'email' => $data['email'],
+            'adresse' => $data['adresse'],
+            'country' => $data['country'],
+            'currency' => $data['currency'],
+            'description' => $data['description'],
 
-            ]);
+        ]);
 
         Journal::create([
             'action' => "Mise à jours de l\'operator  " . $data['name'],
@@ -189,19 +221,19 @@ class OperatorController extends Controller
 
         $data = $request->all();
 
-            Operator::where(['id' => $data['id']])->update([
-                'name' => $data['name'],
-                'tel' => $data['tel'],
-                'email' => $data['email'],
-                'adresse' => $data['adresse'],
-                'country' => $data['country'],
-                'currency' => $data['currency'],
-                'euro_conversion' => $data['euro_conversion'],
-                'dollar_conversion' => $data['dollar_conversion'],
-                'xaf_conversion' => $data['xaf_conversion'],
-                'description' => $data['description'],
+        Operator::where(['id' => $data['id']])->update([
+            'name' => $data['name'],
+            'tel' => $data['tel'],
+            'email' => $data['email'],
+            'adresse' => $data['adresse'],
+            'country' => $data['country'],
+            'currency' => $data['currency'],
+            'euro_conversion' => $data['euro_conversion'],
+            'dollar_conversion' => $data['dollar_conversion'],
+            'xaf_conversion' => $data['xaf_conversion'],
+            'description' => $data['description'],
 
-            ]);
+        ]);
 
         Journal::create([
             'action' => "Mise à jours des paramètres  " . $data['name'],
@@ -259,9 +291,9 @@ class OperatorController extends Controller
             ->get();
 
 
-        $nbre_carnet = Operation::where(['id_operator' => $id_operator, 'is_delete' => 0,'type_operation'=>'carnet'])->count();
-        $solde_carnet_entre = Operation::where(['id_operator' => $id_operator, 'is_delete' => 0,'type_operation'=>'carnet'])->sum('entre');
-        $solde_benefice_carnet = Operation::where(['id_operator' => $id_operator, 'is_delete' => 0,'type_operation'=>'carnet'])->sum('benefice');
+        $nbre_carnet = Operation::where(['id_operator' => $id_operator, 'is_delete' => 0, 'type_operation' => 'carnet'])->count();
+        $solde_carnet_entre = Operation::where(['id_operator' => $id_operator, 'is_delete' => 0, 'type_operation' => 'carnet'])->sum('entre');
+        $solde_benefice_carnet = Operation::where(['id_operator' => $id_operator, 'is_delete' => 0, 'type_operation' => 'carnet'])->sum('benefice');
 
         $solde_carnet = $solde_carnet_entre - $solde_benefice_carnet;
 
@@ -284,14 +316,14 @@ class OperatorController extends Controller
             ->sum('entre');
 
 
-            $tontine_sortie = Operation::whereId_operator($id_operator)
+        $tontine_sortie = Operation::whereId_operator($id_operator)
             ->whereType_operation('retrait')
             ->whereType_compte('tontine')
             ->whereIs_delete(0)
             ->sum('sortie');
 
 
-        $tontine_entre = Operation::where(['id_operator' => $id_operator, 'is_delete' => 0,'type_operation'=>'cotisation'])->sum('entre');
+        $tontine_entre = Operation::where(['id_operator' => $id_operator, 'is_delete' => 0, 'type_operation' => 'cotisation'])->sum('entre');
 
         $tontine_entre -= $tontine_sortie;
 
@@ -304,7 +336,7 @@ class OperatorController extends Controller
             ->sum('entre');
 
 
-            $tontine_sortie_today = Operation::whereId_operator($id_operator)
+        $tontine_sortie_today = Operation::whereId_operator($id_operator)
             ->whereType_operation('retrait')
             ->whereType_compte('tontine')
             ->whereYear('created_at', '=', date('Y'))
@@ -315,8 +347,8 @@ class OperatorController extends Controller
 
 
 
-        $epargne_entre_depot = Operation::where(['id_operator' => $id_operator, 'is_delete' => 0,'type_operation'=>'depot'])->sum('entre');
-        $epargne_entre_new = Operation::where(['id_operator' => $id_operator, 'is_delete' => 0,'type_operation'=>'new'])->sum('entre');
+        $epargne_entre_depot = Operation::where(['id_operator' => $id_operator, 'is_delete' => 0, 'type_operation' => 'depot'])->sum('entre');
+        $epargne_entre_new = Operation::where(['id_operator' => $id_operator, 'is_delete' => 0, 'type_operation' => 'new'])->sum('entre');
 
         $epargne_entre = $epargne_entre_depot + $epargne_entre_new;
 
@@ -328,7 +360,7 @@ class OperatorController extends Controller
             ->whereDay('created_at', '=', date('d'))
             ->sum('entre');
 
-            $epargne_entre_today_new = Operation::whereId_operator($id_operator)
+        $epargne_entre_today_new = Operation::whereId_operator($id_operator)
             ->whereType_operation('depot')
             ->whereYear('created_at', '=', date('Y'))
             ->whereMonth('created_at', '=', date('m'))
@@ -336,17 +368,17 @@ class OperatorController extends Controller
             ->whereDay('created_at', '=', date('d'))
             ->sum('entre');
 
-            $epargne_sortie = Operation::whereId_operator($id_operator)
+        $epargne_sortie = Operation::whereId_operator($id_operator)
             ->whereType_operation('retrait')
             ->whereType_compte('epargne')
             ->whereIs_delete(0)
             ->sum('sortie');
 
-            $epargne_entre =$epargne_entre- $epargne_sortie;
+        $epargne_entre = $epargne_entre - $epargne_sortie;
 
-            $epargne_entre_today = $epargne_entre_today_new + $epargne_entre_today_depot;
+        $epargne_entre_today = $epargne_entre_today_new + $epargne_entre_today_depot;
 
-            $epargne_sortie_today = Operation::whereId_operator($id_operator)
+        $epargne_sortie_today = Operation::whereId_operator($id_operator)
             ->whereType_operation('retrait')
             ->whereType_compte('epargne')
             ->whereYear('created_at', '=', date('Y'))
@@ -355,7 +387,7 @@ class OperatorController extends Controller
             ->whereDay('created_at', '=', date('d'))
             ->sum('sortie');
 
-            $epargne_benefice_today = Operation::whereId_operator($id_operator)
+        $epargne_benefice_today = Operation::whereId_operator($id_operator)
             ->whereType_operation('benefice')
             ->whereType_compte('epargne')
             ->whereYear('created_at', '=', date('Y'))
@@ -376,18 +408,17 @@ class OperatorController extends Controller
             ->whereIs_delete(0)
             ->whereMonth('created_at', '=', date('m'))->sum('entre');
 
-            $entre_today = $total_entre_today - $sortie_today;
+        $entre_today = $total_entre_today - $sortie_today;
 
-            $benefice = $benefice_total - $versement;
+        $benefice = $benefice_total - $versement;
 
-            $solde_operator = $entre - $sortie -$versement;
+        $solde_operator = $entre - $sortie - $versement;
 
-            $entre -= $sortie;
+        $entre -= $sortie;
 
 
-        return view('operator.operator_stastic_dashboard', compact('epargne_benefice_today','epargne_sortie_today','tontine_sortie_today','nbre_carnet','solde_carnet','versement', 'solde_operator', 'solde_entre_today', 'epargne_entre', 'epargne_entre_today', 'tontine_entre_today', 'tontine_entre', 'nbr_comptes', 'mesClients', 'mesAgents', 'operations', 'operator', 'sortie', 'entre', 'benefice_total', 'sortie_today', 'entre_today'));
-
-  }
+        return view('operator.operator_stastic_dashboard', compact('epargne_benefice_today', 'epargne_sortie_today', 'tontine_sortie_today', 'nbre_carnet', 'solde_carnet', 'versement', 'solde_operator', 'solde_entre_today', 'epargne_entre', 'epargne_entre_today', 'tontine_entre_today', 'tontine_entre', 'nbr_comptes', 'mesClients', 'mesAgents', 'operations', 'operator', 'sortie', 'entre', 'benefice_total', 'sortie_today', 'entre_today'));
+    }
 
     public function operator_dashboard()
     {
@@ -408,9 +439,9 @@ class OperatorController extends Controller
             ->get();
 
 
-        $nbre_carnet = Operation::where(['id_operator' => $id_operator, 'is_delete' => 0,'type_operation'=>'carnet'])->count();
-        $solde_carnet_entre = Operation::where(['id_operator' => $id_operator, 'is_delete' => 0,'type_operation'=>'carnet'])->sum('entre');
-        $solde_benefice_carnet = Operation::where(['id_operator' => $id_operator, 'is_delete' => 0,'type_operation'=>'carnet'])->sum('benefice');
+        $nbre_carnet = Operation::where(['id_operator' => $id_operator, 'is_delete' => 0, 'type_operation' => 'carnet'])->count();
+        $solde_carnet_entre = Operation::where(['id_operator' => $id_operator, 'is_delete' => 0, 'type_operation' => 'carnet'])->sum('entre');
+        $solde_benefice_carnet = Operation::where(['id_operator' => $id_operator, 'is_delete' => 0, 'type_operation' => 'carnet'])->sum('benefice');
 
         $solde_carnet = $solde_carnet_entre;
 
@@ -433,14 +464,14 @@ class OperatorController extends Controller
             ->sum('entre');
 
 
-            $tontine_sortie = Operation::whereId_operator(session('id_operator'))
+        $tontine_sortie = Operation::whereId_operator(session('id_operator'))
             ->whereType_operation('retrait')
             ->whereType_compte('tontine')
             ->whereIs_delete(0)
             ->sum('sortie');
 
 
-        $tontine_entre = Operation::where(['id_operator' => $id_operator, 'is_delete' => 0,'type_operation'=>'cotisation'])->sum('entre');
+        $tontine_entre = Operation::where(['id_operator' => $id_operator, 'is_delete' => 0, 'type_operation' => 'cotisation'])->sum('entre');
 
         $tontine_entre -= $tontine_sortie;
 
@@ -453,7 +484,7 @@ class OperatorController extends Controller
             ->sum('entre');
 
 
-            $tontine_sortie_today = Operation::whereId_operator(session('id_operator'))
+        $tontine_sortie_today = Operation::whereId_operator(session('id_operator'))
             ->whereType_operation('retrait')
             ->whereType_compte('tontine')
             ->whereYear('created_at', '=', date('Y'))
@@ -464,8 +495,8 @@ class OperatorController extends Controller
 
 
 
-        $epargne_entre_depot = Operation::where(['id_operator' => $id_operator, 'is_delete' => 0,'type_operation'=>'depot'])->sum('entre');
-        $epargne_entre_new = Operation::where(['id_operator' => $id_operator, 'is_delete' => 0,'type_operation'=>'new'])->sum('entre');
+        $epargne_entre_depot = Operation::where(['id_operator' => $id_operator, 'is_delete' => 0, 'type_operation' => 'depot'])->sum('entre');
+        $epargne_entre_new = Operation::where(['id_operator' => $id_operator, 'is_delete' => 0, 'type_operation' => 'new'])->sum('entre');
 
         $epargne_entre = $epargne_entre_depot + $epargne_entre_new;
 
@@ -477,7 +508,7 @@ class OperatorController extends Controller
             ->whereDay('created_at', '=', date('d'))
             ->sum('entre');
 
-            $epargne_entre_today_new = Operation::whereId_operator(session('id_operator'))
+        $epargne_entre_today_new = Operation::whereId_operator(session('id_operator'))
             ->whereType_operation('depot')
             ->whereYear('created_at', '=', date('Y'))
             ->whereMonth('created_at', '=', date('m'))
@@ -485,17 +516,17 @@ class OperatorController extends Controller
             ->whereDay('created_at', '=', date('d'))
             ->sum('entre');
 
-            $epargne_sortie = Operation::whereId_operator(session('id_operator'))
+        $epargne_sortie = Operation::whereId_operator(session('id_operator'))
             ->whereType_operation('retrait')
             ->whereType_compte('epargne')
             ->whereIs_delete(0)
             ->sum('sortie');
 
-            $epargne_entre =$epargne_entre- $epargne_sortie;
+        $epargne_entre = $epargne_entre - $epargne_sortie;
 
-            $epargne_entre_today = $epargne_entre_today_new + $epargne_entre_today_depot;
+        $epargne_entre_today = $epargne_entre_today_new + $epargne_entre_today_depot;
 
-            $epargne_sortie_today = Operation::whereId_operator(session('id_operator'))
+        $epargne_sortie_today = Operation::whereId_operator(session('id_operator'))
             ->whereType_operation('retrait')
             ->whereType_compte('epargne')
             ->whereYear('created_at', '=', date('Y'))
@@ -504,7 +535,7 @@ class OperatorController extends Controller
             ->whereDay('created_at', '=', date('d'))
             ->sum('sortie');
 
-            $epargne_benefice_today = Operation::whereId_operator(session('id_operator'))
+        $epargne_benefice_today = Operation::whereId_operator(session('id_operator'))
             ->whereType_operation('benefice')
             ->whereType_compte('epargne')
             ->whereYear('created_at', '=', date('Y'))
@@ -525,16 +556,16 @@ class OperatorController extends Controller
             ->whereIs_delete(0)
             ->whereMonth('created_at', '=', date('m'))->sum('entre');
 
-            $entre_today = $total_entre_today - $sortie_today;
+        $entre_today = $total_entre_today - $sortie_today;
 
-            $benefice = $benefice_total - $versement;
+        $benefice = $benefice_total - $versement;
 
-            $solde_operator = $entre - $sortie -$versement;
+        $solde_operator = $entre - $sortie - $versement;
 
-            $entre -= $sortie;
+        $entre -= $sortie;
 
 
-        return view('operator.operator_dashboard', compact('epargne_benefice_today','epargne_sortie_today','tontine_sortie_today','nbre_carnet','solde_carnet','versement', 'solde_operator', 'solde_entre_today', 'epargne_entre', 'epargne_entre_today', 'tontine_entre_today', 'tontine_entre', 'nbr_comptes', 'mesClients', 'mesAgents', 'operations', 'operator', 'sortie', 'entre', 'benefice', 'sortie_today', 'entre_today'));
+        return view('operator.operator_dashboard', compact('epargne_benefice_today', 'epargne_sortie_today', 'tontine_sortie_today', 'nbre_carnet', 'solde_carnet', 'versement', 'solde_operator', 'solde_entre_today', 'epargne_entre', 'epargne_entre_today', 'tontine_entre_today', 'tontine_entre', 'nbr_comptes', 'mesClients', 'mesAgents', 'operations', 'operator', 'sortie', 'entre', 'benefice', 'sortie_today', 'entre_today'));
     }
 
     public function get_new_chef_operator($id)

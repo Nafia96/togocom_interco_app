@@ -15,6 +15,7 @@ class CreateInvoiceTable extends Migration
     {
         Schema::create('invoice', function (Blueprint $table) {
             $table->id();
+            $table->integer('operator_id');
             $table->string('invoice_number')->nullable();
             $table->string('period')->nullable();
             $table->date('periodDate')->nullable();
@@ -23,11 +24,12 @@ class CreateInvoiceTable extends Migration
 
             $table->decimal('call_volume', 16, 2)->nullable();
             $table->string('number_of_call')->nullable();
+            
             $table->string('invoice_type')->nullable();
             $table->integer('add_by')->nullable();
 
             $table->string('is_delete')->default(0);
-
+            $table->string('facture_name')->default(0);
 
             $table->integer('tgc_invoice')->nullable(); 
             $table->decimal('amount', 16, 2)->nullable();

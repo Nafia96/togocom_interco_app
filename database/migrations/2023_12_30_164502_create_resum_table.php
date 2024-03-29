@@ -44,6 +44,10 @@ class CreateResumTable extends Migration
             $table->decimal('payout', 16, 2)->nullable();
             $table->decimal('payout_cfa', 16, 2)->nullable();
 
+            $table->string('facture_name1')->nullable();
+            $table->string('facture_name2')->nullable();
+
+            
             $table->integer('is_delete')->default(0);
 
             $table->decimal('netting', 16, 2)->nullable();

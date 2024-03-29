@@ -21,6 +21,7 @@ class CreateOperationTable extends Migration
             $table->string('invoice_type')->nullable();
             $table->string('operation_name')->nullable();
             $table->string('comment')->nullable();
+            $table->string('facture_name')->nullable();
 
             $table->unsignedBigInteger('id_operator');
             $table->foreign('id_operator')->references('id')->on('operator');

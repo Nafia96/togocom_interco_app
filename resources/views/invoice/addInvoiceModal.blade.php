@@ -67,7 +67,7 @@
                                 <div class="form-group col-md-4">
                                     <label>Periode de facturation:</label>
                                     <input class="form-control" type="month" id="start" name="period"
-                                        min="2020-01" value="2023-01" />
+                                        min="2020-01" value="{{ date('Y-m')}}" />
                                 </div>
 
 
@@ -176,7 +176,18 @@
 
                                     </div>
                                 </div>
-                                <div class="form-group col-md-8">
+                                
+                                <div class="form-group col-md-4">
+                                    <label>Importer la facture</label>
+                                    <div class="input-group">
+                                        
+                                        <input name="the_file" type="file" class="form-control" >
+
+                                    
+                                    </div>
+                                </div>
+
+                                <div class="form-group col-md-4">
                                     <label>Commentaire sur la facture</label>
                                     <textarea name="comment" class="form-control @error('comment') is-invalid @enderror">{{ @old('comment') }}</textarea>
 

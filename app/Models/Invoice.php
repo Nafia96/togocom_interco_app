@@ -31,7 +31,7 @@ class Invoice extends Model
 	* @var arrayclient
 	*/
 	protected $fillable = ['invoice_number','period','invoice_date','number_of_call'
-    ,'call_volume','invoice_type','add_by','tgc_invoice','amount','comment','invoice_type','operator_id','periodDate'];
+    ,'call_volume','invoice_type','add_by','tgc_invoice','amount','comment','invoice_type','operator_id','periodDate','facture_name'];
 
 
     public function operator()

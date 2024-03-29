@@ -51,7 +51,13 @@
                                 @foreach ($operators as $operator)
                                     <tr>
                                         <td style="width:3%">{{ $n }} </td>
-                                        <td style="width:10%">{{ $operator->name }} </td>
+
+                                        <td style="width:10%"> <a class=" mb-2 btn btn-sm btn-info"
+                                                    href="{{ url('ope_dashboard/' . $operator->id) }}">
+                                                    {{ $operator->name }} 
+                                                </a>
+                                            </td>
+                                        
                                         <td style="width:10%">{{ $operator->email }}</td>
                                         <td>{{ $operator->tel }}</td>
                                         <td>{{ $operator->country }}</td>

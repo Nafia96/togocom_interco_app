@@ -30,7 +30,10 @@ class Resum extends Model
 	*
 	* @var arrayclient
 	*/
-	protected $fillable = ['incoming_payement_cfa','payout_cfa','receivable_cfa','debt_cfa','id_operator','period','periodDate','receivable','debt' ,'incoming_payement','payout','netting','id_operation_1','id_operation_2','service',];
+	protected $fillable = ['incoming_payement_cfa','payout_cfa','receivable_cfa',
+	'debt_cfa','id_operator','period','periodDate','receivable','debt' 
+	,'incoming_payement','payout','netting','id_operation_1',
+	'id_operation_2','service', 'facture_name1','facture_name2'];
 
  
 	public function operator(){

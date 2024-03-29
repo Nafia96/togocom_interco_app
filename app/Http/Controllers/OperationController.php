@@ -34,7 +34,7 @@ class OperationController extends Controller
 
 
         $data = $request->all();
-
+     
         $operator = Operator::where('id', $data['id_operator'])->first();
 
         $op_account = Account::where('id_operator', $operator->id)->first();
@@ -51,7 +51,18 @@ class OperationController extends Controller
 
         if ($resum == null) {
 
+            $facture_name =0;
 
+            if ($request->hasfile('the_file')) {
+    
+                $imageIcon = $request->file('the_file');
+                $exten = $imageIcon->getClientOriginalExtension();
+                $imageIconName = date('Y-m').'-'.$request->invoice_number . uniqid() . '.' . $exten;
+                $destinationPath = public_path('/facture');
+                $ulpoadImageSuccess = $imageIcon->move($destinationPath, $imageIconName);
+                $facture_name = "/facture/" . $imageIconName;
+            }
+    
 
 
             $invoice = Invoice::create([
@@ -61,6 +72,7 @@ class OperationController extends Controller
                 'invoice_number' => $data['invoice_number'],
                 'period' =>  $data['period'],
                 'periodDate' => periodeDate($data['period']),
+                'operator_id' =>  $operator->id,
 
                 'invoice_date' =>  $data['invoice_date'],
                 'call_volume' =>  $data['call_volume'],
@@ -68,6 +80,8 @@ class OperationController extends Controller
                 'add_by' => session('id'),
                 'amount' => $data['amount'],
                 'comment' =>  $data['comment'],
+                'facture_name' =>  $facture_name,
+
 
 
 
@@ -93,6 +107,7 @@ class OperationController extends Controller
                     'new_netting' => $op_account->netting + $data['amount'],
                     'invoice_type' => $data['invoice_type'],
                     'id_invoice' =>  $invoice->id,
+                    'facture_name' =>  $facture_name,
 
 
 
@@ -127,6 +142,7 @@ class OperationController extends Controller
                         'id_invoice_2' =>  $invoice->id,
                         'id_operation_1' =>  $operation->id,
                         'id_operation_2' =>  $operation->id,
+                        'facture_name1' =>  $facture_name,
 
                     ]);
                 } elseif ($operator->currency == 'USD') {
@@ -145,6 +161,7 @@ class OperationController extends Controller
                         'id_invoice_2' =>  $invoice->id,
                         'id_operation_1' =>  $operation->id,
                         'id_operation_2' =>  $operation->id,
+                        'facture_name1' =>  $facture_name,
 
                     ]);
                 } elseif ($operator->currency == 'XAF') {
@@ -163,6 +180,7 @@ class OperationController extends Controller
                         'id_invoice_2' =>  $invoice->id,
                         'id_operation_1' =>  $operation->id,
                         'id_operation_2' =>  $operation->id,
+                        'facture_name1' =>  $facture_name,
 
                     ]);
                 } elseif ($operator->currency == 'XOF') {
@@ -181,6 +199,7 @@ class OperationController extends Controller
                         'id_invoice_2' =>  $invoice->id,
                         'id_operation_1' =>  $operation->id,
                         'id_operation_2' =>  $operation->id,
+                        'facture_name1' =>  $facture_name,
 
                     ]);
                 } else {
@@ -204,6 +223,7 @@ class OperationController extends Controller
                     'new_netting' => $op_account->netting + $data['amount'],
                     'invoice_type' => $data['invoice_type'],
                     'id_invoice' =>  $invoice->id,
+                    'facture_name' =>  $facture_name,
 
 
 
@@ -237,6 +257,8 @@ class OperationController extends Controller
 
                         'id_operation_1' =>  $operation->id,
                         'id_operation_2' =>  $operation->id,
+                        'facture_name1' =>  $facture_name,
+
 
                     ]);
                 } elseif ($operator->currency == 'USD') {
@@ -254,6 +276,8 @@ class OperationController extends Controller
 
                         'id_operation_1' =>  $operation->id,
                         'id_operation_2' =>  $operation->id,
+                        'facture_name1' =>  $facture_name,
+
 
                     ]);
                 } elseif ($operator->currency == 'XAF') {
@@ -271,6 +295,8 @@ class OperationController extends Controller
 
                         'id_operation_1' =>  $operation->id,
                         'id_operation_2' =>  $operation->id,
+                        'facture_name1' =>  $facture_name,
+
 
                     ]);
                 } elseif ($operator->currency == 'XOF') {
@@ -288,6 +314,8 @@ class OperationController extends Controller
 
                         'id_operation_1' =>  $operation->id,
                         'id_operation_2' =>  $operation->id,
+                        'facture_name1' =>  $facture_name,
+
 
                     ]);
                 } else {
@@ -344,9 +372,22 @@ class OperationController extends Controller
 
         $tgc_account = Account::where('account_number', 000)->first();
 
+    
 
 
         if ($resum != null) {
+
+            $facture_name =0;
+            
+        if ($request->hasfile('the_file')) {
+
+            $imageIcon = $request->file('the_file');
+            $exten = $imageIcon->getClientOriginalExtension();
+            $imageIconName = date('Y-m').'-'.$request->invoice_number . uniqid() . '.' . $exten;
+            $destinationPath = public_path('/facture');
+            $ulpoadImageSuccess = $imageIcon->move($destinationPath, $imageIconName);
+            $facture_name = "/facture/" . $imageIconName;
+        }
 
 
             if ($resum->debt == null) {
@@ -358,13 +399,14 @@ class OperationController extends Controller
                     'invoice_number' => $data['invoice_number'],
                     'period' =>  $data['period'],
                     'periodDate' => periodeDate($data['period']),
-
+                    'operator_id' =>  $operator->id,
                     'invoice_date' =>  $data['invoice_date'],
                     'call_volume' =>  $data['call_volume'],
                     'number_of_call' =>  $data['number_of_call'],
                     'add_by' => session('id'),
                     'amount' => $data['amount'],
                     'comment' =>  $data['comment'],
+                    'facture_name' =>  $facture_name,
 
 
 
@@ -390,6 +432,7 @@ class OperationController extends Controller
                         'new_debt' => $op_account->debt + $data['amount'],
                         'new_netting' => $op_account->netting - $data['amount'],
                         'invoice_type' => $data['invoice_type'],
+                        'facture_name' =>  $facture_name,
 
 
 
@@ -421,7 +464,8 @@ class OperationController extends Controller
 
                             'netting' => $resum->netting - $data['amount'],
                             'id_operation_2' =>  $operation->id,
-
+                            
+                            'facture_name2' =>  $facture_name,
 
                         ]);
                     } elseif ($operator->currency == 'USD') {
@@ -437,6 +481,7 @@ class OperationController extends Controller
 
                             'netting' => $resum->netting - $data['amount'],
                             'id_operation_2' =>  $operation->id,
+                            'facture_name2' =>  $facture_name,
 
 
                         ]);
@@ -453,6 +498,7 @@ class OperationController extends Controller
 
                             'netting' => $resum->netting - $data['amount'],
                             'id_operation_2' =>  $operation->id,
+                            'facture_name2' =>  $facture_name,
 
 
                         ]);
@@ -469,6 +515,8 @@ class OperationController extends Controller
 
                             'netting' => $resum->netting - $data['amount'],
                             'id_operation_2' =>  $operation->id,
+                            'facture_name2' =>  $facture_name,
+
                         ]);
                     } else {
 
@@ -483,6 +531,7 @@ class OperationController extends Controller
                         'operation_name' =>  'Facture de service voix (DETTE)',
                         'comment' =>  $data['comment'],
                         'id_invoice' =>  $invoice->id,
+                         
                         'id_op_account' =>  $op_account->id,
                         'id_operator' =>  $operator->id,
                         'add_by' => session('id'),
@@ -491,6 +540,7 @@ class OperationController extends Controller
                         'new_debt' => $op_account->debt + $data['amount'],
                         'new_netting' => $op_account->netting - $data['amount'],
                         'invoice_type' => $data['invoice_type'],
+                        'facture_name' =>  $facture_name,
 
 
 
@@ -519,6 +569,7 @@ class OperationController extends Controller
 
                             'debt' =>  $data['amount'],
                             'debt_cfa' =>  $data['amount'] * $tgc_account->operator->euro_conversion,
+                            'facture_name2' =>  $facture_name,
 
 
                             'netting' => $resum->netting - $data['amount'],
@@ -536,6 +587,7 @@ class OperationController extends Controller
                             
                             'debt' =>  $data['amount'],
                             'debt_cfa' =>  $data['amount'] * $tgc_account->operator->dollar_conversion,
+                            'facture_name2' =>  $facture_name,
 
 
                             'netting' => $resum->netting - $data['amount'],
@@ -553,6 +605,7 @@ class OperationController extends Controller
                             'debt' =>  $data['amount'],
                             'debt_cfa' =>  $data['amount'] * $tgc_account->operator->xaf_conversion,
 
+                            'facture_name2' =>  $facture_name,
 
                             'netting' => $resum->netting - $data['amount'],
                             'id_operation_2' =>  $operation->id,
@@ -570,6 +623,7 @@ class OperationController extends Controller
                             'debt' =>  $data['amount'],
                             'debt_cfa' =>  $data['amount'],
 
+                            'facture_name2' =>  $facture_name,
 
                             'netting' => $resum->netting - $data['amount'],
                             'id_operation_2' =>  $operation->id,
@@ -1559,6 +1613,8 @@ class OperationController extends Controller
                 'tgc_invoice' => 3,
                 'invoice_type' => 'Encaissement',
                 'invoice_date' =>  $data['invoice_date'],
+                'operator_id' =>  $operator->id,
+
                 'add_by' => session('id'),
                 'amount' => $data['amount'],
                 'comment' =>  $data['comment'],
@@ -1573,7 +1629,7 @@ class OperationController extends Controller
                 //Operation type 3 it mees that it is the settlement
                 'operation_type' => 3,
                 'account_number' => $op_account->account_number,
-                'operation_name' =>  'Paiement netting ' . $data['invoice_date'],
+                'operation_name' =>  'Encaissement - ' . $data['invoice_date'],
                 'comment' =>  $data['comment'],
                 'id_invoice' =>  $invoice->id,
                 'id_op_account' =>  $op_account->id,
@@ -1616,7 +1672,7 @@ class OperationController extends Controller
                     'id_invoice_2' =>  $invoice->id,
                     'id_operation_1' =>  $operation->id,
                     'id_operation_2' =>  $operation->id,
-                    'service' =>  'Paiement netting ' . $data['invoice_date'],
+                    'service' =>  'Encaissment - ' . $data['invoice_date'],
                     'periodDate' =>  $data['invoice_date'],
 
                 ]);
@@ -1630,7 +1686,7 @@ class OperationController extends Controller
                     'id_invoice_2' =>  $invoice->id,
                     'id_operation_1' =>  $operation->id,
                     'id_operation_2' =>  $operation->id,
-                    'service' =>  'Paiement netting ' . $data['invoice_date'],
+                    'service' =>  'Encaissment - ' . $data['invoice_date'],
                     'periodDate' =>  $data['invoice_date'],
 
                 ]);
@@ -1644,7 +1700,7 @@ class OperationController extends Controller
                     'id_invoice_2' =>  $invoice->id,
                     'id_operation_1' =>  $operation->id,
                     'id_operation_2' =>  $operation->id,
-                    'service' =>  'Paiement netting ' . $data['invoice_date'],
+                    'service' =>  'Encaissment - ' . $data['invoice_date'],
                     'periodDate' =>  $data['invoice_date'],
 
                 ]);
@@ -1658,7 +1714,7 @@ class OperationController extends Controller
                     'id_invoice_2' =>  $invoice->id,
                     'id_operation_1' =>  $operation->id,
                     'id_operation_2' =>  $operation->id,
-                    'service' =>  'Paiement netting ' . $data['invoice_date'],
+                    'service' =>  'Encaissment - ' . $data['invoice_date'],
                     'periodDate' =>  $data['invoice_date'],
 
                 ]);
@@ -1684,6 +1740,8 @@ class OperationController extends Controller
                 'tgc_invoice' => 4,
                 'invoice_type' => 'Decaissement',
                 'invoice_date' =>  $data['invoice_date'],
+                'operator_id' =>  $operator->id,
+
                 'add_by' => session('id'),
                 'amount' => $data['amount'],
                 'comment' =>  $data['comment'],
@@ -1696,7 +1754,7 @@ class OperationController extends Controller
                 //Operation type 4 it mees that it is the disbursement 
                 'operation_type' => 4,
                 'account_number' => $op_account->account_number,
-                'operation_name' =>  'Paiement netting ' . $data['invoice_date'],
+                'operation_name' =>  'Decaissement - ' . $data['invoice_date'],
                 'comment' =>  $data['comment'],
                 'id_invoice' =>  $invoice->id,
                 'id_op_account' =>  $op_account->id,
@@ -1737,7 +1795,7 @@ class OperationController extends Controller
                     'id_invoice_2' =>  $invoice->id,
                     'id_operation_1' =>  $operation->id,
                     'id_operation_2' =>  $operation->id,
-                    'service' =>  'Paiement netting ' . $data['invoice_date'],
+                    'service' =>  'Decaissement - ' . $data['invoice_date'],
                     'periodDate' =>  $data['invoice_date'],
 
                 ]);
@@ -1751,7 +1809,7 @@ class OperationController extends Controller
                     'id_invoice_2' =>  $invoice->id,
                     'id_operation_1' =>  $operation->id,
                     'id_operation_2' =>  $operation->id,
-                    'service' =>  'Paiement netting ' . $data['invoice_date'],
+                    'service' =>  'Decaissement - ' . $data['invoice_date'],
                     'periodDate' =>  $data['invoice_date'],
 
                 ]);
@@ -1765,7 +1823,7 @@ class OperationController extends Controller
                     'id_invoice_2' =>  $invoice->id,
                     'id_operation_1' =>  $operation->id,
                     'id_operation_2' =>  $operation->id,
-                    'service' =>  'Paiement netting ' . $data['invoice_date'],
+                    'service' =>  'Decaissement - ' . $data['invoice_date'],
                     'periodDate' =>  $data['invoice_date'],
 
                 ]);
@@ -1779,7 +1837,7 @@ class OperationController extends Controller
                     'id_invoice_2' =>  $invoice->id,
                     'id_operation_1' =>  $operation->id,
                     'id_operation_2' =>  $operation->id,
-                    'service' =>  'Paiement netting ' . $data['invoice_date'],
+                    'service' =>  'Decaissement - ' . $data['invoice_date'],
                     'periodDate' =>  $data['invoice_date'],
 
                 ]);

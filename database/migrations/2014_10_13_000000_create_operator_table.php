@@ -26,11 +26,14 @@ class CreateOperatorTable extends Migration
             $table->string('email2')->nullable();
             $table->string('email3')->nullable();
             $table->integer('cedeao')->nullable();
-            $table->integer('afrique')->nullable();
-            $table->integer('is_carrier')->nullable();
+            $table->integer('afrique')->nullable();   
             $table->string('adresse')->nullable();
             $table->string('country')->nullable();
             $table->string('description')->nullable();
+            $table->string('rib')->nullable();
+            $table->string('ope_account_number')->nullable();
+            $table->string('banque_adresse')->nullable();
+            $table->string('swift_code')->nullable();
             $table->integer('is_delete')->default(0);
             $table->timestamps();
         });

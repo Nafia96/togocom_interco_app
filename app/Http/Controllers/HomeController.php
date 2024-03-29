@@ -129,7 +129,6 @@ class HomeController extends Controller
                 $sum_of_ope = Operator::where(['is_delete' => 0])->get()->count();
                 $sum_of_ope_cdeao = Operator::where(['is_delete' => 0, 'cedeao' => 1])->get()->count();
                 $sum_of_ope_afrique = Operator::where(['is_delete' => 0, 'afrique' => 1])->get()->count();
-                $sum_of_ope_carrier = Operator::where(['is_delete' => 0, 'is_carrier' => 1])->get()->count();
                 $sum_of_invoice = Invoice::where(['is_delete' => 0])->get()->count();
 
                 $sum_of_invoice_month = Invoice::whereYear('created_at', '=', date('Y'))
@@ -269,7 +268,7 @@ class HomeController extends Controller
 
                 //  dd($comparaison_month_befor);
 
-                return view('no_dashboard', compact('sum_of_ope_carrier', 'comparaison_current_month_afq', 'comparaison_month_befor_afq', 'comparaison_month_befor', 'comparaison_current_month', 'sum_of_ope_afrique', 'volumEntrant_results', 'volumEntrantBefor_results', 'volumSortant_results', 'volumSortantBefor_results', 'curent_year_befor_result', 'year_befors', 'curent_year_recouvrement', 'recouvrement_results', 'curent_year_result', 'results', 'sum_of_user', 'sum_of_ope', 'sum_of_ope_cdeao', 'sum_of_invoice', 'sum_of_invoice_month'))->render();
+                return view('no_dashboard', compact( 'comparaison_current_month_afq', 'comparaison_month_befor_afq', 'comparaison_month_befor', 'comparaison_current_month', 'sum_of_ope_afrique', 'volumEntrant_results', 'volumEntrantBefor_results', 'volumSortant_results', 'volumSortantBefor_results', 'curent_year_befor_result', 'year_befors', 'curent_year_recouvrement', 'recouvrement_results', 'curent_year_result', 'results', 'sum_of_user', 'sum_of_ope', 'sum_of_ope_cdeao', 'sum_of_invoice', 'sum_of_invoice_month'))->render();
             } elseif ($user->type_user == 3 ||  $user->type_user == 2 || $user->type_user == 1) {
 
 
@@ -277,7 +276,6 @@ class HomeController extends Controller
                 $sum_of_ope = Operator::where(['is_delete' => 0])->get()->count();
                 $sum_of_ope_cdeao = Operator::where(['is_delete' => 0, 'cedeao' => 1])->get()->count();
                 $sum_of_ope_afrique = Operator::where(['is_delete' => 0, 'afrique' => 1])->get()->count();
-                $sum_of_ope_carrier = Operator::where(['is_delete' => 0, 'is_carrier' => 1])->get()->count();
                 $sum_of_invoice = Invoice::where(['is_delete' => 0])->get()->count();
 
                 $sum_of_invoice_month = Invoice::whereYear('created_at', '=', date('Y'))
@@ -417,7 +415,7 @@ class HomeController extends Controller
 
                 //  dd($comparaison_month_befor);
 
-                return view('dashboard', compact('sum_of_ope_carrier', 'comparaison_current_month_afq', 'comparaison_month_befor_afq', 'comparaison_month_befor', 'comparaison_current_month', 'sum_of_ope_afrique', 'volumEntrant_results', 'volumEntrantBefor_results', 'volumSortant_results', 'volumSortantBefor_results', 'curent_year_befor_result', 'year_befors', 'curent_year_recouvrement', 'recouvrement_results', 'curent_year_result', 'results', 'sum_of_user', 'sum_of_ope', 'sum_of_ope_cdeao', 'sum_of_invoice', 'sum_of_invoice_month'))->render();
+                return view('dashboard', compact( 'comparaison_current_month_afq', 'comparaison_month_befor_afq', 'comparaison_month_befor', 'comparaison_current_month', 'sum_of_ope_afrique', 'volumEntrant_results', 'volumEntrantBefor_results', 'volumSortant_results', 'volumSortantBefor_results', 'curent_year_befor_result', 'year_befors', 'curent_year_recouvrement', 'recouvrement_results', 'curent_year_result', 'results', 'sum_of_user', 'sum_of_ope', 'sum_of_ope_cdeao', 'sum_of_invoice', 'sum_of_invoice_month'))->render();
             }
         }
         return view('index');

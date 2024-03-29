@@ -24,7 +24,7 @@ class Operation extends Model
 	*
 	* @var arrayclient
 	*/
-	protected $fillable = ['operation_type','repayment_type','operation_name','comment','is_delete','id_invoice','id_op_account','add_by'
+	protected $fillable = ['facture_name','operation_type','repayment_type','operation_name','comment','is_delete','id_invoice','id_op_account','add_by'
     ,'incoming_balance','output_balance','new_netting','amount','new_debt','new_receivable','account_number','id_operator','invoice_type'];
 
 
