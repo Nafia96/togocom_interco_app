@@ -13,7 +13,7 @@
                             <div class="row ">
                                 <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pr-0 pt-3">
                                     <div class="card-content">
-                                        <h5 class="font-15">UTLISATEURS</h5>
+                                        <p style="white-space: nowrap; font-weight:bold; "><span class="font-15">   UTLISATEURS  </span></p>
                                         <h2 class="mb-3 font-18">{{ $sum_of_user }}</h2>
                                     </div>
                                 </div>
@@ -34,9 +34,8 @@
                             <div class="row ">
                                 <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pr-0 pt-3">
                                     <div class="card-content">
-                                        <h5 class="font-15"> OPERATEURS</h5>
-                                        <h2 class="mb-3 font-18">{{ $sum_of_ope }}</h2>
-                                        <p class="mb-0"><span class="col-green">{{ $sum_of_ope_cdeao }}</span> CEDEAO</p>
+                                        <p style="white-space: nowrap; font-weight:bold; "><span class="font-15">  OPERATEURS</span></p>
+                                        <h2 class=" font-18">{{ $sum_of_ope }}</h2>
                                     </div>
                                 </div>
                                 <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pl-0">
@@ -56,8 +55,8 @@
                             <div class="row ">
                                 <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pr-0 pt-3">
                                     <div class="card-content">
-                                        <h5 class="font-15">OPERATEUR EN AFRIQUE</h5>
-                                        <h2 class="mb-3 font-18">{{ $sum_of_ope_afrique }}</h2>
+                                        <h5 class="font-15">OPERATEURS EN AFRIQUE</h5>
+                                        <h2 class=" font-18">{{ $sum_of_ope_afrique }}</h2>
                                     </div>
                                 </div>
                                 <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pl-0">
@@ -79,9 +78,9 @@
                             <div class="row ">
                                 <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pr-0 pt-3">
                                     <div class="card-content">
-                                        <h5 class="font-15">FACTURES</h5>
-                                        <h2 class="mb-3 font-18">{{ $sum_of_invoice }}</h2>
-                                        <p class="mb-0"><span class="col-green">{{ $sum_of_invoice_month }}</span> ce mois
+                                        <p style="white-space: nowrap; font-weight:bold; "><span class="font-15"> FACTURES </span></p>
+                                        <h2 class="font-18">{{ $sum_of_invoice }}</h2>
+                                        <p class="mb-0"><span class="col-green">{{ $sum_of_invoice_month }}</span>  mois en cours
                                         </p>
                                     </div>
                                 </div>
@@ -101,7 +100,7 @@
         <div class="col-12 col-sm-12 col-lg-12">
             <div class="card">
                 <div class="card-header">
-                    <h4>REPORTING NETTING INTERCO {{ date('Y') }} </h4>
+                    <h4>REPORTING NETTING  DES INTERCONNEXIONS INTERNATIONALES  {{ date('Y') }} </h4>
                     <div class="card-header-action">
                         <a data-collapse="#mycard-collapse" class="btn btn-icon btn-info" href="#"><i
                                 class="fas fa-plus"></i></a>
@@ -179,14 +178,14 @@
             foreach ($results as $data) {
                 $formattedData[] = (int) $data->total_receivable - $data->total_debt;
             }
-            
+
             $dateData = [];
             foreach ($results as $data) {
                 $dateData[] = periodePrint($data->year . '-' . $data->month);
             }
-            
+
             //dd($dateData);
-            
+
         @endphp
 
 
@@ -194,7 +193,7 @@
         <div class="col-12 col-sm-12 col-lg-12">
             <div class="card">
                 <div class="card-header">
-                    <h4>REPORTING RECOUVREMENT INTERCO {{ date('Y') }} </h4>
+                    <h4>REPORTING RECOUVREMENT  DES INTERCONNEXIONS INTERNATIONALES  {{ date('Y') }} </h4>
                     <div class="card-header-action">
                         <a data-collapse="#mycard-collapse1" class="btn btn-icon btn-info" href="#"><i
                                 class="fas fa-plus"></i></a>
@@ -269,14 +268,14 @@
             foreach ($recouvrement_results as $data) {
                 $coveringData[] = (int) $data->total_incoming_payement;
             }
-            
+
             $coveringDate = [];
             foreach ($recouvrement_results as $data) {
                 $coveringDate[] = periodePrint($data->year . '-' . $data->month);
             }
-            
+
             //dd($dateData);
-            
+
         @endphp
 
 
@@ -440,29 +439,43 @@
             foreach ($results as $data) {
                 $RevenuData[] = (int) $data->total_receivable;
             }
-            
+
             $ChargeData = [];
             foreach ($results as $data) {
                 $ChargeData[] = (int) $data->total_debt;
             }
-            
+
             $RevenuBeforData = [];
             foreach ($year_befors as $data) {
                 $RevenuBeforData[] = (int) $data->total_receivable;
             }
-            
+
             $ChargeBeforData = [];
             foreach ($year_befors as $data) {
                 $ChargeBeforData[] = (int) $data->total_debt;
             }
-            
+
             $rcDate = [];
             foreach ($year_befors as $data) {
                 $rcDate[] = periodePrint($data->year + 1 . '-' . $data->month);
             }
-            
+
             // dd($rcDate);
-            
+            $mois = [
+                1 => 'JANVIER',
+                2 => 'FEVRIER',
+                3 => 'MARS',
+                4 => 'AVRIL',
+                5 => 'MAI',
+                6 => 'JUIN',
+                7 => 'JUILLET',
+                8 => 'AOUT',
+                9 => 'SEPTEMBRE',
+                10 => 'OCTOBRE',
+                11 => 'NOVEMBRE',
+                12 => 'DECEMBRE',
+            ];
+
         @endphp
 
         <div class="col-12 col-sm-12 col-lg-12">
@@ -625,27 +638,27 @@
             foreach ($volumEntrant_results as $data) {
                 $EntrantData[] = (int) $data->volume;
             }
-            
+
             $SortantData = [];
             foreach ($volumSortant_results as $data) {
                 $SortantData[] = (int) $data->volume;
             }
-            
+
             $EntrantBeforData = [];
             foreach ($volumEntrantBefor_results as $data) {
                 $EntrantBeforData[] = (int) $data->volume;
             }
-            
+
             $SortantBeforData = [];
             foreach ($volumSortantBefor_results as $data) {
                 $SortantBeforData[] = (int) $data->volume;
             }
-            
+
             $vDate = [];
             foreach ($volumEntrantBefor_results as $data) {
                 $vDate[] = periodePrint($data->year + 1 . '-' . $data->month);
             }
-            
+
         @endphp
 
 
@@ -653,8 +666,8 @@
         <div class="col-12 col-sm-12 col-lg-12">
             <div class="card">
                 <div class="card-header">
-                    <h4>COMPARAISON REVENUS (FCFA) PAR OPERATEUR {{ date('m') - 1 }}-{{ date('Y') }} VS
-                        {{ date('M') }}-{{ date('Y') }}</h4>
+                    <h4>COMPARAISON REVENUS (FCFA) PAR OPERATEUR {{$mois[date('m') - 1]  }}-{{ date('Y') }} VS
+                        {{ $mois[date('m') +0 ]  }}-{{ date('Y') }}</h4>
                     <div class="card-header-action">
                         <a data-collapse="#mycard-collapse4" class="btn btn-icon btn-info" href="#"><i
                                 class="fas fa-plus"></i></a>
@@ -672,8 +685,8 @@
                                         <thead>
                                             <tr>
                                                 <th style="color: aliceblue">OPERATEUR AFRIQUE</th>
-                                                <th style="color: aliceblue">{{ date('m') - 1 }}-{{ date('Y') }}</th>
-                                                <th style="color: aliceblue">{{ date('M') }}-{{ date('Y') }}</th>
+                                                <th style="color: aliceblue">{{$mois[date('m') - 1]  }}-{{ date('Y') }}</th>
+                                                <th style="color: aliceblue">{{ $mois[date('m') +0 ]  }}-{{ date('Y') }}</th>
                                                 <th style="color: aliceblue">VARIATION GCGA</th>
                                                 <th style="color: aliceblue">%VARIATION</th>
 
@@ -697,7 +710,7 @@
                                                         @if ($result->operator_name == $befor->operator_name)
                                                             @php
                                                                 $all_of_current += $result->total_receivable;
-                                                                
+
                                                                 $all_gcca += $result->total_receivable - $befor->total_receivable;
                                                             @endphp
                                                             @if ($befor->total_receivable == null)
@@ -791,8 +804,8 @@
                                         <thead>
                                             <tr>
                                                 <th style="color: aliceblue">OPERATEUR HORS AFRIQUE</th>
-                                                <th style="color: aliceblue">{{ date('m') - 1 }}-{{ date('Y') }}</th>
-                                                <th style="color: aliceblue">{{ date('M') }}-{{ date('Y') }}
+                                                <th style="color: aliceblue">{{$mois[date('m') - 1]  }}-{{ date('Y') }}</th>
+                                                <th style="color: aliceblue">{{ $mois[date('m') +0 ]  }}-{{ date('Y') }}
                                                 </th>
                                                 <th style="color: aliceblue">VARIATION GCGA</th>
                                                 <th style="color: aliceblue">%VARIATION</th>
@@ -817,7 +830,7 @@
                                                         @if ($result->operator_name == $befor->operator_name)
                                                             @php
                                                                 $all_of_current += $result->total_receivable;
-                                                                
+
                                                                 $all_gcca += $result->total_receivable - $befor->total_receivable;
                                                             @endphp
                                                             @if ($befor->total_receivable == null)
@@ -944,19 +957,19 @@
         </div>
 
         @php
-            
+
             $inAfrqData = '';
             foreach ($comparaison_month_befor_afq as $data) {
                 $inAfrqData .= ' { value: ' . $data->total_receivable . ", category: '" . $data->operator_name . "' },";
             }
-            
+
             $horsAfrqData = '';
             foreach ($comparaison_month_befor as $data) {
                 $horsAfrqData .= ' { value: ' . $data->total_receivable . ", category: '" . $data->operator_name . "' },";
             }
-            
+
             // dd($horsAfrqData);
-            
+
         @endphp
     </section>
     <div class="settingSidebar">

@@ -27,6 +27,7 @@ class HomeController extends Controller
     public function index(Request $request)
     {
 
+
         if ($request->isMethod('post')) {
             $data = $request->input();
 
@@ -52,7 +53,7 @@ class HomeController extends Controller
                         ]);
 
                         return redirect('dashboard');
-                        
+
                     } else {
 
                         return redirect()->back()->with('error', "Compte bloqué, Veuillez contacter votre administation")->withInput();

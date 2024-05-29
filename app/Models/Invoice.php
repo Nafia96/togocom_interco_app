@@ -41,14 +41,14 @@ class Invoice extends Model
 
 	public function contestation()
     {
-		
-		return $this->hasOne(Contestation::class, 'id_invoice');  
+
+		return $this->hasOne(Contestation::class, 'id_invoice');
  	 }
 
 	  public function creditnote()
 	  {
-		  
-		  return $this->hasOne(Creditnote::class, 'id_invoice');  
+
+		  return $this->hasOne(Creditnote::class, 'id_invoice');
 	  }
 
 

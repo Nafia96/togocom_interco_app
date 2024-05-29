@@ -138,7 +138,7 @@
                                         <input name="call_volume"  type="number" step="0.01" min="0" lang="en"
                                             class="form-control
                                             @error('call_volume') is-invalid @enderror"
-                                            value="1000" placeholder="" required>
+                                            value="" placeholder="" required>
 
                                         @error('call_volume')
                                             <span class="invalid-feedback" role="alert">
@@ -161,10 +161,10 @@
                                                 <i class="fas fa-phone"></i>
                                             </div>
                                         </div>
-                                        <input name="number_of_call" type="text"
+                                        <input name="number_of_call" type="number"
                                             class="form-control
                                             @error('number_of_call') is-invalid @enderror"
-                                            value="1000" placeholder="" required>
+                                            value="1" placeholder="1" required>
 
                                         @error('number_of_call')
                                             <span class="invalid-feedback" role="alert">
@@ -175,14 +175,14 @@
                                     </div>
                                 </div>
 
-                                
+
                                 <div class="form-group col-md-4">
                                     <label>Importer la facture</label>
                                     <div class="input-group">
-                                        
+
                                         <input name="the_file" type="file" class="form-control" >
 
-                                    
+
                                     </div>
                                 </div>
                                 <div class="form-group col-md-4">

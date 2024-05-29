@@ -22,7 +22,8 @@
                     @if (isset($operation->invoice->contestation->amount))
                         <div class="mt-3  col-12 text-center  m-auto">
                             <div class="author-box-name mb-3" style="color: #03a04f; font-weight: bold;">
-                                <h5>{{ $operation->operator->name }} - {{ $operation->operator->tel }} - {{$operation->operator->email }}</h5>
+                                <h5>{{ $operation->operator->name }} - {{ $operation->operator->tel }} -
+                                    {{ $operation->operator->email }}</h5>
                             </div>
                         </div>
 
@@ -37,6 +38,12 @@
                             <input type="hidden" name="invoice_id" value="{{ $operation->invoice->id }}">
                             <input type="hidden" name="contestation_id"
                                 value="{{ $operation->invoice->contestation->id }}">
+                            {{--                             @if ($operation->operation_type == 1)
+                            <input type="hidden" name="id_resum" value="{{ $operation->resum->id }}">
+                            @elseif ($operation->operation_type == 2)
+                            <input type="hidden" name="id_resum" value="{{ $operation->resum2->id }}">
+
+                            @endif --}}
 
                             <br>
 
@@ -52,8 +59,8 @@
                                                 {{ $operation->operator->currency }}
                                             </div>
                                         </div>
-                                        <input disabled name="amount" type="number" step="0.01" min="0" lang="en"
-                                            class="form-control  @error('amount') is-invalid @enderror"
+                                        <input disabled name="amount" type="number" step="0.01" min="0"
+                                            lang="en" class="form-control  @error('amount') is-invalid @enderror"
                                             value="{{ $operation->invoice->contestation->amount }}" placeholder=""
                                             required>
 
@@ -66,7 +73,7 @@
                                     </div>
                                 </div>
 
-                               
+
 
                                 <div class="form-group col-md-6">
                                     <label>Sur</label>
@@ -76,7 +83,8 @@
                                                 {{ $operation->operator->currency }}
                                             </div>
                                         </div>
-                                        <input disabled name="olde_amount" type="number" step="0.01" min="0" lang="en"
+                                        <input disabled name="olde_amount" type="number" step="0.01" min="0"
+                                            lang="en"
                                             class="form-control  @error('olde_amount') is-invalid @enderror"
                                             value="{{ $operation->invoice->amount }}" placeholder="" required>
 
@@ -96,12 +104,13 @@
                             </div>
 
                             @if ($operation->invoice->contestation->comment != null)
-                            <div class="form-group col-md-12">
-                                 Commentaire:
-                                 <span style="color: #ec1f28;   font-size: 12px;"> {{ $operation->invoice->contestation->comment }} </span>
+                                <div class="form-group col-md-12">
+                                    Commentaire:
+                                    <span style="color: #ec1f28;   font-size: 12px;">
+                                        {{ $operation->invoice->contestation->comment }} </span>
 
-                            </div>
-                        @endif
+                                </div>
+                            @endif
 
 
                             <div class="form-row">
@@ -114,9 +123,9 @@
                                                 {{ $operation->operator->currency }}
                                             </div>
                                         </div>
-                                        <input name="amount" type="number" step="0.01" min="0" lang="en"
-                                            class="form-control  @error('amount') is-invalid @enderror" value=""
-                                            placeholder="" required>
+                                        <input name="amount" type="number" step="0.01" min="0"
+                                            lang="en" class="form-control  @error('amount') is-invalid @enderror"
+                                            value="" placeholder="" required>
 
                                         @error('amount')
                                             <span class="invalid-feedback" role="alert">
@@ -126,15 +135,30 @@
 
                                     </div>
                                 </div>
-                                <div class="form-group col-md-6">
+                                @if ($operation->operation_type == 1)
+                                    <div class="form-group col-md-6">
 
-                                    <label for="inputEmail4">En diminution de : </label>
-                                    <select name="cn_type" id="inputState" class="form-control">
-                                        <option selected value="debt">DETTE</option>
-                                        <option value="receivable">CREANCE</option>
+                                        <label for="inputEmail4">Type d'opération : </label>
+                                        <select name="cn_type" id="inputState" class="form-control">
+                                            <option selected value="1">EN DIMINUTION DE CREANCE</option>
+                                            <option value="2">EN AUGMENTATION DE DETTE</option>
 
-                                    </select>
-                                </div>
+                                        </select>
+                                    </div>
+                                @endif
+
+
+                                @if ($operation->operation_type == 2)
+                                    <div class="form-group col-md-6">
+
+                                        <label for="inputEmail4">Type d'opération : </label>
+                                        <select name="cn_type" id="inputState" class="form-control">
+                                            <option selected value="3">EN DIMINUTION DE DETTE</option>
+                                            <option value="4">EN AUGMENTATION DE CREANCE</option>
+
+                                        </select>
+                                    </div>
+                                @endif
 
 
 

@@ -13,11 +13,11 @@ class CreateCreditnoteTable extends Migration
      */
     public function up()
     {
-        Schema::create('Creditnote', function (Blueprint $table) {
+        Schema::create('creditnote', function (Blueprint $table) {
 
             $table->id();
 
-          
+
             $table->unsignedBigInteger('id_operator');
             $table->foreign('id_operator')->references('id')->on('operator');
 
@@ -33,12 +33,12 @@ class CreateCreditnoteTable extends Migration
             $table->decimal('debt', 16, 2)->nullable();
 
             $table->decimal('receivable', 16, 2)->nullable();
-            
+
             $table->string('is_delete')->default(0);
 
 
             $table->string('comment')->nullable();
-            
+
             $table->timestamps();
         });
     }
@@ -50,6 +50,6 @@ class CreateCreditnoteTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('Creditnote');
+        Schema::dropIfExists('creditnote');
     }
 }

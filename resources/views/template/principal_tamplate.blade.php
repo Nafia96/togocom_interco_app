@@ -167,11 +167,11 @@
                     <ul class="sidebar-menu">
                         <li class="menu-header">Menu principal</li>
                         <li class="dropdown">
-                            
+
                                 <a href="{{ url('/dashboard') }}" class="nav-link"><i
                                         data-feather="monitor"></i><span>Tableau de Bord</span></a>
-                           
-                           
+
+
                         </li>
 
                             <li class="menu-header">Gestions des données</li>
@@ -270,8 +270,7 @@
                             @if (getUserType()->type_user == 3 || getUserType()->type_user == 2)
 
                             <li class="dropdown  {{ Request::is('sta_dashboard') ? 'active' : '' }}">
-                                <a href="{{ route('sta_dashboard') }}" class="nav-link"><i
-                                        data-feather="aperture"></i><span>Statistiques</span></a>
+                                <a href="{{ route('sta_dashboard') }}"class="nav-link"><i data-feather="aperture"></i><span>Statistiques</span></a>
                             </li>
                         @endif
 
@@ -361,9 +360,10 @@
                         @include('invoice.addInvoiceModal')
                         @include('invoice.settlementModal')
                     @endforeach
+                     @endif
 
 
-                @endif
+
                 @if (isset($operator))
                     @include('invoice.invoiceModal')
                     @include('invoice.addInvoiceModal')
@@ -386,7 +386,7 @@
                 @if (isset($resums))
                     @foreach ($resums as $resum)
                         @include('invoice.update_invoiceModal')
-                        
+
                     @endforeach
 
 

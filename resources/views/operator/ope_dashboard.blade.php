@@ -2,7 +2,7 @@
 
 @section('title')
 
-Dashboard opérateur
+    Dashboard opérateur
 
 @endsection
 
@@ -12,21 +12,20 @@ Dashboard opérateur
 @section('breadcrumb')
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ route('dashboard') }}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
-            </li>
 
-            <li class="breadcrumb-item active" aria-current="page"><i class="fas fa-list"></i> Situation actuelle de
+
+            <li class="breadcrumb-item " aria-current="page"><i class="fas fa-list"></i> Situation de :
                 {{ $operator->name }}</li>
 
 
             <div class="d-flex justify-content-end container-fluid mt-n3">
                 @if (getUserType()->type_user == 3 || getUserType()->type_user == 2)
                     <a data-toggle="modal" data-target="{{ '#invoiceModal' . $operator->id }}"> <button type="button"
-                            class=" btn btn-dark mx-1">+CREANCE</button></a>
+                            class=" btn btn-dark mx-1">+CREANCES</button></a>
                     <a data-toggle="modal" data-target="{{ '#addInvoiceModal' . $operator->id }}"><button type="button"
-                            class="btn btn-warning mx-1">+DETTE</button></a>
+                            class="btn btn-warning mx-1">+DETTES</button></a>
                     <a data-toggle="modal" data-target="{{ '#settlementModal' . $operator->id }}"><button type="button"
-                            class="btn btn-info mx-1">+REGLEMENT</button></a>
+                            class="btn btn-info mx-1">+REGLEMENTS</button></a>
                 @endif
                 <span class="mx-1">
                     <a href="{{ route('liste_operator') }}" class="btn btn-primary ">TOUS LES OPÉRATEURS</a>
@@ -42,99 +41,117 @@ Dashboard opérateur
     </nav>
 @stop
 <div class="row">
-    <div class="col-lg-4 col-md-4 col-sm-12">
+    <div class="col-lg-4 col-md-12 col-sm-12">
         <div class="card card-statistic-2">
-            <div class="card-icon shadow-primary bg-cyan">
-                <i class="fas fa-donate"></i>
-            </div>
+
             <div class="card-wrap">
                 <div class="card-header">
-                    <h4 class="pull-left" style="color:#ec1f28; font-weight: bold; ">CREANCE AVEC {{ $operator->name }}
+                    <h4 class="pull-left" style="color:#ec1f28; font-weight: bold; ">CREANCES AVEC {{ $operator->name }}
                     </h4>
                 </div>
                 <div style="font-size: 140%" class="card-body pull-center">
                     <br>
                     Année en cours : <br>
-                    {{ number_format($receiv_invoices->sum('amount'), 2, ',', ' ') }} {{ $operator->currency }} <br>
+                    <p style="white-space: nowrap;"><span>
+                            {{ number_format($receiv_invoices->sum('amount'), 2, ',', ' ') }} {{ $operator->currency }}
+                        </span></p>
 
                 </div>
 
-                <div style="font-size: 100%" class=" mb-4 card-body pull-center">
-                    Total : {{ number_format($op_account->receivable, 2, ',', ' ') }} {{ $operator->currency }}
+                <div style="font-size: 100%" class=" mb-1 card-body pull-center">
+                    Total : <br>
+                    <p style="white-space: nowrap;"><span> {{ number_format($op_account->receivable, 2, ',', ' ') }}
+                            {{ $operator->currency }} </span></p>
                 </div>
             </div>
 
         </div>
     </div>
-    <div class="col-lg-4 col-md-4 col-sm-12">
+    <div class="col-lg-4 col-md-12 col-sm-12">
         <div class="card card-statistic-2">
-            <div class="card-icon shadow-primary bg-purple">
-                <i class="fas fa-drafting-compass"></i>
-            </div>
+
             <div class="card-wrap">
                 <div class="card-header">
                     <h4 class="pull-left" style="color:#ec1f28; font-weight: bold; ">NETTING AVEC {{ $operator->name }}
                     </h4>
                 </div>
-                <br>
 
-                <div class="card-body pull-center">
 
-                    <p class="mb-0 mt-0 font-15">Année en cours :<span class="col-green"> en faveur de
-                            @if ($receiv_invoices->sum('amount') - $debt_invoices->sum('amount') > 0)
-                                TOGOCOM
-                            @else
-                                {{ $operator->name }}
-                            @endif
-                        </span>
+                <div style="font-size: 140%" class="card-body pull-center">
+                    <br>
+                    Année en cours : <br>
+                    <p>
+
+                        @if ($receiv_invoices->sum('amount') - $debt_invoices->sum('amount') >= 0)
+                            <span style="white-space: nowrap; color:#03a04f">
+                                {{ number_format($receiv_invoices->sum('amount') - $debt_invoices->sum('amount'), 2, ',', ' ') }}
+                                {{ $operator->currency }}
+                            </span>
+                        @else
+                            <span style="white-space: nowrap; color:red">
+
+                                {{ number_format($receiv_invoices->sum('amount') - $debt_invoices->sum('amount'), 2, ',', ' ') }}
+                                {{ $operator->currency }}
+                            </span>
+                        @endif
                     </p>
 
 
 
-                    <h2 class="mb-0 font-20">
-                        {{ number_format($receiv_invoices->sum('amount') - $debt_invoices->sum('amount'), 2, ',', ' ') }}
-                        {{ $operator->currency }}</h2>
 
 
                 </div>
 
-                <div style="font-size: 100%" class="mb-4 card-body pull-center">
+                <div style="font-size: 100%" class="card-body pull-center">
 
-                    Total :
-                    {{ number_format($op_account->receivable - $op_account->debt, 2, ',', ' ') }}
-                    {{ $operator->currency }}
-                    en faveur de
-                    @if ($op_account->receivable - $op_account->debt > 0)
-                        TOGOCOM
-                    @else
-                        {{ $operator->name }}
-                    @endif
+                    Total : <br>
+
+
+                    <p>
+                        @if ($op_account->receivable - $op_account->debt >= 0)
+                            <span style="white-space: nowrap; color:#03a04f">
+
+                                {{ number_format($op_account->receivable - $op_account->debt, 2, ',', ' ') }}
+                                {{ $operator->currency }}
+                            </span>
+                        @else
+                            <span style="white-space: nowrap; color:red">
+
+                                {{ number_format($op_account->receivable - $op_account->debt, 2, ',', ' ') }}
+                                {{ $operator->currency }}
+                            </span>
+                        @endif
+                    </p>
 
                 </div>
             </div>
 
         </div>
     </div>
-    <div class="col-lg-4 col-md-4 col-sm-12">
+    <div class="col-lg-4 col-md-12 col-sm-12">
         <div class="card card-statistic-2">
-            <div class="card-icon shadow-primary bg-green">
-                <i class="fas fa-hand-holding-usd"></i>
-            </div>
+
             <div class="card-wrap">
                 <div class="card-header">
-                    <h4 class="pull-left" style="color:#ec1f28; font-weight: bold; ">DETTE AVEC {{ $operator->name }}
+                    <h4 class="pull-left" style="color:#ec1f28; font-weight: bold; ">DETTES AVEC {{ $operator->name }}
                     </h4>
                 </div>
                 <div style="font-size: 140%" class="  card-body pull-center">
-                    <br>
 
+                    <br>
                     Année en cours : <br>
-                    {{ number_format($debt_invoices->sum('amount'), 2, ',', ' ') }} {{ $operator->currency }} <br>
+                    <p style="white-space: nowrap;"><span>
+                            {{ number_format($debt_invoices->sum('amount'), 2, ',', ' ') }} {{ $operator->currency }}
+                        </span></p>
+
 
                 </div>
 
-                <div style="font-size: 100%" class=" mb-4 card-body pull-center">
-                    Total : {{ number_format($op_account->debt, 2, ',', ' ') }} {{ $operator->currency }}
+                <div style="font-size: 100%" class="card-body pull-center">
+                    Total : <br>
+                    <p style="white-space: nowrap;"><span>
+                            {{ number_format($op_account->debt, 2, ',', ' ') }} {{ $operator->currency }}
+                        </span></p>
 
                 </div>
             </div>
@@ -374,7 +391,7 @@ Dashboard opérateur
                                                     @endif
 
                                                     <td style="width:15%">
-                                                        {{ number_format($resum->total_receivable - $resum->total_debt, 2, ',', ' ') }}
+                                                        {{ number_format($resum->total_receivable - $resum->total_debt + $resum->decaissement - $resum->encaissement, 2, ',', ' ') }}
 
                                                     </td>
 
@@ -384,21 +401,22 @@ Dashboard opérateur
                                                 <?php $n = $n + 1; ?>
                                             @endforeach
 
-                                           
+
 
 
                                         </tbody>
                                         <tfoot>
                                             <tr style="font-weight: bold;">
                                                 <td>#</td>
-                                                <td >TOTAL </td>
-                                                <td>{{$sum_resum_total->total_receivable}}</td>
-                                                <td>{{$sum_resum_total->encaissement}}</td>
-                                                <td>{{$sum_resum_total->total_debt}}</td>
-                                                <td>{{$sum_resum_total->decaissement}}</td>
-                                                <td>{{$sum_resum_total->total_receivable - $sum_resum_total->total_debt}}</td>
+                                                <td>TOTAL </td>
+                                                <td>{{ $sum_resum_total->total_receivable }}</td>
+                                                <td>{{ $sum_resum_total->encaissement }}</td>
+                                                <td>{{ $sum_resum_total->total_debt }}</td>
+                                                <td>{{ $sum_resum_total->decaissement }}</td>
+                                                <td>{{ number_format($sum_resum_total->total_receivable - $sum_resum_total->total_debt + $sum_resum_total->decaissement - $sum_resum_total->encaissement, 2, ',', ' ') }}
+                                                </td>
                                             </tr>
-                                        
+
                                         </tfoot>
                                     </table>
                                 </div>
@@ -605,9 +623,7 @@ Dashboard opérateur
                                 <th class="recherche">PERIODES</th>
                                 <th class="recherche">TYPE</th>
                                 <th class="recherche">MONTANT</th>
-                                <th class="recherche">CREANCES TOGOCOM</th>
 
-                                <th class="recherche">DETTES TOGOCOM</th>
                                 <th class="recherche">SOLDE</th>
                                 <th>Action</th>
                             </tr>
@@ -617,7 +633,7 @@ Dashboard opérateur
 
                             @foreach ($operations as $operation)
                                 @if ($operation->invoice->invoice_type == 'litigious')
-                                    <tr style="background-color: #03a04f; color:aliceblue;">
+                                    <tr style="background-color: orange; color:black;">
                                         <td>{{ $n }} </td>
                                         <td style="width:15%">{{ $operation->operation_name }} </td>
 
@@ -644,21 +660,23 @@ Dashboard opérateur
 
                                         <td>{{ number_format($operation->amount, 2, ',', ' ') . '  ' . $operator->currency }}
                                         </td>
-                                        <td>{{ number_format($operation->new_receivable, 2, ',', ' ') . '  ' . $operator->currency }}
-                                        </td>
-                                        <td>{{ number_format($operation->new_debt, 2, ',', ' ') . '  ' . $operator->currency }}
-                                        </td>
+
                                         <td>{{ number_format($operation->new_receivable - $operation->new_debt, 2, ',', ' ') . '  ' . $operator->currency }}
                                         </td>
 
 
                                         <td style="width:10%">
-                                            <span data-toggle="tooltip" data-placement="top" title="Voir la facture">
-                                                <a class=" mb-2 btn btn-sm btn-warning"  
-                                                    href="{{$operation->facture_name}}" target="blank">
-                                                    <i class="fas fa-eye text-white "> </i>
-                                                </a>
-                                            </span>
+
+                                            @if ($operation->facture_name)
+                                                <span data-toggle="tooltip" data-placement="top"
+                                                    title="Voir la facture">
+                                                    <a class=" mb-2 btn btn-sm btn-primary"
+                                                        href="{{ $operation->facture_name }}" target="blank">
+                                                        <i class="fas fa-eye text-white "> </i>
+                                                    </a>
+                                                </span>
+                                            @endif
+
 
                                             @if (getUserType()->type_user == 3 || getUserType()->type_user == 2)
                                                 <span data-toggle="tooltip" data-placement="top"
@@ -712,21 +730,21 @@ Dashboard opérateur
 
                                         <td>{{ number_format($operation->amount, 2, ',', ' ') . '  ' . $operator->currency }}
                                         </td>
-                                        <td>{{ number_format($operation->new_receivable, 2, ',', ' ') . '  ' . $operator->currency }}
-                                        </td>
-                                        <td>{{ number_format($operation->new_debt, 2, ',', ' ') . '  ' . $operator->currency }}
-                                        </td>
+                                        
                                         <td>{{ number_format($operation->new_receivable - $operation->new_debt, 2, ',', ' ') . '  ' . $operator->currency }}
                                         </td>
 
 
                                         <td style="width:10%">
-                                            <span data-toggle="tooltip" data-placement="top" title="Voir la facture">
-                                                <a class=" mb-2 btn btn-sm btn-primary" data-toggle="modal"
-                                                href="{{$operation->facture_name}}" target="blank">
-                                                    <i class="fas fa-eye text-white "> </i>
-                                                </a>
-                                            </span>
+                                            @if ($operation->facture_name)
+                                                <span data-toggle="tooltip" data-placement="top"
+                                                    title="Voir la facture">
+                                                    <a class=" mb-2 btn btn-sm btn-primary"
+                                                        href="{{ $operation->facture_name }}" target="blank">
+                                                        <i class="fas fa-eye text-white "> </i>
+                                                    </a>
+                                                </span>
+                                            @endif
                                             @if (getUserType()->type_user == 3 || getUserType()->type_user == 2)
                                                 <span data-toggle="tooltip" data-placement="top"
                                                     title="Mettre à jour les informations  de la facture">
@@ -776,20 +794,21 @@ Dashboard opérateur
 
                                         <td>{{ number_format($operation->amount, 2, ',', ' ') . '  ' . $operator->currency }}
                                         </td>
-                                        <td>{{ number_format($operation->new_receivable, 2, ',', ' ') . '  ' . $operator->currency }}
-                                        </td>
-                                        <td>{{ number_format($operation->new_debt, 2, ',', ' ') . '  ' . $operator->currency }}
-                                        </td>
+
                                         <td>{{ number_format($operation->new_receivable - $operation->new_debt, 2, ',', ' ') . '  ' . $operator->currency }}
                                         </td>
 
 
                                         <td style="width:10%">
-                                            <span data-toggle="tooltip" data-placement="top" title="Voir la facture">
-                                                <a class=" mb-2 btn btn-sm btn-primary"  href="{{$operation->facture_name}}" target="blank">
-                                                    <i class="fas fa-eye text-white "> </i>
-                                                </a>
-                                            </span>
+                                            @if ($operation->facture_name)
+                                                <span data-toggle="tooltip" data-placement="top"
+                                                    title="Voir la facture">
+                                                    <a class=" mb-2 btn btn-sm btn-primary"
+                                                        href="{{ $operation->facture_name }}" target="blank">
+                                                        <i class="fas fa-eye text-white "> </i>
+                                                    </a>
+                                                </span>
+                                            @endif
                                             @if (getUserType()->type_user == 3 || getUserType()->type_user == 2)
                                                 <span data-toggle="tooltip" data-placement="top"
                                                     title="Mettre à jour les informations  de la facture">
@@ -851,6 +870,7 @@ Dashboard opérateur
                                 <th class="recherche">Montant</th>
                                 <th class="recherche">Devise</th>
                                 <th class="recherche">Ajouter par:</th>
+                                <th class="recherche">Date</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -867,6 +887,7 @@ Dashboard opérateur
                                     <td>{{ number_format($operation->amount, 2, ',', ' ') }}</td>
                                     <td>{{ $operator->currency }}</td>
                                     <td>{{ $operation->user->last_name . ' ' . $operation->user->first_name }}</td>
+                                    <td>{{ $operation->updated_at }}</td>
 
 
 
@@ -913,7 +934,8 @@ Dashboard opérateur
 <script>
     $(document).ready(function() {
         // Setup - add a text input to each footer cell
-        $('#tableExpor235 thead  tr .recherche ').clone(true).appendTo('#tableExpor235 thead ').addClass("rech");
+        $('#tableExpor235 thead  tr .recherche ').clone(true).appendTo('#tableExpor235 thead ').addClass(
+            "rech");
         $('#tableExpor235 thead .rech ').each(function(i) {
             var title = $(this).text();
             $(this).html('<input type="text" class="form-control" placeholder="Rechercher ' + title +
@@ -929,23 +951,34 @@ Dashboard opérateur
             });
         });
 
-        var myVariable = <?php echo(json_encode($operator->name)); ?>;
+        var myVariable = <?php echo json_encode($operator->name); ?>;
 
         var table = $('#tableExpor235').DataTable({
             orderCellsTop: true,
             fixedHeader: true,
             dom: 'Bfrtip',
 
-           
+
             buttons: [
-                
-                { extend: 'copyHtml5', footer: true },
-                { extend: 'excelHtml5', footer: true },
-                { extend: 'csvHtml5', footer: true },
-                { extend: 'pdfHtml5', footer: true,
-                 filename: 'SOMME PAR ANNEES DES CREANCES ET DETTES DE : '.concat(myVariable),
-                 title: 'SOMME PAR ANNEES DES CREANCES ET DETTES DE : '.concat(myVariable) 
- }
+
+                {
+                    extend: 'copyHtml5',
+                    footer: true
+                },
+                {
+                    extend: 'excelHtml5',
+                    footer: true
+                },
+                {
+                    extend: 'csvHtml5',
+                    footer: true
+                },
+                {
+                    extend: 'pdfHtml5',
+                    footer: true,
+                    filename: 'SOMME PAR ANNEES DES CREANCES ET DETTES DE : '.concat(myVariable),
+                    title: 'SOMME PAR ANNEES DES CREANCES ET DETTES DE : '.concat(myVariable)
+                }
             ],
             "language": {
                 "emptyTable": "Aucune donnée disponible dans le tableau",

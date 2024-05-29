@@ -25,17 +25,17 @@ class OperatorController extends Controller
 
     public function ope_dashboard($id_operator)
     {
-        
+
             $sum_resum = Resum::selectRaw('year(resum.periodDate) year, SUM(receivable) as total_receivable,
             SUM(debt) as total_debt,SUM(incoming_payement) as encaissement,SUM(payout) as decaissement')
-            ->Where(['id_operator' => $id_operator, 'is_delete' => 0])     
+            ->Where(['id_operator' => $id_operator, 'is_delete' => 0])
             ->groupBy('year')
             ->orderBy('year', 'desc')
             ->get();
 
             $sum_resum_total = Resum::selectRaw(' SUM(receivable) as total_receivable,
             SUM(debt) as total_debt,SUM(incoming_payement) as encaissement,SUM(payout) as decaissement')
-            ->Where(['id_operator' => $id_operator, 'is_delete' => 0])     
+            ->Where(['id_operator' => $id_operator, 'is_delete' => 0])
             ->first();
 
           //  dd($sum_resum_total);
@@ -61,6 +61,11 @@ class OperatorController extends Controller
         $operations = Operation::where(['id_operator' => $id_operator, 'is_delete' => 0])
             ->orderBy('updated_at', 'DESC')
             ->get();
+
+    //$lastContestation = $operations[]->invoicee->contestation->last();
+
+   //dd( $operations[1]->invoice->contestation->last());
+
 
         return view('operator/ope_dashboard', compact('sum_resum_total','sum_resum','debt_invoices', 'receiv_invoices', 'operations', 'op_account', 'resums', 'operator'))->render();
     }
@@ -130,6 +135,8 @@ class OperatorController extends Controller
         $operators = Operator::where('is_delete', 0)
             ->orderBy('created_at', 'DESC')
             ->get();
+
+            //dd($operators);
         return view('operator.liste_operator', compact('operators'));
     }
 

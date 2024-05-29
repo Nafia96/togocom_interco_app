@@ -18,7 +18,7 @@
             <div class="modal-body">
                 <form action="{{url('update_estimated_invoice')}}"  enctype="multipart/form-data" method="post">
                     @csrf
-                  
+
                     @if (isset($resum->operator))
                         <div class="mt-3  col-12 text-center  m-auto">
                             <div class="author-box-name mb-3" style="color: #03a04f; font-weight: bold;">
@@ -29,7 +29,7 @@
 
 
                         <div class="tab-content tab-bordered" id="myTab3Content">
-                        
+
 
                             <input type="hidden" name="id_operator" value="{{ $resum->operator->id }}">
                             <input type="hidden" name="operation_id" value="{{ $resum->operation2->id }}">
@@ -72,7 +72,7 @@
                                     <label for="inputEmail4">Type de facture (Automatiquement)</label>
                                     <select name="invoice_type" id="inputState" class="form-control">
                                         <option selected value="real">Facture réelle</option>
-                                        
+
 
                                     </select>
                                 </div>
@@ -134,7 +134,7 @@
                                     <label>Commentaire sur la facture</label>
                                     <textarea disabled name="comment" class="form-control ">{{  $resum->operation2->invoice->comment }}</textarea>
 
-                                 
+
                                 </div>
 
                             </div>

@@ -1,128 +1,124 @@
 @extends('template.principal_tamplate')
-@section('title', 'Liste des opérateurs')
-@section('breadcrumb')
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
 
-            <li class="breadcrumb-item active" aria-current="page">Liste des Opérateurs</li>
-            <div class="d-flex justify-content-end container-fluid mt-n3">
-                <a href="{{ route('add_operator') }}" class="btn btn-primary ">Ajouter un opérateur </a>
-            </div>
-        </ol>
-
-
-
-    </nav>
-@stop
+@section('title', 'Statistique dashboard')
 
 @section('content')
+    <div class="col-12 col-md-12 col-lg-12">
+        <div class="card">
+            <div class="card-header" style="background-color:#F5F5DC ">
+                <h6> <i class="fas fa-search card-icon col-green font-30 p-r-30"></i> Filtrer les volumes en fonction des
+                    périodes </h6>
+            </div>
+            <div class="padding-10">
 
-    <div class="section-body">
-        <div class="row">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-header">
-                        <h4>Liste des opérateurs</h4>
-                    </div>
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            @if (getUserType()->type_user == 3 || getUserType()->type_user == 2 || getUserType()->type_user == 1)
-                                <table class="table table-striped table-hover category" id="tableExpor" style="width:100%;">
-                                @else
-                                    <table class="table table-striped table-hover category" id="save-stage"
-                                        style="width:100%;">
-                            @endif
-                            <thead>
-                                <tr>
-                                    <th class="recherche">N°</th>
-                                    <th class="recherche">Nom de l'opérateur</th>
-                                    <th class="recherche">Email</th>
-                                    <th class="recherche">Tel</th>
-                                    <th class="recherche">Pays</th>
-                                    <th class="recherche">Devise</th>
-                                    <th class="recherche">Date d'ajout</th>
-                                    <th>Action--</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php $n = 1; ?>
-
-                                @foreach ($operators as $operator)
-                                    <tr>
-                                        <td style="width:3%">{{ $n }} </td>
-
-                                        <td style="width:17%;"> <a style="background-color:green; color:aliceblue " class=" mb-2 btn btn-sm btn-info"
-                                                    href="{{ url('ope_dashboard/'.$operator->id) }}">
-                                                    {{ $operator->name }}
-                                                </a>
-                                            </td>
-
-                                        <td style="width:10%">{{ $operator->email }}</td>
-                                        <td>{{ $operator->tel }}</td>
-                                        <td>{{ $operator->country }}</td>
-                                        <td style="width:4%">{{ $operator->currency }}</td>
-                                        <td>{{ $operator->created_at }}</td>
-
-                                        <td style="width:13%">
-                                            <span data-toggle="tooltip" data-placement="top"
-                                                title="Voir les informations de l'opérateur en détail">
-
-                                                <a class=" mb-2 btn btn-sm btn-dark"
-                                                    href="{{ url('ope_dashboard/'.$operator->id) }}">
-
-                                                    <i class="fas fa-eye text-white "> </i>
-                                                </a>
-                                            </span>
+                <form action="{{ url('sor_by_group') }}" enctype="multipart/form-data" method="post">
+                    {{ csrf_field() }}
 
 
 
 
+                    <div class="form-row filtre_form">
+
+                        <div class="form-group col-md-3">
+                            <label for="inputEmail4"> Opérateurs </label>
+                            <select name="mois" id="inputState" class="demo ">
+                                <option value="1" selected="selected">Tous les opérateurs</option>
+                                <option value="2">FEVRIER</option>
+                                <option value="3">MARS</option>
+                                <option value="4">AVRIL</option>
+                                <option value="5">MAI</option>
+                                <option value="6">JUIN</option>
+                                <option value="7">JUILLET</option>
+                                <option value="8">AOUT</option>
+                                <option value="9">SEPTEMBRE</option>
+                                <option value="10">OCTOBRE</option>
+                                <option value="11">NOVEMBRE</option>
+                                <option value="12">DECEMBRE</option>
 
 
-                                            @if (getUserType()->type_user == 3 || getUserType()->type_user == 2)
+                            </select>
+                        </div>
+
+                        <div class="form-group col-md-3">
+                            <label>Choisir periode debut:</label>
+                            <input class="form-control" type="month" id="start" name="period" min="2020-01"
+                                value="{{ date('Y-m') }}" />
+                        </div>
+
+                        <div class="form-group col-md-3">
+                            <label>Choisir periode fin:</label>
+                            <input class="form-control" type="month" id="start" name="period" min="2020-01"
+                                value="{{ date('Y-m') }}" />
+                        </div>
 
 
-                                            <span data-toggle="tooltip" data-placement="top"
-                                                title="Modifier les informations de l'opérateur">
-                                                <a class=" mb-2 btn btn-sm btn-info"
-                                                    href="{{ url('update_operator/'.$operator->id) }}">
-                                                    <i class="fas fas fa-user-cog text-white "> </i>
-                                                </a>
-                                            </span>
+                        <input type="hidden" name="gp" value="0">
 
+                        <div class="form-group col-md-3">
+                            <label for="inputEmail4">. </label><br>
 
+                            <button class=" btn btn-success align-content-center">
+                                <i class="material-icons ">sort</i>
 
-                                            <span data-toggle="tooltip" data-placement="top"
-                                                title="Supprimer cet opérateur">
-                                                <a class=" delete-confirm mb-2 btn btn-sm btn-danger"
-                                                    href="/delete_operator/{{ $operator->id }}">
-                                                    <i class="fas far fa-times-circle text-white"> </i>
-                                                </a>
-                                            </span>
+                                Filtrer</button>
 
-
-
-
-@endif
-                                        </td>
-                                    </tr>
-                                    <?php $n = $n + 1; ?>
-                                @endforeach
-
-
-
-                            </tbody>
-                            </table>
                         </div>
                     </div>
+
+
+
+
+
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h4>Les résultats du filtre</h4>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    @if (getUserType()->type_user == 3 || getUserType()->type_user == 2 || getUserType()->type_user == 1)
+                        <table class="table table-striped table-hover category" id="tableExpor" style="width:100%;">
+                        @else
+                            <table class="table table-striped table-hover category" id="save-stage" style="width:100%;">
+                    @endif
+                    <thead>
+                        <tr>
+                            <th class="recherche">N°</th>
+                            <th class="recherche">Opérateur</th>
+                            <th class="recherche">Periode debut</th>
+                            <th class="recherche">Periode fin</th>
+                            <th class="recherche">Volume</th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php $n = 1; ?>
+
+
+                        <tr>
+
+                        </tr>
+                        <?php $n = $n + 1; ?>
+
+
+
+                    </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     </div>
 
 
-@stop
+
+
+
+@endsection
 
 @section('script')
     <script>

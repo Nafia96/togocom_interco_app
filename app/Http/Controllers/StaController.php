@@ -17,12 +17,15 @@ use Illuminate\Http\Request;
 class StaController extends Controller
 {
     //Togocom to operator
-    
+
     public function sta_dashboard()
     {
 
+        $operators = Operator::where('is_delete', 0)
+        ->orderBy('created_at', 'DESC')
+        ->get();
 
-        return view('sta.sta_dashboard');
+           return view('sta.sta_dashboard', compact('operators'));
     }
 
     public function tgc_to_ope_invoice(Request $request)
@@ -499,26 +502,26 @@ class StaController extends Controller
                     'id' =>  $resum->operation2->invoice->id,
                 ])->update([
                     'is_delete' =>  1,
-    
+
                 ]);
-    
+
                 Operation::where([
                     'id' =>  $resum->operation2->id,
                 ])->update([
                     'is_delete' =>  1,
-    
+
                 ]);
-    
-   
+
+
                 Account::where(['id' => $tgc_account->id])->update([
                     'debt' => $tgc_account->debt - $resum->operation2->amount,
-    
+
                 ]);
-    
+
                 Account::where(['id' => $op_account->id])->update([
                     'debt' => $op_account->debt - $resum->operation2->amount,
                     'netting' => $op_account->netting + $resum->operation2->amount,
-    
+
                 ]);
             }
 
@@ -598,7 +601,7 @@ class StaController extends Controller
             }
         } elseif ($operation->operation_type == 4) {
 
-            
+
 
         }
 
@@ -1098,7 +1101,7 @@ class StaController extends Controller
         if ($data['type'] == 'Encaissement') {
 
             $invoice = Invoice::create([
-                // 3 if the invoice is Reglement 
+                // 3 if the invoice is Reglement
                 'tgc_invoice' => 3,
                 'invoice_type' => 'Encaissement',
                 'invoice_date' =>  $data['invoice_date'],
@@ -1174,7 +1177,7 @@ class StaController extends Controller
         } else {
 
             $invoice = Invoice::create([
-                //tgc_invoice is 3 if the invoice is Reglement 
+                //tgc_invoice is 3 if the invoice is Reglement
                 'tgc_invoice' => 3,
                 'invoice_type' => 'Decaissement',
                 'invoice_date' =>  $data['invoice_date'],

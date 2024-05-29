@@ -36,19 +36,19 @@
                                 <div class="row">
 
                                     <div class="col-md-6 col-6 b-r">
-                                        <strong>CREANCE TOGOCOM AVEC {{ $operator->name }} </strong>
+                                        <strong>CREANCES TOGOCOM AVEC {{ $operator->name }} </strong>
                                         <br>
                                         <p class="text " style="color: #ec1f28; font-weight: bold;">{{ number_format($operator->account->receivable, 2, ',', ' ') }}
                                             {{ $operator->currency }}</p>
                                     </div>
 
                                     <div class="col-md-6 col-6 b-r">
-                                        <strong>DETTE TOGOCOM AVEC {{ $operator->name }} </strong>
+                                        <strong>DETTES TOGOCOM AVEC {{ $operator->name }} </strong>
                                         <br>
                                         <p class="text " style="color: #ec1f28; font-weight: bold;">{{ number_format($operator->account->debt, 2, ',', ' ') }}
                                             {{ $operator->currency }} </p>
                                     </div>
-                                    
+
                                 </div>
 
                                 <div class="row">
@@ -77,7 +77,7 @@
                                     <input name="invoice_date" type="text" class="form-control datepicker">
                                 </div>
 
-                        
+
 
                                 <div class="form-group col-md-4">
                                     <label>Valeur (montant)</label>
@@ -112,7 +112,7 @@
 
                             </div>
 
-                            
+
                             <div class="form-row">
 
                                 <div class="form-group col-md-12">

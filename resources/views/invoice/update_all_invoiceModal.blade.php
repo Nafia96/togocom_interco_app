@@ -29,7 +29,7 @@
 
 
                         <div class="tab-content tab-bordered" id="myTab3Content">
-                           
+
 
                             <input type="hidden" name="id_operator" value="{{ $operator->id }}">
                             <input type="hidden" name="operation_id" value="{{ $operation->id }}">
@@ -76,7 +76,7 @@
                                         <option
                                             {{ $operation->invoice->invoice_type == 'estimated' ? 'selected' : '' }}
                                             value="estimated">Facture Estimée</option>
-                                        
+
 
 
                                     </select>
@@ -137,7 +137,16 @@
 
                                     </div>
                                 </div>
-                                <div class="form-group col-md-8">
+                                <div class="form-group col-md-4">
+                                    <label>Importer une nouvelle facture</label>
+                                    <div class="input-group">
+
+                                        <input name="the_file" type="file" class="form-control" >
+
+
+                                    </div>
+                                </div>
+                                <div class="form-group col-md-4">
                                     <label>Commentaire sur la facture</label>
                                     <textarea  name="comment" class="form-control ">{{ $operation->invoice->comment }}</textarea>
 
