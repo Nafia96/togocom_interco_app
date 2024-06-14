@@ -2,23 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Mail\ResetPassword;
-use App\Models\User;
-use App\Models\Intervention;
-use App\Models\Journal;
-use App\Models\Admin;
-use App\Models\Agence;
-use App\Models\Agent;
-use App\Models\Client;
-use App\Models\Comptes;
 use App\Models\Invoice;
-use App\Models\Operation;
+use App\Models\Journal;
 use App\Models\Operator;
 use App\Models\Resum;
+use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
 use Session;
 
 class HomeController extends Controller
@@ -26,7 +17,6 @@ class HomeController extends Controller
     //
     public function index(Request $request)
     {
-
 
         if ($request->isMethod('post')) {
             $data = $request->input();
@@ -36,9 +26,7 @@ class HomeController extends Controller
                 //dd($currentUser);
                 if (Hash::check($data['password'], $currentUser->password)) {
 
-
                     if ($currentUser->is_delete == 0) {
-
 
                         session(
                             [
@@ -52,7 +40,7 @@ class HomeController extends Controller
                             'user_id' => $currentUser->id,
                         ]);
 
-                        return redirect('dashboard');
+                        return redirect('lunchpade');
 
                     } else {
 
@@ -79,9 +67,6 @@ class HomeController extends Controller
         return view('update_password');
     }
 
-
-
-
     public function update_password_save(Request $request)
     {
 
@@ -97,8 +82,6 @@ class HomeController extends Controller
 
         $currentUser = User::where('id', $id)->first();
 
-
-
         if (Hash::check($data['old_password'], $currentUser->password)) {
 
             User::where(['id' => $id])->update([
@@ -112,20 +95,15 @@ class HomeController extends Controller
         }
     }
 
-
     public function dashboard(Request $request)
     {
 
         if (session('id') != null) {
 
-
             $user = User::where(['id' => session('id')])->first();
-
 
             if ($user->type_user == 0) {
 
-
-
                 $sum_of_user = User::where(['is_delete' => 0])->get()->count();
                 $sum_of_ope = Operator::where(['is_delete' => 0])->get()->count();
                 $sum_of_ope_cdeao = Operator::where(['is_delete' => 0, 'cedeao' => 1])->get()->count();
@@ -139,11 +117,10 @@ class HomeController extends Controller
                     ->get()
                     ->count();
 
-
                 /*    $result = Resum::selectRaw('year(periodDate) year, monthname(periodDate) month, SUM(debt_cfa) as total_debt')
-                    ->groupBy('year', 'month')
-                    ->orderBy('year', 'desc')
-                    ->get(); */
+                ->groupBy('year', 'month')
+                ->orderBy('year', 'desc')
+                ->get(); */
 
                 $year_befors = Resum::selectRaw('year(periodDate) year, month(periodDate) month, SUM(debt_cfa) as total_debt, SUM(receivable_cfa) as total_receivable')
                     ->whereYear('periodDate', '=', date('Y') - 1)
@@ -192,7 +169,6 @@ class HomeController extends Controller
                     ->orderBy('month', 'asc')
                     ->get();
 
-
                 $volumEntrantBefor_results = Invoice::selectRaw('year(periodDate) year, month(periodDate) month, SUM(call_volume) as volume')
                     ->whereYear('periodDate', '=', date('Y') - 1)
                     ->whereTgc_invoice(1)
@@ -240,7 +216,6 @@ class HomeController extends Controller
                     ->orderBy('month', 'asc')
                     ->get();
 
-
                 $comparaison_current_month_afq = Resum::selectRaw('year(resum.periodDate) year, month(resum.periodDate) month, operator.name as operator_name , SUM(receivable_cfa) as total_receivable')
                     ->join('operator', 'resum.id_operator', '=', 'operator.id')
                     ->whereYear('periodDate', '=', date('Y'))
@@ -265,13 +240,10 @@ class HomeController extends Controller
                     ->orderBy('month', 'asc')
                     ->get();
 
-
-
                 //  dd($comparaison_month_befor);
 
-                return view('no_dashboard', compact( 'comparaison_current_month_afq', 'comparaison_month_befor_afq', 'comparaison_month_befor', 'comparaison_current_month', 'sum_of_ope_afrique', 'volumEntrant_results', 'volumEntrantBefor_results', 'volumSortant_results', 'volumSortantBefor_results', 'curent_year_befor_result', 'year_befors', 'curent_year_recouvrement', 'recouvrement_results', 'curent_year_result', 'results', 'sum_of_user', 'sum_of_ope', 'sum_of_ope_cdeao', 'sum_of_invoice', 'sum_of_invoice_month'))->render();
-            } elseif ($user->type_user == 3 ||  $user->type_user == 2 || $user->type_user == 1) {
-
+                return view('no_dashboard', compact('comparaison_current_month_afq', 'comparaison_month_befor_afq', 'comparaison_month_befor', 'comparaison_current_month', 'sum_of_ope_afrique', 'volumEntrant_results', 'volumEntrantBefor_results', 'volumSortant_results', 'volumSortantBefor_results', 'curent_year_befor_result', 'year_befors', 'curent_year_recouvrement', 'recouvrement_results', 'curent_year_result', 'results', 'sum_of_user', 'sum_of_ope', 'sum_of_ope_cdeao', 'sum_of_invoice', 'sum_of_invoice_month'))->render();
+            } elseif ($user->type_user == 3 || $user->type_user == 2 || $user->type_user == 1) {
 
                 $sum_of_user = User::where(['is_delete' => 0])->get()->count();
                 $sum_of_ope = Operator::where(['is_delete' => 0])->get()->count();
@@ -286,11 +258,10 @@ class HomeController extends Controller
                     ->get()
                     ->count();
 
-
                 /*    $result = Resum::selectRaw('year(periodDate) year, monthname(periodDate) month, SUM(debt_cfa) as total_debt')
-                    ->groupBy('year', 'month')
-                    ->orderBy('year', 'desc')
-                    ->get(); */
+                ->groupBy('year', 'month')
+                ->orderBy('year', 'desc')
+                ->get(); */
 
                 $year_befors = Resum::selectRaw('year(periodDate) year, month(periodDate) month, SUM(debt_cfa) as total_debt, SUM(receivable_cfa) as total_receivable')
                     ->whereYear('periodDate', '=', date('Y') - 1)
@@ -339,7 +310,6 @@ class HomeController extends Controller
                     ->orderBy('month', 'asc')
                     ->get();
 
-
                 $volumEntrantBefor_results = Invoice::selectRaw('year(periodDate) year, month(periodDate) month, SUM(call_volume) as volume')
                     ->whereYear('periodDate', '=', date('Y') - 1)
                     ->whereTgc_invoice(1)
@@ -387,7 +357,6 @@ class HomeController extends Controller
                     ->orderBy('month', 'asc')
                     ->get();
 
-
                 $comparaison_current_month_afq = Resum::selectRaw('year(resum.periodDate) year, month(resum.periodDate) month, operator.name as operator_name , SUM(receivable_cfa) as total_receivable')
                     ->join('operator', 'resum.id_operator', '=', 'operator.id')
                     ->whereYear('periodDate', '=', date('Y'))
@@ -412,13 +381,32 @@ class HomeController extends Controller
                     ->orderBy('month', 'asc')
                     ->get();
 
-
-
                 //  dd($comparaison_month_befor);
 
-                return view('dashboard', compact( 'comparaison_current_month_afq', 'comparaison_month_befor_afq', 'comparaison_month_befor', 'comparaison_current_month', 'sum_of_ope_afrique', 'volumEntrant_results', 'volumEntrantBefor_results', 'volumSortant_results', 'volumSortantBefor_results', 'curent_year_befor_result', 'year_befors', 'curent_year_recouvrement', 'recouvrement_results', 'curent_year_result', 'results', 'sum_of_user', 'sum_of_ope', 'sum_of_ope_cdeao', 'sum_of_invoice', 'sum_of_invoice_month'))->render();
+                return view('dashboard', compact('comparaison_current_month_afq', 'comparaison_month_befor_afq', 'comparaison_month_befor', 'comparaison_current_month', 'sum_of_ope_afrique', 'volumEntrant_results', 'volumEntrantBefor_results', 'volumSortant_results', 'volumSortantBefor_results', 'curent_year_befor_result', 'year_befors', 'curent_year_recouvrement', 'recouvrement_results', 'curent_year_result', 'results', 'sum_of_user', 'sum_of_ope', 'sum_of_ope_cdeao', 'sum_of_invoice', 'sum_of_invoice_month'))->render();
             }
         }
+        return view('index');
+    }
+
+    public function lunchpade(Request $request)
+    {
+        //dd('ok');
+        if (session('id') != null) {
+
+            return view('lunchpad');
+        }
+    }
+
+    public function national()
+    {
+        //dd(session('id'));
+        if (session('id') != null) {
+
+            return view('national.national');
+
+        }
+
         return view('index');
     }
 
@@ -429,7 +417,6 @@ class HomeController extends Controller
         $journaux = Journal::orderBy("created_at", 'DESC')->get();
         return view('logs', compact('journaux'));
     }
-
 
     public function logout(Request $request)
     {

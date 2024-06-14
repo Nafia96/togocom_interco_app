@@ -36,6 +36,7 @@ Route::get('update_password', [HomeController::class, 'update_password'])->name(
 Route::post('update_password_save', [HomeController::class, 'update_password_save'])->name('update_password_save');
 
 Route::get('dashboard', [HomeController::class, 'dashboard'])->name('dashboard');
+Route::get('national', [HomeController::class, 'national'])->name('national');
 
 
 Route::get('logout', 'App\Http\Controllers\HomeController@logout');
@@ -111,6 +112,7 @@ Route::middleware([NotConnected::class])->group(function () {
 	Route::get('sta_dashboard', [StaController::class, 'sta_dashboard'])->name('sta_dashboard');
 
 
+    Route::match(['get', 'post'], 'lunchpade', 'App\Http\Controllers\HomeController@lunchpade')->name('lunchepade');
 
 
 

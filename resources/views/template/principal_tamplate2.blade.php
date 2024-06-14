@@ -22,7 +22,7 @@
     <link rel="stylesheet" href="{{ asset('assets/bundles/fullcalendar/fullcalendar.min.css') }}">
 
 
-    <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/style2.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/components.css') }}">
 
     <!-- Date piker CSS -->
@@ -93,8 +93,8 @@
     <div class="loader"></div>
     <div id="app">
         <div class="main-wrapper main-wrapper-1">
-            <div class="navbar-bg"></div>
-            <nav class="navbar navbar-expand-lg main-navbar sticky">
+
+            <nav  style="margin-left:-250px; padding-left:-150px" class="navbar navbar-expand-lg main-navbar sticky">
                 <div class="form-inline mr-auto">
                     <ul class="navbar-nav mr-3">
                         <li><a href="#" data-toggle="sidebar"
@@ -140,9 +140,7 @@
                                 <div class="dropdown-title">VISITEUR : {{ getUserAuth()->first_name }}
                                     {{ getUserAuth()->last_name }}</div>
                             @endif
-                            <!--<a href="/profile" class="dropdown-item has-icon"> <i class="far
-          fa-user"></i> Profile
-      </a>-->
+
                             <div class="dropdown-divider"></div>
                             <a href="{{ url('/update_password') }}" class="dropdown-item has-icon text-success"> <i
                                     class="fas fa-user-cog text-blue"></i>
@@ -156,286 +154,22 @@
                     </li>
                 </ul>
             </nav>
-            <div class="main-sidebar sidebar-style-2">
-                <aside id="sidebar-wrapper">
-                    <div class="sidebar-brand">
-                        <a href="{{ route('dashboard') }}"> <img alt="image"
-                                src="{{ asset('assets/img/logo.png') }}" class="header-logo" /> <span
-                                class="logo-name">TOGOCOM</span>
-                        </a>
-                    </div>
-                    <ul class="sidebar-menu">
-                        <li class="menu-header">Menu principal</li>
-                        <li class="dropdown">
 
-                                <a href="{{ url('/lunchpade') }}" class="nav-link"><i
-                                        data-feather="home"></i><span>Launchpad</span></a>
-
-
-                        </li>
-                        <li class="dropdown">
-
-                            <a href="{{ url('/dashboard') }}" class="nav-link"><i
-                                    data-feather="monitor"></i><span>Tableau de Bord</span></a>
-
-
-                    </li>
-
-                            <li class="menu-header">Gestions des données</li>
-                            <li
-                                class="dropdown  {{ Request::is('add_operator') ? 'active' : '' }}
-                                  {{ Request::is('liste_operator') ? 'active' : '' }}
-                                  {{ Request::is('delete_operator_liste') ? 'active' : '' }}
-                                  {{ Request::is('ope_dashboard') ? 'active' : '' }}
-                                 ">
-
-                                <a href="#" class="menu-toggle nav-link has-dropdown"><i
-                                        data-feather="cpu"></i><span>Gestion des opérateurs</span></a>
-                                <ul class="dropdown-menu">
-
-                                    @if (getUserType()->type_user == 3 || getUserType()->type_user == 2)
-
-                                    <li class="{{ Request::is('add_operator') ? 'active' : '' }}"><a
-                                            class="nav-link " href="{{ route('add_operator') }}">Créer un opérateur
-                                        </a></li>
-
-                                    @endif
-                                    <li class="{{ Request::is('liste_operator') ? 'active' : '' }}"><a
-                                            class="nav-link " href="{{ route('liste_operator') }}">Liste des
-                                            opérateurs</a>
-                                    </li>
-
-                                    @if (getUserType()->type_user == 3 || getUserType()->type_user == 2)
-
-                                    <li class="{{ Request::is('delete_operator_liste') ? 'active' : '' }}"><a
-                                            class="nav-link " href="{{ route('delete_operator_liste') }}">Opérateurs
-                                            supprimées</a>
-                                    </li>
-
-                                    @endif
-
-
-                                </ul>
-                            </li>
-
-
-                            <li
-                                class="dropdown  {{ Request::is('all_invoice_list') ? 'active' : '' }}
-                              {{ Request::is('all_resum_list') ? 'active' : '' }}
-                              {{ Request::is('delete_invoice_list') ? 'active' : '' }}
-                             ">
-
-                                <a href="#" class="menu-toggle nav-link has-dropdown"><i
-                                        data-feather="file-text"></i><span>Gestion des factures</span></a>
-                                <ul class="dropdown-menu">
-
-                                    <li class="{{ Request::is('all_invoice_list') ? 'active' : '' }}"><a
-                                            class="nav-link " href="{{ route('all_invoice_list') }}">Toutes les
-                                            factures
-                                        </a></li>
-
-
-                                    <li class="{{ Request::is('all_resum_list') ? 'active' : '' }}"><a
-                                            class="nav-link " href="{{ route('all_resum_list') }}">Créances &
-                                            Dettes</a>
-                                    </li>
-
-                                    <li class="{{ Request::is('delete_invoice_list') ? 'active' : '' }}"><a
-                                            class="nav-link " href="{{ route('delete_invoice_list') }}">Factures
-                                            supprimées</a>
-                                    </li>
-
-
-
-                                </ul>
-                            </li>
-
-
-                            <li
-                                class="dropdown  {{ Request::is('all_operations') ? 'active' : '' }}
-                              {{ Request::is('all_cancel_operations') ? 'active' : '' }}
-
-                             ">
-
-                                <a href="#" class="menu-toggle nav-link has-dropdown"><i
-                                        data-feather="slack"></i><span>Gestion des opérations</span></a>
-                                <ul class="dropdown-menu">
-
-                                    <li class="{{ Request::is('all_operations') ? 'active' : '' }}"><a
-                                            class="nav-link " href="{{ route('all_operations') }}">Liste des
-                                            opperations
-                                        </a></li>
-                                    <li class="{{ Request::is('all_cancel_operations') ? 'active' : '' }}"><a
-                                            class="nav-link " href="{{ route('all_cancel_operations') }}">Opperations
-                                            supprimées</a>
-                                    </li>
-
-
-
-                                </ul>
-                            </li>
-                            @if (getUserType()->type_user == 3 || getUserType()->type_user == 2)
-
-                            <li class="dropdown  {{ Request::is('sta_dashboard') ? 'active' : '' }}">
-                                <a href="{{ route('sta_dashboard') }}"class="nav-link"><i data-feather="aperture"></i><span>Statistiques</span></a>
-                            </li>
-                        @endif
-
-                        @if (getUserType()->type_user == 3)
-                            <li
-                                class="dropdown  {{ Request::is('add_user') ? 'active' : '' }}
-                                      {{ Request::is('users_list') ? 'active' : '' }}
-                                        {{ Request::is('delete_user_liste') ? 'active' : '' }} ">
-
-                                <a href="#" class="menu-toggle nav-link has-dropdown"><i
-                                        data-feather="users"></i><span>Gestion des utilisateurs</span></a>
-                                <ul class="dropdown-menu">
-
-                                    <li class="{{ Request::is('add_user') ? 'active' : '' }}"><a class="nav-link "
-                                            href="{{ route('add_user') }}">Ajouter un utilisateur
-                                        </a></li>
-                                    <li class="{{ Request::is('users_list') ? 'active' : '' }}"><a class="nav-link "
-                                            href="{{ route('users_list') }}">Liste des utilisateurs
-                                        </a></li>
-
-                                    <li class="{{ Request::is('delete_user_liste') ? 'active' : '' }}"><a
-                                            class="nav-link " href="{{ route('delete_user_liste') }}">Utilisateurs
-                                            suprimés
-                                        </a></li>
-
-
-                                </ul>
-                            </li>
-                        @endif
-
-                        @if (getUserType()->type_user == 3 || getUserType()->type_user == 2)
-
-                        <li class="dropdown  {{ Request::is('logs') ? 'active' : '' }}">
-                            <a href="{{ route('logs') }}" class="nav-link"><i
-                                    data-feather="package"></i><span>Journal des Actions</span></a>
-                        </li>
-
-@endif
-
-@if (getUserType()->type_user == 3)
-
-<li style="position: fixed; bottom: 0;" class="dropdown  {{ Request::is('setting') ? 'active' : '' }}">
-    <a href="{{ route('setting') }}" class="nav-link"><i
-            data-feather="settings"></i><span>Paramètres </span></a>
-</li>
-
-@endif
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                    </ul>
-                </aside>
-            </div>
             <!-- Main Content -->
-            <div class="main-content">
-                <section class="section">
-
-                    <div class="section-body">
-                        <!-- add content here -->
-
-                        @yield('breadcrumb')
-
+            <div class="main-content" style="background-color: rgb(214, 214, 214)">
 
                         @yield('content')
-
-
-                    </div>
-
-
-                </section>
-
-                @if (isset($operators))
-                    @foreach ($operators as $operator)
-                        @include('operator.voirOperatorModal')
-                        @include('invoice.invoiceModal')
-                        @include('invoice.addInvoiceModal')
-                        @include('invoice.settlementModal')
-                    @endforeach
-                     @endif
-
-
-
-                @if (isset($operator))
-                    @include('invoice.invoiceModal')
-                    @include('invoice.addInvoiceModal')
-                    @include('invoice.settlementModal')
-                @endif
-
-
-
-                @if (isset($operations))
-                    @foreach ($operations as $operation)
-                        @include('invoice.invoice')
-                        @include('invoice.conteste_invoiceModal')
-                        @include('invoice.update_all_invoiceModal')
-                        @include('invoice.cn_Modal')
-                    @endforeach
-
-
-                @endif
-
-                @if (isset($resums))
-                    @foreach ($resums as $resum)
-                        @include('invoice.update_invoiceModal')
-
-                    @endforeach
-
-
-                @endif
-
-
-
-                @if (isset($agents))
-                    @foreach ($agents as $agent)
-                        @include('agents.voirAgentModal')
-                    @endforeach
-
-
-                @endif
-
-                @if (isset($clients))
-                    @foreach ($clients as $client)
-                        @include('client.voirClientModal')
-                    @endforeach
-
-
-                @endif
-
-
-
-
-
-
-
-
-
 
 
             </div>
             <footer class="main-footer">
                 <div class="simple-footer" style="width: 100%; margin: auto  !important;">
                     <a href="#"
-                        style="color: #e90000fd;font-weight: bold; text-align: center !important; margin: auto !important;">
-                        Copyright &copy; TOGOCOM {{ date('Y') }}</a>
+                        style="color: #e90000fd;font-weight: bold; text-align: center !important; margin: auto !important; ">
+                        Copyright &copy; TOGOCOM {{ date('Y') }}
+                    </a>
                 </div>
-                <div class="footer-right">
-                </div>
+
             </footer>
         </div>
     </div>
@@ -495,12 +229,12 @@
     <script src="{{ asset('assets/js/page/forms-advanced-forms.js') }}"></script>
 
     <script src="{{ asset('assets/bundles/amcharts4/core.js') }}"></script>
-  <script src="{{ asset('assets/bundles/amcharts4/charts.js') }}"></script>
-  <script src="{{ asset('assets/bundles/amcharts4/animated.js') }}"></script>
-  <script src="{{ asset('assets/bundles/amcharts4/worldLow.js') }}"></script>
-  <script src="{{ asset('assets/bundles/amcharts4/maps.js') }}"></script>
-  <!-- Page Specific JS File -->
-  <script src="{{ asset('assets/js/page/chart-amchart.js') }}"></script>
+    <script src="{{ asset('assets/bundles/amcharts4/charts.js') }}"></script>
+    <script src="{{ asset('assets/bundles/amcharts4/animated.js') }}"></script>
+    <script src="{{ asset('assets/bundles/amcharts4/worldLow.js') }}"></script>
+    <script src="{{ asset('assets/bundles/amcharts4/maps.js') }}"></script>
+    <!-- Page Specific JS File -->
+    <script src="{{ asset('assets/js/page/chart-amchart.js') }}"></script>
 
 
     <script src="{{ asset('assets/bundles/sweetalert/sweetalert.min.js') }}"></script>
