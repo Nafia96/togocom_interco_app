@@ -12,16 +12,26 @@
                         <i class="fas fa-hiking"></i>
                     </div>
                     <div class="card-wrap">
-                        <div class="card-header">
-                            <h4 class="pull-right">New Clients</h4>
-                        </div>
+
                         <div class="card-body pull-right">
-                            10,225
+                            TOGOTELECOM
                         </div>
                     </div>
-                    <div class="card-chart">
-                        <canvas id="chart-1" height="80"></canvas>
+
+                    <br>
+
+                    <div style="font-size: 140%" class="card-body pull-center">
+                        <br>
+                        Mesures: <br>
+                        <p style="white-space: nowrap;"><span>
+                                0000
+                            </span></p>
+
                     </div>
+
+
+
+
                 </div>
             </div>
             <div class="col-lg-4 col-md-4 col-sm-12">
@@ -30,15 +40,19 @@
                         <i class="fas fa-drafting-compass"></i>
                     </div>
                     <div class="card-wrap">
-                        <div class="card-header">
-                            <h4 class="pull-right">Delivered Order</h4>
-                        </div>
+
                         <div class="card-body pull-right">
-                            2,857
+                            TOGOCOCEL
                         </div>
                     </div>
-                    <div class="card-chart">
-                        <canvas id="chart-2" height="80"></canvas>
+                    <br>
+                    <div style="font-size: 140%" class="card-body pull-center">
+                        <br>
+                        Mesures: <br>
+                        <p style="white-space: nowrap;"><span>
+                                0000
+                            </span></p>
+
                     </div>
                 </div>
             </div>
@@ -48,15 +62,19 @@
                         <i class="fas fa-dollar-sign"></i>
                     </div>
                     <div class="card-wrap">
-                        <div class="card-header">
-                            <h4 class="pull-right">Total Earning</h4>
-                        </div>
                         <div class="card-body pull-right">
-                            $17,458
+                            MOOV
                         </div>
                     </div>
-                    <div class="card-chart">
-                        <canvas id="chart-3" height="80"></canvas>
+
+                    <br>
+                    <div style="font-size: 140%" class="card-body pull-center">
+                        <br>
+                        Mesures: <br>
+                        <p style="white-space: nowrap;"><span>
+                                0000
+                            </span></p>
+
                     </div>
                 </div>
             </div>
@@ -89,14 +107,13 @@
                     <h6 class="font-medium m-b-10">Sidebar Color</h6>
                     <div class="selectgroup selectgroup-pills sidebar-color">
                         <label class="selectgroup-item">
-                            <input type="radio" name="icon-input" value="1"
-                                class="selectgroup-input select-sidebar">
+                            <input type="radio" name="icon-input" value="1" class="selectgroup-input select-sidebar">
                             <span class="selectgroup-button selectgroup-button-icon" data-toggle="tooltip"
                                 data-original-title="Light Sidebar"><i class="fas fa-sun"></i></span>
                         </label>
                         <label class="selectgroup-item">
-                            <input type="radio" name="icon-input" value="2"
-                                class="selectgroup-input select-sidebar" checked>
+                            <input type="radio" name="icon-input" value="2" class="selectgroup-input select-sidebar"
+                                checked>
                             <span class="selectgroup-button selectgroup-button-icon" data-toggle="tooltip"
                                 data-original-title="Dark Sidebar"><i class="fas fa-moon"></i></span>
                         </label>

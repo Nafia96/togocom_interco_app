@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\OperatorController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\NationalController;
 use App\Http\Controllers\OperationController;
 use App\Http\Controllers\StaController;
 use App\Http\Controllers\UserController;
@@ -85,6 +86,9 @@ Route::middleware([NotConnected::class])->group(function () {
 
 
 	Route::get('liste_operator', [OperatorController::class, 'liste_operator'])->name('liste_operator');
+
+    //Rout  pour le national
+	Route::get('show_tgt_tgc', [NationalController::class, 'show_tgt_tgc'])->name('show_tgt_tgc');
 
 	//Route des operations
 

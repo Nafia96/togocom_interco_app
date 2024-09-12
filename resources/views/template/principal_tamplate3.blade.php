@@ -183,7 +183,7 @@
 
                         <li class="menu-header">Gestions des mesures</li>
                         <li
-                            class="dropdown  {{ Request::is('add_operator') ? 'active' : '' }}
+                            class="dropdown  {{ Request::is('show_tgt_tgc') ? 'active' : '' }}
                                   {{ Request::is('liste_operator') ? 'active' : '' }}
                                   {{ Request::is('delete_operator_liste') ? 'active' : '' }}
                                   {{ Request::is('ope_dashboard') ? 'active' : '' }}
@@ -194,19 +194,19 @@
                             <ul class="dropdown-menu">
 
                                 @if (getUserType()->type_user == 3 || getUserType()->type_user == 2)
-                                    <li class="{{ Request::is('add_operator') ? 'active' : '' }}"><a
-                                            class="nav-link " href="{{ route('add_operator') }}">TGT - TGC National
+                                    <li class="{{ Request::is('show_tgt_tgc') ? 'active' : '' }}"><a
+                                            class="nav-link " href="{{ route('show_tgt_tgc') }}">TGT - TGC National
                                         </a></li>
                                 @endif
-                                <li class="{{ Request::is('liste_operator') ? 'active' : '' }}"><a class="nav-link "
-                                        href="{{ route('liste_operator') }}">TGT - TGC International
+                                <li class="{{ Request::is('show_tgt_tgc') ? 'active' : '' }}"><a class="nav-link "
+                                        href="{{ route('show_tgt_tgc') }}">TGT - TGC International
                                     </a>
                                 </li>
 
                                 @if (getUserType()->type_user == 3 || getUserType()->type_user == 2)
                                     <li class="{{ Request::is('delete_operator_liste') ? 'active' : '' }}"><a
-                                            class="nav-link " href="{{ route('delete_operator_liste') }}">TGT - MOOV
-                                            International</a>
+                                            class="nav-link " href="{{ route('delete_operator_liste') }}">MOOV - TGC via TGT
+                                    </a>
                                     </li>
                                 @endif
 
@@ -263,7 +263,7 @@
                                 </li>
 
                                 <li class="{{ Request::is('all_cancel_operations') ? 'active' : '' }}"><a
-                                        class="nav-link " href="{{ route('all_cancel_operations') }}"> MOOV - TGT
+                                        class="nav-link " href="{{ route('all_cancel_operations') }}"> MOOV - TGC
                                         national</a>
                                 </li>
 
@@ -324,6 +324,8 @@
 
 
                 </section>
+
+                @include('national.addMesureModal')
 
                 @if (isset($operators))
                     @foreach ($operators as $operator)
