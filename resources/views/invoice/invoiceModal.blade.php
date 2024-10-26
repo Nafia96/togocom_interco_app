@@ -65,7 +65,7 @@
                                 <div class="form-group col-md-4">
                                     <label>Periode de facturation:</label>
                                     <input class="form-control" type="month" id="start" name="period"
-                                        min="2020-01" value="{{ date('Y-m')}}" />
+                                        min="2020-01" value="2023-01" />
                                 </div>
 
 
@@ -80,7 +80,7 @@
                                     <label for="inputEmail4">Numeros de la facture</label>
                                     <input name="invoice_number" type="text"
                                         class="form-control  @error('invoice_number') is-invalid @enderror"
-                                        value="" placeholder="" required>
+                                        value="MTN GLOBAL CONNECT-2023" placeholder="MTN GLOBAL CONNECT-2022" required>
 
                                     @error('invoice_number')
                                         <span class="invalid-feedback" role="alert">

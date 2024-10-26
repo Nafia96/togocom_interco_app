@@ -53,14 +53,14 @@
                     <br>
                     Année en cours : <br>
                     <p style="white-space: nowrap;"><span>
-                            {{ number_format($receiv_invoices->sum('amount'), 2, ',', ' ') }} {{ $operator->currency }}
+                            {{ number_format($sum_resum_total_annuelle->total_receivable , 2, ',', ' ') }} {{ $operator->currency }}
                         </span></p>
 
                 </div>
 
                 <div style="font-size: 100%" class=" mb-1 card-body pull-center">
                     Total : <br>
-                    <p style="white-space: nowrap;"><span> {{ number_format($op_account->receivable, 2, ',', ' ') }}
+                    <p style="white-space: nowrap;"><span> {{ number_format( $sum_resum_total->total_receivable , 2, ',', ' ') }}
                             {{ $operator->currency }} </span></p>
                 </div>
             </div>
@@ -82,15 +82,16 @@
                     Année en cours : <br>
                     <p>
 
-                        @if ($receiv_invoices->sum('amount') - $debt_invoices->sum('amount') >= 0)
+                        @if ( ($sum_resum_total_annuelle->total_receivable - $sum_resum_total_annuelle->total_debt+ $sum_resum_total_annuelle->decaissement - $sum_resum_total_annuelle->encaissement ) >= 0 )
                             <span style="white-space: nowrap; color:#03a04f">
-                                {{ number_format($receiv_invoices->sum('amount') - $debt_invoices->sum('amount'), 2, ',', ' ') }}
+                                {{ number_format( $sum_resum_total_annuelle->total_receivable - $sum_resum_total_annuelle->total_debt+ $sum_resum_total_annuelle->decaissement - $sum_resum_total_annuelle->encaissement, 2, ',', ' ') }}
                                 {{ $operator->currency }}
                             </span>
+
                         @else
                             <span style="white-space: nowrap; color:red">
 
-                                {{ number_format($receiv_invoices->sum('amount') - $debt_invoices->sum('amount'), 2, ',', ' ') }}
+                                {{ number_format( $sum_resum_total_annuelle->total_receivable - $sum_resum_total_annuelle->total_debt+ $sum_resum_total_annuelle->decaissement - $sum_resum_total_annuelle->encaissement , 2, ',', ' ') }}
                                 {{ $operator->currency }}
                             </span>
                         @endif
@@ -111,14 +112,12 @@
                         @if ($op_account->receivable - $op_account->debt >= 0)
                             <span style="white-space: nowrap; color:#03a04f">
 
-                                {{ number_format($op_account->receivable - $op_account->debt, 2, ',', ' ') }}
-                                {{ $operator->currency }}
+                                {{ number_format($sum_resum_total->total_receivable - $sum_resum_total->total_debt + $sum_resum_total->decaissement - $sum_resum_total->encaissement, 2, ',', ' ') }}
                             </span>
                         @else
                             <span style="white-space: nowrap; color:red">
 
-                                {{ number_format($op_account->receivable - $op_account->debt, 2, ',', ' ') }}
-                                {{ $operator->currency }}
+                                {{ number_format($sum_resum_total->total_receivable - $sum_resum_total->total_debt + $sum_resum_total->decaissement - $sum_resum_total->encaissement, 2, ',', ' ') }}
                             </span>
                         @endif
                     </p>
@@ -141,7 +140,7 @@
                     <br>
                     Année en cours : <br>
                     <p style="white-space: nowrap;"><span>
-                            {{ number_format($debt_invoices->sum('amount'), 2, ',', ' ') }} {{ $operator->currency }}
+                            {{ number_format($sum_resum_total_annuelle->total_debt, 2, ',', ' ') }} {{ $operator->currency }}
                         </span></p>
 
 
@@ -150,7 +149,7 @@
                 <div style="font-size: 100%" class="card-body pull-center">
                     Total : <br>
                     <p style="white-space: nowrap;"><span>
-                            {{ number_format($op_account->debt, 2, ',', ' ') }} {{ $operator->currency }}
+                            {{ number_format($sum_resum_total->total_debt , 2, ',', ' ') }} {{ $operator->currency }}
                         </span></p>
 
                 </div>
@@ -409,10 +408,10 @@
                                             <tr style="font-weight: bold;">
                                                 <td>#</td>
                                                 <td>TOTAL </td>
-                                                <td>{{ $sum_resum_total->total_receivable }}</td>
-                                                <td>{{ $sum_resum_total->encaissement }}</td>
-                                                <td>{{ $sum_resum_total->total_debt }}</td>
-                                                <td>{{ $sum_resum_total->decaissement }}</td>
+                                                <td>{{  number_format($sum_resum_total->total_receivable, 2, ',', ' ') }}</td>
+                                                <td>{{  number_format($sum_resum_total->encaissement , 2, ',', ' ')}}</td>
+                                                <td>{{  number_format($sum_resum_total->total_debt , 2, ',', ' ')}}</td>
+                                                <td>{{  number_format($sum_resum_total->decaissement, 2, ',', ' ') }}</td>
                                                 <td>{{ number_format($sum_resum_total->total_receivable - $sum_resum_total->total_debt + $sum_resum_total->decaissement - $sum_resum_total->encaissement, 2, ',', ' ') }}
                                                 </td>
                                             </tr>
@@ -730,7 +729,7 @@
 
                                         <td>{{ number_format($operation->amount, 2, ',', ' ') . '  ' . $operator->currency }}
                                         </td>
-                                        
+
                                         <td>{{ number_format($operation->new_receivable - $operation->new_debt, 2, ',', ' ') . '  ' . $operator->currency }}
                                         </td>
 

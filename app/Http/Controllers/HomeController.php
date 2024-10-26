@@ -196,7 +196,7 @@ class HomeController extends Controller
                 $comparaison_current_month = Resum::selectRaw('year(resum.periodDate) year, month(resum.periodDate) month, operator.name as operator_name , SUM(receivable_cfa) as total_receivable')
                     ->join('operator', 'resum.id_operator', '=', 'operator.id')
                     ->whereYear('periodDate', '=', date('Y'))
-                    ->whereMonth('periodDate', '=', date('m'))
+                    ->whereMonth('periodDate', '=', date('m') -1)
                     ->where('resum.is_delete', 0)
                     ->where('operator.is_delete', 0)
                     ->where('operator.afrique', 0)
@@ -207,7 +207,7 @@ class HomeController extends Controller
                 $comparaison_month_befor = Resum::selectRaw('year(resum.periodDate) year, month(resum.periodDate) month, operator.name as operator_name , SUM(receivable_cfa) as total_receivable')
                     ->join('operator', 'resum.id_operator', '=', 'operator.id')
                     ->whereYear('periodDate', '=', date('Y'))
-                    ->whereMonth('periodDate', '=', date('m') - 1)
+                    ->whereMonth('periodDate', '=', date('m') - 2)
                     ->where('resum.is_delete', 0)
                     ->where('operator.is_delete', 0)
 
@@ -219,7 +219,7 @@ class HomeController extends Controller
                 $comparaison_current_month_afq = Resum::selectRaw('year(resum.periodDate) year, month(resum.periodDate) month, operator.name as operator_name , SUM(receivable_cfa) as total_receivable')
                     ->join('operator', 'resum.id_operator', '=', 'operator.id')
                     ->whereYear('periodDate', '=', date('Y'))
-                    ->whereMonth('periodDate', '=', date('m'))
+                    ->whereMonth('periodDate', '=', date('m')-1)
                     ->where('resum.is_delete', 0)
                     ->where('operator.is_delete', 0)
 
@@ -231,7 +231,7 @@ class HomeController extends Controller
                 $comparaison_month_befor_afq = Resum::selectRaw('year(resum.periodDate) year, month(resum.periodDate) month, operator.name as operator_name , SUM(receivable_cfa) as total_receivable')
                     ->join('operator', 'resum.id_operator', '=', 'operator.id')
                     ->whereYear('periodDate', '=', date('Y'))
-                    ->whereMonth('periodDate', '=', date('m') - 1)
+                    ->whereMonth('periodDate', '=', date('m') - 2)
                     ->where('resum.is_delete', 0)
                     ->where('operator.is_delete', 0)
 
@@ -337,7 +337,7 @@ class HomeController extends Controller
                 $comparaison_current_month = Resum::selectRaw('year(resum.periodDate) year, month(resum.periodDate) month, operator.name as operator_name , SUM(receivable_cfa) as total_receivable')
                     ->join('operator', 'resum.id_operator', '=', 'operator.id')
                     ->whereYear('periodDate', '=', date('Y'))
-                    ->whereMonth('periodDate', '=', date('m'))
+                    ->whereMonth('periodDate', '=', date('m')-1)
                     ->where('resum.is_delete', 0)
                     ->where('operator.is_delete', 0)
                     ->where('operator.afrique', 0)
@@ -348,7 +348,7 @@ class HomeController extends Controller
                 $comparaison_month_befor = Resum::selectRaw('year(resum.periodDate) year, month(resum.periodDate) month, operator.name as operator_name , SUM(receivable_cfa) as total_receivable')
                     ->join('operator', 'resum.id_operator', '=', 'operator.id')
                     ->whereYear('periodDate', '=', date('Y'))
-                    ->whereMonth('periodDate', '=', date('m') - 1)
+                    ->whereMonth('periodDate', '=', date('m') - 2)
                     ->where('resum.is_delete', 0)
                     ->where('operator.is_delete', 0)
 
@@ -360,7 +360,7 @@ class HomeController extends Controller
                 $comparaison_current_month_afq = Resum::selectRaw('year(resum.periodDate) year, month(resum.periodDate) month, operator.name as operator_name , SUM(receivable_cfa) as total_receivable')
                     ->join('operator', 'resum.id_operator', '=', 'operator.id')
                     ->whereYear('periodDate', '=', date('Y'))
-                    ->whereMonth('periodDate', '=', date('m'))
+                    ->whereMonth('periodDate', '=', date('m')-1)
                     ->where('resum.is_delete', 0)
                     ->where('operator.is_delete', 0)
 
@@ -372,7 +372,7 @@ class HomeController extends Controller
                 $comparaison_month_befor_afq = Resum::selectRaw('year(resum.periodDate) year, month(resum.periodDate) month, operator.name as operator_name , SUM(receivable_cfa) as total_receivable')
                     ->join('operator', 'resum.id_operator', '=', 'operator.id')
                     ->whereYear('periodDate', '=', date('Y'))
-                    ->whereMonth('periodDate', '=', date('m') - 1)
+                    ->whereMonth('periodDate', '=', date('m') - 2)
                     ->where('resum.is_delete', 0)
                     ->where('operator.is_delete', 0)
 

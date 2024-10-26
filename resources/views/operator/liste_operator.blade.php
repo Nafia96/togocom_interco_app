@@ -10,9 +10,6 @@
                 <a href="{{ route('add_operator') }}" class="btn btn-primary ">Ajouter un opérateur </a>
             </div>
         </ol>
-
-
-
     </nav>
 @stop
 

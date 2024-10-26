@@ -26,48 +26,48 @@ class OperatorController extends Controller
     public function ope_dashboard($id_operator)
     {
 
-            $sum_resum = Resum::selectRaw('year(resum.periodDate) year, SUM(receivable) as total_receivable,
+        $sum_resum = Resum::selectRaw('year(resum.periodDate) year, SUM(receivable) as total_receivable,
             SUM(debt) as total_debt,SUM(incoming_payement) as encaissement,SUM(payout) as decaissement')
             ->Where(['id_operator' => $id_operator, 'is_delete' => 0])
             ->groupBy('year')
             ->orderBy('year', 'desc')
             ->get();
 
-            $sum_resum_total = Resum::selectRaw(' SUM(receivable) as total_receivable,
+        $sum_resum_total = Resum::selectRaw(' SUM(receivable) as total_receivable,
             SUM(debt) as total_debt,SUM(incoming_payement) as encaissement,SUM(payout) as decaissement')
             ->Where(['id_operator' => $id_operator, 'is_delete' => 0])
             ->first();
 
-          //  dd($sum_resum_total);
+        $sum_resum_total_annuelle = Resum::selectRaw('year(resum.periodDate) year, SUM(receivable) as total_receivable,
+            SUM(debt) as total_debt,SUM(incoming_payement) as encaissement,SUM(payout) as decaissement')
+            ->Where(['id_operator' => $id_operator, 'is_delete' => 0])
+            ->groupBy('year')
+            ->orderBy('year', 'desc')
+            ->first();
+
 
         $operator = Operator::where('id', $id_operator)->first();
         $op_account = Account::where('id_operator', $operator->id)->first();
 
         $resums = Resum::where(['id_operator' => $id_operator, 'is_delete' => 0])
-            ->orderBy('updated_at', 'DESC')
+            ->orderBy('period', 'DESC')
             ->get();
 
-
-        $debt_invoices = Invoice::where(['operator_id' => $id_operator, 'is_delete' => 0, 'tgc_invoice' => 2])
+        $decaissement_invoices = Invoice::where(['operator_id' => $id_operator, 'is_delete' => 0, 'tgc_invoice' => 1])
             ->whereYear('periodDate', '=', date('Y'))
             ->get();
 
-        $receiv_invoices = Invoice::where(['operator_id' => $id_operator, 'is_delete' => 0, 'tgc_invoice' => 1])
+        $encaissement_invoices = Invoice::where(['operator_id' => $id_operator, 'is_delete' => 0, 'tgc_invoice' => 1])
             ->whereYear('periodDate', '=', date('Y'))
             ->get();
 
-        //dd($receiv_invoices->sum('amount'));
 
         $operations = Operation::where(['id_operator' => $id_operator, 'is_delete' => 0])
             ->orderBy('updated_at', 'DESC')
             ->get();
 
-    //$lastContestation = $operations[]->invoicee->contestation->last();
 
-   //dd( $operations[1]->invoice->contestation->last());
-
-
-        return view('operator/ope_dashboard', compact('sum_resum_total','sum_resum','debt_invoices', 'receiv_invoices', 'operations', 'op_account', 'resums', 'operator'))->render();
+        return view('operator/ope_dashboard', compact('sum_resum_total_annuelle', 'sum_resum_total', 'sum_resum', 'operations', 'op_account', 'resums', 'operator'))->render();
     }
     public function operator_register(Request $request)
     {
@@ -114,7 +114,7 @@ class OperatorController extends Controller
 
         Account::create([
             'id_operator' => $operator->id,
-            'account_number' => $operator->id . '55',
+            'account_number' => $operator->id . '5577',
             'receivable' => 0,
             'debt' => 0,
             'netting' => 0,
@@ -136,7 +136,7 @@ class OperatorController extends Controller
             ->orderBy('created_at', 'DESC')
             ->get();
 
-            //dd($operators);
+        //dd($operators);
         return view('operator.liste_operator', compact('operators'));
     }
 
