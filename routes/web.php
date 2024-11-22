@@ -121,63 +121,63 @@ Route::middleware([NotConnected::class])->group(function () {
 
 
 });
-// For others functionality
-Route::get('/migrate-fresh', function () {
+                        // For others functionality
+                        Route::get('/migrate-fresh', function () {
 
-	Artisan::call('migrate:fresh');
+                            Artisan::call('migrate:fresh');
 
-	Artisan::call('db:seed');
+                            Artisan::call('db:seed');
 
-	/*Artisan::call('ide-helper:models -R');*/
+                            /*Artisan::call('ide-helper:models -R');*/
 
-	Artisan::call('config:cache');
+                            Artisan::call('config:cache');
 
-	Artisan::call('config:clear');
+                            Artisan::call('config:clear');
 
-	Artisan::call('cache:clear');
+                            Artisan::call('cache:clear');
 
-	Artisan::call('route:clear');
+                            Artisan::call('route:clear');
 
-	Artisan::call('view:clear');
+                            Artisan::call('view:clear');
 
-	Artisan::call('clear-compiled');
+                            Artisan::call('clear-compiled');
 
-	return "OK.";
-});
+                            return "OK.";
+                        });
 
-// For others functionality
-Route::get('/migrate', function () {
+                        // For others functionality
+                        Route::get('/migrate', function () {
 
-	Artisan::call('migrate');
+                            Artisan::call('migrate');
 
-	Artisan::call('config:cache');
+                            Artisan::call('config:cache');
 
-	Artisan::call('config:clear');
+                            Artisan::call('config:clear');
 
-	Artisan::call('cache:clear');
+                            Artisan::call('cache:clear');
 
-	Artisan::call('route:clear');
+                            Artisan::call('route:clear');
 
-	Artisan::call('view:clear');
+                            Artisan::call('view:clear');
 
-	Artisan::call('clear-compiled');
+                            Artisan::call('clear-compiled');
 
-	return "OK.";
-});
+                            return "OK.";
+                        });
 
-Route::get('/clear-cache', function () {
+                        Route::get('/clear-cache', function () {
 
-	Artisan::call('config:cache');
+                            Artisan::call('config:cache');
 
-	Artisan::call('config:clear');
+                            Artisan::call('config:clear');
 
-	Artisan::call('cache:clear');
+                            Artisan::call('cache:clear');
 
-	Artisan::call('route:clear');
+                            Artisan::call('route:clear');
 
-	Artisan::call('view:clear');
+                            Artisan::call('view:clear');
 
-	Artisan::call('clear-compiled');
+                            Artisan::call('clear-compiled');
 
-	return "OK.";
-});
+                            return "OK.";
+                        });

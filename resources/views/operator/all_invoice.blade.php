@@ -40,7 +40,7 @@
                                     <th class="recherche">PRESTATION</th>
                                     <th class="recherche">N° FACTURE</th>
                                     <th class="recherche">PERIODES</th>
-                                    <th class="recherche">TYPE</th>
+                                    <th class="recherche">VOLUME </th>
                                     <th class="recherche">MONTANT</th>
                                     <th class="recherche">CREANCES TOGOCOM</th>
 
@@ -79,7 +79,7 @@
                                                 <td>-------</td>
                                             @endif
 
-                                            <td>Facture Litigieuse</td>
+                                            <td>{{ $operation->invoice->call_volume }}</td>
 
 
                                             <td>{{ $operation->amount }}</td>
@@ -147,7 +147,7 @@
                                                 <td>-------</td>
                                             @endif
 
-                                            <td>Facture Estimée</td>
+                                            <td>{{ $operation->invoice->call_volume }}</td>
 
 
                                             <td>{{ $operation->amount }}</td>
@@ -206,17 +206,7 @@
                                             @if ($operation->invoice->period == null)
                                                 <td>-------</td>
                                             @endif
-                                            @if ($operation->invoice_type == 'real')
-                                                <td>Facture réelle</td>
-                                            @endif
-
-
-                                            @if (
-                                                $operation->invoice_type != 'litigious' &&
-                                                    $operation->invoice_type != 'estimated' &&
-                                                    $operation->invoice_type != 'real')
-                                                <td>{{ $operation->invoice_type }}</td>
-                                            @endif
+                                            <td>{{ $operation->invoice->call_volume }}</td>
 
                                             <td>{{ $operation->amount }}</td>
                                             <td>{{ $operation->new_receivable . '  ' . $operation->operator->currency }}

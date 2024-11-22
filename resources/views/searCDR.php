@@ -536,3 +536,240 @@ FROM (
 
 
 ---------------------------------------------------------------------------
+
+SELECT
+    CASE
+        WHEN role_of_node = 0 THEN LEFT(served_msisdn, 3) -- B-num pour les appels sortants
+        WHEN role_of_node = 1 THEN LEFT(other_msisdn, 3) -- A-num pour les appels entrants
+    END AS indicatif_pays,
+    role_of_node,
+    COUNT(*) AS nombre_appels
+FROM
+all_day_cdr -- Remplacez par le nom de votre table CDR
+WHERE
+    (role_of_node = 0 AND served_msisdn IS NOT NULL) OR
+    (role_of_node = 1 AND other_msisdn IS NOT NULL)
+GROUP BY
+    indicatif_pays, role_of_node
+ORDER BY
+    nombre_appels DESC;
+---------------------------------------------------------------------------------------filtre par pays-----------------
+
+SELECT
+    LEFT(served_msisdn, 3) AS indicatif_pays,  -- Préfixe pour les appels sortants
+    role_of_node,
+    COUNT(*) AS nombre_appels,
+    SUM(CAST(NULLIF(rounded_call_duration, '') AS INTEGER)) / 60 AS volume_total_duree_minutes,  -- Durée totale en minutes par indicatif
+    (SELECT SUM(CAST(NULLIF(rounded_call_duration, '') AS INTEGER)) / 60 FROM all_day_cdr WHERE CAST(role_of_node AS INTEGER) = 1) AS volume_global_minutes -- Durée totale en minutes pour tous les appels sortants
+FROM
+    all_day_cdr
+WHERE
+    CAST(role_of_node AS INTEGER) = 1 AND served_msisdn IS NOT NULL
+GROUP BY
+    indicatif_pays, role_of_node
+ORDER BY
+    nombre_appels DESC;
+
+
+    --------------------------------------TEST-----------------------------------------------------
+    INSERT INTO countrycode (country_code, country_name, region_code)
+SELECT
+    CASE
+        WHEN position('-' IN country_code) > 0 THEN split_part(country_code, '-', 2)  -- Région (si présente)
+        ELSE NULL
+    END AS region_code,
+    country_name
+FROM temp_import;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+CREATE OR REPLACE FUNCTION extract_country_info(phone_number VARCHAR)
+RETURNS TABLE(country_code VARCHAR, country_name VARCHAR)
+LANGUAGE plpgsql AS $$
+DECLARE
+    code VARCHAR(3);
+    region VARCHAR(3);
+BEGIN
+    -- Boucle pour tester les codes pays, du plus long au plus court
+    FOR code IN (SELECT DISTINCT country_code FROM CountryCode ORDER BY LENGTH(country_code) DESC) LOOP
+        -- Vérifie si le numéro commence par le code pays actuel
+        IF phone_number LIKE code || '%' THEN
+            -- Extraire les 3 chiffres suivants après le code pays pour l'indicatif régional (si disponible)
+            region := SUBSTRING(phone_number FROM LENGTH(code) + 1 FOR 3);
+
+            -- Recherche du pays correspondant avec code pays et indicatif régional, ou NULL si non défini
+            RETURN QUERY
+            SELECT country_code, country_name
+            FROM CountryCode
+            WHERE country_code = code
+            AND (region_code = region OR region_code IS NULL)
+            LIMIT 1;
+
+            EXIT; -- Arrête la recherche dès qu'une correspondance est trouvée
+        END IF;
+    END LOOP;
+
+    -- Si aucun code pays valide n'est trouvé, retourne NULL pour les deux valeurs
+    RETURN QUERY SELECT NULL, NULL;
+END;
+$$;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+----------------------------------$_COOKIE
+
+httrack "URL_DU_SITE" -O "/chemin/vers/dossier_de_destination"
+
+
+httrack "https://preview.themeforest.net/item/porto-ecommerce-shop-template/full_screen_preview/" -O "/home/djire-nahfiou/copied_site"
+
+
+httrack "https://www.portotheme.com/html/porto_ecommerce/" -O "/home/djire-nahfiou/copied_site4" --robots=0 --user-agent "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36" -c2 -A10000
+
+
+-----------------------------------------------------COUPER LE COUNTRY CODE ET LE COUNTRY NAME -----------------------------
+UPDATE all_day_cdr
+SET
+    country_code = cc.country_code,
+    country_name = cc.country_name
+FROM
+    countrycode cc
+WHERE
+    LEFT(all_day_cdr.served_msisdn, LENGTH(cc.country_code)) = cc.country_code;
+
+------------------
+    UPDATE all_day_cdr
+SET
+    country_code = cc.country_code,
+    country_name = cc.network
+FROM
+    destination_network cc
+WHERE
+    LEFT(all_day_cdr.served_msisdn, LENGTH(cc.country_code)) = cc.country_code;
+--------------------------------------------------------------------------------END CODE SQL -------------------
+--------------------------------------------------------------REGROUPER PAR PAYS ET OPERATEURS--------------------------
+SELECT
+    country_name,
+    SUM(CAST(rounded_call_duration AS INTEGER)) / 60 AS total_duration_minutes
+FROM
+    all_day_cdr
+WHERE
+    rounded_call_duration <> ''
+GROUP BY
+    country_name
+HAVING
+    SUM(CAST(rounded_call_duration AS INTEGER)) / 60 > 0
+ORDER BY
+    total_duration_minutes DESC;
+---------------------------------------------------------------------------------FIN REGROUPEMENT---------------------------
+---------------------ENTRANT TRAFIC----------------------------
+SELECT
+    country_name,
+    SUM(CAST(rounded_call_duration AS INTEGER)) / 60 AS total_duration_minutes
+FROM
+    all_day_cdr
+WHERE
+    rounded_call_duration <> '' AND CAST(role_of_node AS INTEGER) = 1
+GROUP BY
+    country_name
+HAVING
+    SUM(CAST(rounded_call_duration AS INTEGER)) / 60 > 0
+ORDER BY
+    total_duration_minutes DESC;
+
+    --------------------------------------------------END--------------------------------------
+
+    ----------------------------Trafic sortant regroupement par country code et par pays ---------------
+    UPDATE all_day_cdr
+SET
+    country_code_outband = cc.country_code,
+    country_name_outband = cc.country_name
+FROM
+    countrycode cc
+WHERE
+    LEFT(all_day_cdr.other_msisdn, LENGTH(cc.country_code)) = cc.country_code;
+
+---------------------------------------------------------End--------------------------------------------------------
+SELECT
+    country_name_outband,
+    SUM(CAST(rounded_call_duration AS INTEGER)) / 60 AS total_duration_minutes
+FROM
+    all_day_cdr
+WHERE
+    rounded_call_duration <> '' AND CAST(role_of_node AS INTEGER) = 0
+GROUP BY
+country_name_outband
+HAVING
+    SUM(CAST(rounded_call_duration AS INTEGER)) / 60 > 0
+ORDER BY
+    total_duration_minutes DESC;
+---------------------------------------------------------------------End
+
+UPDATE all_day_cdr
+SET
+    number = SUBSTRING(served_msisdn FROM LENGTH(country_code) + 1);
+--------------------------------fIN DE COUP DES NUMER SANS LE COUNTRY CODE --------------------
+UPDATE all_day_cdr
+SET
+    network = dn.network
+FROM
+    destination_network dn
+WHERE
+    dn.country_code = all_day_cdr.country_code
+    AND LEFT(all_day_cdr.number, LENGTH(dn.network_dest_code)) = dn.network_dest_code;
+
+
+-----------------------------------------FIN ENVOI DES NETWORK NAME----------------------------------------------
+SELECT
+    network,
+    SUM(CAST(rounded_call_duration AS INTEGER)) / 60 AS total_volume_minutes
+FROM
+    all_day_cdr
+WHERE
+rounded_call_duration <> '' AND CAST(role_of_node AS INTEGER) = 1
+GROUP BY
+   network
+ORDER BY
+    total_volume_minutes DESC;
+
+
+    SELECT
+    event_date,network,
+    SUM(CAST(rounded_call_duration AS INTEGER)) / 60 AS total_volume_minutes
+FROM
+    (SELECT DISTINCT event_date, network, rounded_call_duration, role_of_node
+     FROM all_day_cdr
+     WHERE rounded_call_duration <> '' AND CAST(role_of_node AS INTEGER) = 1) AS unique_networks
+GROUP BY
+    network
+ORDER BY
+    network;
