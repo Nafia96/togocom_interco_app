@@ -7,7 +7,7 @@
 <head>
     <meta charset="UTF-8">
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" name="viewport">
-    <title>TOGOCOM
+    <title>YAS
         - @yield('title')</title>
     <!-- General CSS Files -->
     <link rel="stylesheet" href={{ asset('assets/css/app.min.css') }}>
@@ -22,11 +22,11 @@
 </head>
 
 <body
-    style="background-image: url({{ asset('assets/img/b_tgc2.jpg') }});background-size: 100%;background-repeat: no-repeat;margin: 0;padding: 0">
+    style="background-image: url({{ asset('assets/img/app_back.jpg') }});background-size: 100%;background-repeat: no-repeat;margin: 0;padding: 0">
     <div class="loader"></div>
 
-    <div class="mt-3 col-12 text-center m-auto">
-        <a href="{{ route('home') }}"><img style="height: 50px; width: 50px;" alt="image"
+    <div class=" col-12 text-center m-auto">
+        <a href="{{ route('home') }}"><img style="height: 100px; width: 100px;" alt="image"
                 src="{{ asset('assets/img/logo.png') }}" class="rounded author-box-picture"></a>
         <div class="clearfix"></div>
     </div>
@@ -49,8 +49,8 @@
     @yield('content')
 
 
-    <div class="simple-footer" style="color: #e90000fd;font-weight: bold; ">
-        Copyright &copy; TOGOCOM {{ date('Y') }}
+    <div class="simple-footer" style="color: #fbd305;font-weight: bold; ">
+        Copyright &copy; YAS {{ date('Y') }}
     </div>
 
     <script src={{ asset('assets/js/app.min.js') }}></script>

@@ -4,6 +4,7 @@ use App\Http\Controllers\OperatorController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\NationalController;
 use App\Http\Controllers\OperationController;
+use App\Http\Controllers\RoamingController;
 use App\Http\Controllers\StaController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -38,6 +39,12 @@ Route::post('update_password_save', [HomeController::class, 'update_password_sav
 
 Route::get('dashboard', [HomeController::class, 'dashboard'])->name('dashboard');
 Route::get('national', [HomeController::class, 'national'])->name('national');
+Route::get('roaming', [HomeController::class, 'roaming2'])->name('roaming');
+
+//roaming rout
+Route::get('iot_discount', [RoamingController::class, 'iot_discount'])->name('iot_discount');
+Route::post('iot_discount_register', [RoamingController::class, 'iot_discount_register'])->name('iot_discount_register');
+
 
 
 Route::get('logout', 'App\Http\Controllers\HomeController@logout');

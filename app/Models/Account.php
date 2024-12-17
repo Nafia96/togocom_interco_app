@@ -33,14 +33,14 @@ class Account extends Model
 	protected $fillable = ['id_operator','account_number','receivable','debt'
     ,'delete_by','reactive_by','netting','is_delete'];
 
- 
+
 
     public function operator(){
         return $this->belongsTo(Operator::class,'id_operator');
     }
 
    /*
-   
+
     public function agence(){
         return $this->belongsTo(Agence::class,'id_agence');
     }

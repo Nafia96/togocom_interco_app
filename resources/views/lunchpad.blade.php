@@ -14,7 +14,7 @@
                 </div>
                 <div class="row container-fluid mt-3 mb-5">
                     <div class="mt-3 col-12 text-center m-auto">
-                        <h4 style="color:#e90000fd;">INTERCO APP LAUNCHPAD</h4>
+                        <h4 style="color:#16346d;">INTERCO APP LAUNCHPAD</h4>
                     </div>
                 </div>
                 <div class="row ">
@@ -28,8 +28,8 @@
                                         <div class="row ">
                                             <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pr-0 pt-3">
                                                 <div class="card-content">
-                                                    <h5 class="font-15"> INTERNATIONALES</h5>
-                                                    <h2 class="mb-3 font-18">Interconnexions</h2>
+                                                    <h5 class="font-15" style="color:#16346d;"> INTERNATIONALES</h5>
+                                                    <h2 class="mb-3 font-18" style="color:#16346d;">Interconnexions</h2>
                                                     <p class="mb-0"><span class="col-orange">34</span> Opérateurs
                                                     </p>
                                                 </div>
@@ -56,8 +56,8 @@
                                         <div class="row ">
                                             <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pr-0 pt-3">
                                                 <div class="card-content">
-                                                    <h5 class="font-15">NATIONALES</h5>
-                                                    <h2 class="mb-3 font-18">Interconnexions</h2>
+                                                    <h5 class="font-15" style="color:#16346d;">NATIONALES</h5>
+                                                    <h2 class="mb-3 font-18" style="color:#16346d;">Interconnexions</h2>
                                                     <p class="mb-0"><span class="col-green">03</span>
                                                         Opérateurs</p>
                                                 </div>
@@ -74,15 +74,15 @@
                         </div>
                     </a>
 
-                    <div class="col-xl-4 col-lg-6 col-md-6 col-sm-6 col-xs-12">
+                    <a class="col-xl-4 col-lg-6 col-md-6 col-sm-6 col-xs-12" href="{{ url('/roaming') }}">
                         <div class="card">
                             <div class="card-statistic-4">
                                 <div class="align-items-center justify-content-between">
                                     <div class="row ">
                                         <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pr-0 pt-3">
                                             <div class="card-content">
-                                                <h5 class="font-15">ROAMING</h5>
-                                                <h2 class="mb-3 font-18">Services</h2>
+                                                <h5 class="font-15" style="color:#16346d;">ROAMING</h5>
+                                                <h2 class="mb-3 font-18" style="color:#16346d;"> Services</h2>
                                                 <p class="mb-0"><span class="col-green">112 </span>Opérateurs
                                                 </p>
                                             </div>
@@ -96,7 +96,7 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </a>
                 </div>
 
 

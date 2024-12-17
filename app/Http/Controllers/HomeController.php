@@ -2,15 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
+use Session;
+use App\Models\User;
+use App\Models\Resum;
 use App\Models\Invoice;
 use App\Models\Journal;
 use App\Models\Operator;
-use App\Models\Resum;
-use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
-use Session;
 
 class HomeController extends Controller
 {
@@ -41,7 +42,6 @@ class HomeController extends Controller
                         ]);
 
                         return redirect('lunchpade');
-
                     } else {
 
                         return redirect()->back()->with('error', "Compte bloqué, Veuillez contacter votre administation")->withInput();
@@ -389,6 +389,8 @@ class HomeController extends Controller
         return view('index');
     }
 
+
+
     public function lunchpade(Request $request)
     {
         //dd('ok');
@@ -404,9 +406,84 @@ class HomeController extends Controller
         if (session('id') != null) {
 
             return view('national.national');
-
         }
 
+        return view('index');
+    }
+
+    public function roaming()
+    {
+        //dd(session('id'));
+        if (session('id') != null) {
+
+            return view('roaming.roaming');
+        }
+
+        return view('index');
+    }
+
+    public function roaming2(Request $request)
+    {
+
+        if (session('id') != null) {
+
+      /*      $daily_trend_incoming = DB::connection('mysql_remote')
+            ->table('live_roaming_trend')
+            ->selectRaw('*')
+            ->where('direction', '=', 'Incoming')
+            ->orderBy('start_hour', 'ASC')
+            ->get();
+
+        $daily_trend_incoming_MAX = DB::connection('mysql_remote')
+            ->table('live_roaming_trend')
+            ->where('direction', '=', 'Incoming')
+            ->max('duration_min');
+
+        $daily_trend_incoming_MIN = DB::connection('mysql_remote')
+            ->table('live_roaming_trend')
+            ->where('direction', '=', 'Incoming')
+            ->min('duration_min');
+
+        $daily_trend_outgoing = DB::connection('mysql_remote')
+            ->table('live_roaming_trend')
+            ->selectRaw('*')
+            ->where('direction', '=', 'Outgoing')
+            ->orderBy('start_hour', 'ASC')
+            ->get();
+
+
+            */
+           // dd($daily_trend_outgoing);
+
+           $daily_trend_incoming = DB::connection('mysql_remote')
+           ->table('live_roaming_trend')
+           ->selectRaw('*')
+           ->where('direction', '=', 'Incoming')
+           ->orderBy('start_hour', 'ASC')
+           ->get();
+
+       $daily_trend_incoming_MAX = DB::connection('mysql_remote')
+           ->table('live_roaming_trend')
+           ->where('direction', '=', 'Incoming')
+           ->max('duration_min');
+
+       $daily_trend_incoming_MIN = DB::connection('mysql_remote')
+           ->table('live_roaming_trend')
+           ->where('direction', '=', 'Incoming')
+           ->min('duration_min');
+
+       $daily_trend_outgoing = DB::connection('mysql_remote')
+           ->table('live_roaming_trend')
+           ->selectRaw('*')
+           ->where('direction', '=', 'Outgoing')
+           ->orderBy('start_hour', 'ASC')
+           ->get();
+
+
+
+
+            return view('roaming.roaming', compact('daily_trend_incoming', 'daily_trend_outgoing','daily_trend_incoming_MIN','daily_trend_incoming_MAX'))->render();
+        }
         return view('index');
     }
 

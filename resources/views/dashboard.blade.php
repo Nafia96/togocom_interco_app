@@ -13,7 +13,8 @@
                             <div class="row ">
                                 <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pr-0 pt-3">
                                     <div class="card-content">
-                                        <p style="white-space: nowrap; font-weight:bold; "><span class="font-15">   UTLISATEURS  </span></p>
+                                        <p style="white-space: nowrap; font-weight:bold; "><span class="font-15"> UTLISATEURS
+                                            </span></p>
                                         <h2 class="mb-3 font-18">{{ $sum_of_user }}</h2>
                                     </div>
                                 </div>
@@ -34,7 +35,8 @@
                             <div class="row ">
                                 <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pr-0 pt-3">
                                     <div class="card-content">
-                                        <p style="white-space: nowrap; font-weight:bold; "><span class="font-15">  OPERATEURS</span></p>
+                                        <p style="white-space: nowrap; font-weight:bold; "><span class="font-15">
+                                                OPERATEURS</span></p>
                                         <h2 class=" font-18">{{ $sum_of_ope }}</h2>
                                     </div>
                                 </div>
@@ -78,9 +80,11 @@
                             <div class="row ">
                                 <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pr-0 pt-3">
                                     <div class="card-content">
-                                        <p style="white-space: nowrap; font-weight:bold; "><span class="font-15"> FACTURES </span></p>
+                                        <p style="white-space: nowrap; font-weight:bold; "><span class="font-15"> FACTURES
+                                            </span></p>
                                         <h2 class="font-18">{{ $sum_of_invoice }}</h2>
-                                        <p class="mb-0"><span class="col-green">{{ $sum_of_invoice_month }}</span>  mois en cours
+                                        <p class="mb-0"><span class="col-green">{{ $sum_of_invoice_month }}</span> mois en
+                                            cours
                                         </p>
                                     </div>
                                 </div>
@@ -100,7 +104,7 @@
         <div class="col-12 col-sm-12 col-lg-12">
             <div class="card">
                 <div class="card-header">
-                    <h4>REPORTING NETTING  DES INTERCONNEXIONS INTERNATIONALES  {{ date('Y') }} </h4>
+                    <h4>REPORTING NETTING DES INTERCONNEXIONS INTERNATIONALES {{ date('Y') }} </h4>
                     <div class="card-header-action">
                         <a data-collapse="#mycard-collapse" class="btn btn-icon btn-info" href="#"><i
                                 class="fas fa-plus"></i></a>
@@ -193,7 +197,7 @@
         <div class="col-12 col-sm-12 col-lg-12">
             <div class="card">
                 <div class="card-header">
-                    <h4>REPORTING RECOUVREMENT  DES INTERCONNEXIONS INTERNATIONALES  {{ date('Y') }} </h4>
+                    <h4>REPORTING RECOUVREMENT DES INTERCONNEXIONS INTERNATIONALES {{ date('Y') }} </h4>
                     <div class="card-header-action">
                         <a data-collapse="#mycard-collapse1" class="btn btn-icon btn-info" href="#"><i
                                 class="fas fa-plus"></i></a>
@@ -666,8 +670,8 @@
         <div class="col-12 col-sm-12 col-lg-12">
             <div class="card">
                 <div class="card-header">
-                    <h4>COMPARAISON REVENUS (FCFA) PAR OPERATEUR {{$mois[date('m') - 1]  }}-{{ date('Y') }} VS
-                        {{ $mois[date('m') +0 ]  }}-{{ date('Y') }}</h4>
+                    <h4>COMPARAISON REVENUS (FCFA) PAR OPERATEUR {{ $mois[date('m') - 1] }}-{{ date('Y') }} VS
+                        {{ $mois[date('m') + 0] }}-{{ date('Y') }}</h4>
                     <div class="card-header-action">
                         <a data-collapse="#mycard-collapse4" class="btn btn-icon btn-info" href="#"><i
                                 class="fas fa-plus"></i></a>
@@ -685,8 +689,10 @@
                                         <thead>
                                             <tr>
                                                 <th style="color: aliceblue">OPERATEUR AFRIQUE</th>
-                                                <th style="color: aliceblue">{{$mois[date('m') - 1]  }}-{{ date('Y') }}</th>
-                                                <th style="color: aliceblue">{{ $mois[date('m') +0 ]  }}-{{ date('Y') }}</th>
+                                                <th style="color: aliceblue">
+                                                    {{ $mois[date('m') - 1] }}-{{ date('Y') }}</th>
+                                                <th style="color: aliceblue">
+                                                    {{ $mois[date('m') + 0] }}-{{ date('Y') }}</th>
                                                 <th style="color: aliceblue">VARIATION GCGA</th>
                                                 <th style="color: aliceblue">%VARIATION</th>
 
@@ -711,7 +717,9 @@
                                                             @php
                                                                 $all_of_current += $result->total_receivable;
 
-                                                                $all_gcca += $result->total_receivable - $befor->total_receivable;
+                                                                $all_gcca +=
+                                                                    $result->total_receivable -
+                                                                    $befor->total_receivable;
                                                             @endphp
                                                             @if ($befor->total_receivable == null)
                                                                 <td style="width:5%">{{ number_format(0, 2, ',', ' ') }}
@@ -804,8 +812,10 @@
                                         <thead>
                                             <tr>
                                                 <th style="color: aliceblue">OPERATEUR HORS AFRIQUE</th>
-                                                <th style="color: aliceblue">{{$mois[date('m') - 1]  }}-{{ date('Y') }}</th>
-                                                <th style="color: aliceblue">{{ $mois[date('m') +0 ]  }}-{{ date('Y') }}
+                                                <th style="color: aliceblue">
+                                                    {{ $mois[date('m') - 1] }}-{{ date('Y') }}</th>
+                                                <th style="color: aliceblue">
+                                                    {{ $mois[date('m') + 0] }}-{{ date('Y') }}
                                                 </th>
                                                 <th style="color: aliceblue">VARIATION GCGA</th>
                                                 <th style="color: aliceblue">%VARIATION</th>
@@ -831,7 +841,9 @@
                                                             @php
                                                                 $all_of_current += $result->total_receivable;
 
-                                                                $all_gcca += $result->total_receivable - $befor->total_receivable;
+                                                                $all_gcca +=
+                                                                    $result->total_receivable -
+                                                                    $befor->total_receivable;
                                                             @endphp
                                                             @if ($befor->total_receivable == null)
                                                                 <td style="width:5%">{{ number_format(0, 2, ',', ' ') }}
@@ -965,7 +977,8 @@
 
             $horsAfrqData = '';
             foreach ($comparaison_month_befor as $data) {
-                $horsAfrqData .= ' { value: ' . $data->total_receivable . ", category: '" . $data->operator_name . "' },";
+                $horsAfrqData .=
+                    ' { value: ' . $data->total_receivable . ", category: '" . $data->operator_name . "' },";
             }
 
             // dd($horsAfrqData);

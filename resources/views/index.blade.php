@@ -12,7 +12,7 @@
                         <div class="card card-primary">
                             <div class="row container-fluid mt-3 ">
                                 <div class="mt-3 col-12 text-center m-auto" >
-                                    <h4>Connexion</h4>
+                                     <h4 style="color:#16346d">Connexion</h4>
                                 </div>
                             </div>
                             <div class="card-body">
@@ -47,7 +47,7 @@
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                   <button type="submit" class="btn btn-primary btn-lg btn-block"   tabindex="4">
+                                   <button type="submit" style="color:#fbd305" class="btn btn-primary btn-lg btn-block"   tabindex="4">
                                         Connexion
                                     </button>
                                 </div>

@@ -7,7 +7,7 @@
 <head>
     <meta charset="UTF-8">
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" name="viewport">
-    <title>TOGOCOM APP - @yield('title')</title>
+    <title>YAS APP - @yield('title')</title>
     <!-- General CSS Files -->
     <link rel="stylesheet" href="{{ asset('assets/css/app.min.css') }}">
 
@@ -96,23 +96,7 @@
 
             <nav  style="margin-left:-250px; padding-left:-150px" class="navbar navbar-expand-lg main-navbar sticky">
                 <div class="form-inline mr-auto">
-                    <ul class="navbar-nav mr-3">
-                        <li><a href="#" data-toggle="sidebar"
-                                class="nav-link nav-link-lg
-                           collapse-btn"> <i
-                                    data-feather="align-justify"></i></a></li>
-                        <li><a href="#" class="nav-link nav-link-lg fullscreen-btn">
-                                <i data-feather="maximize"></i>
-                            </a></li>
-
-                        <li style="transform: translate(250px)">
-                            @if (session()->has('register_success'))
-                                <div class="alert alert-success">
-                                    {{ session()->get('register_success') }}
-                                </div>
-                            @endif
-                        </li>
-                    </ul>
+                    
                 </div>
                 <ul class="navbar-nav navbar-right">
 
@@ -165,8 +149,8 @@
             <footer class="main-footer">
                 <div class="simple-footer" style="width: 100%; margin: auto  !important;">
                     <a href="#"
-                        style="color: #e90000fd;font-weight: bold; text-align: center !important; margin: auto !important; ">
-                        Copyright &copy; TOGOCOM {{ date('Y') }}
+                        style="color: #16346d;font-weight: bold; text-align: center !important; margin: auto !important; ">
+                        Copyright &copy; YAS {{ date('Y') }}
                     </a>
                 </div>
 

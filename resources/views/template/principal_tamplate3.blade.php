@@ -7,7 +7,7 @@
 <head>
     <meta charset="UTF-8">
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" name="viewport">
-    <title>TOGOCOM APP - @yield('title')</title>
+    <title>YAS APP - @yield('title')</title>
     <!-- General CSS Files -->
     <link rel="stylesheet" href="{{ asset('assets/css/app.min.css') }}">
 
@@ -397,8 +397,8 @@
             <footer class="main-footer">
                 <div class="simple-footer" style="width: 100%; margin: auto  !important;">
                     <a href="#"
-                        style="color: #e90000fd;font-weight: bold; text-align: center !important; margin: auto !important;">
-                        Copyright &copy; TOGOCOM {{ date('Y') }}</a>
+                        style="color: #16346d;font-weight: bold; text-align: center !important; margin: auto !important;">
+                        Copyright &copy; YAS {{ date('Y') }}</a>
                 </div>
                 <div class="footer-right">
                 </div>
