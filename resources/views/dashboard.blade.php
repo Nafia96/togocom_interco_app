@@ -670,8 +670,7 @@
         <div class="col-12 col-sm-12 col-lg-12">
             <div class="card">
                 <div class="card-header">
-                    <h4>COMPARAISON REVENUS (FCFA) PAR OPERATEUR {{ $mois[date('m') - 1] }}-{{ date('Y') }} VS
-                        {{ $mois[date('m') + 0] }}-{{ date('Y') }}</h4>
+                    <h4>COMPARAISON REVENUS (FCFA) PAR OPERATEUR </h4>
                     <div class="card-header-action">
                         <a data-collapse="#mycard-collapse4" class="btn btn-icon btn-info" href="#"><i
                                 class="fas fa-plus"></i></a>
@@ -690,9 +689,9 @@
                                             <tr>
                                                 <th style="color: aliceblue">OPERATEUR AFRIQUE</th>
                                                 <th style="color: aliceblue">
-                                                    {{ $mois[date('m') - 1] }}-{{ date('Y') }}</th>
+                                                  </th>
                                                 <th style="color: aliceblue">
-                                                    {{ $mois[date('m') + 0] }}-{{ date('Y') }}</th>
+                                                    </th>
                                                 <th style="color: aliceblue">VARIATION GCGA</th>
                                                 <th style="color: aliceblue">%VARIATION</th>
 
@@ -813,9 +812,9 @@
                                             <tr>
                                                 <th style="color: aliceblue">OPERATEUR HORS AFRIQUE</th>
                                                 <th style="color: aliceblue">
-                                                    {{ $mois[date('m') - 1] }}-{{ date('Y') }}</th>
+                                                   </th>
                                                 <th style="color: aliceblue">
-                                                    {{ $mois[date('m') + 0] }}-{{ date('Y') }}
+                                                    
                                                 </th>
                                                 <th style="color: aliceblue">VARIATION GCGA</th>
                                                 <th style="color: aliceblue">%VARIATION</th>

@@ -11,7 +11,7 @@
                     <div class="card-icon card-icon-large"><i class="fa fa-award"></i></div>
                     <div class="card-content">
                         <h4 class="card-title">Operator</h4>
-                        <span>524</span>
+                        <span>0</span>
 
 
                     </div>
@@ -24,7 +24,7 @@
                     <div class="card-icon card-icon-large"><i class="fa fa-briefcase"></i></div>
                     <div class="card-content">
                         <h4 class="card-title">Auto renewal</h4>
-                        <span>1,258</span>
+                        <span>0</span>
 
                     </div>
                 </div>
@@ -36,7 +36,7 @@
                     <div class="card-icon card-icon-large"><i class="fa fa-globe"></i></div>
                     <div class="card-content">
                         <h4 class="card-title">In Negociation</h4>
-                        <span>10,225</span>
+                        <span>0</span>
 
                     </div>
                 </div>
@@ -48,7 +48,7 @@
                     <div class="card-icon card-icon-large"><i class="fa fa-money-bill-alt"></i></div>
                     <div class="card-content">
                         <h4 class="card-title">Country</h4>
-                        <span>$2,658</span>
+                        <span>0</span>
 
                     </div>
                 </div>
@@ -87,8 +87,7 @@
     <div class="card">
         <div class="card-header" style="background-color:#16346d">
 
-            <h4 style="color: #fbd305"><i class="fas fa-file-invoice-dollar card-icon col-orange font-30 p-r-30"></i> Liste
-                des compteurs Basse Tension </h4>
+            <h4 style="color: #fbd305"><i class="fas fa-file-invoice-dollar card-icon col-orange font-30 p-r-30"></i>  IOT DISCOUNT DEALS BETWEEN TGOTC AND  ROAMING PARTNERS				 </h4>
         </div>
         <div class="card-body">
             <div class="table-responsive">
@@ -123,14 +122,16 @@
                                 <td style="width:15%">{{ $itd->comments }} </td>
                                 <td style="width:10%">{{ $itd->created_at }} </td>
                                 <td style="width:10%">
-                                    <span data-toggle="tooltip" data-placement="top" title="Voir la facture de la dette">
-                                        <a class=" mb-2 btn btn-sm btn-dark" data-toggle="modal"
-                                            data-target="{{ '#invoice' . $itd->id }}">
-                                            <i class="fas fa-receipt text-white "> </i>
-                                        </a>
+                                    <span data-toggle="tooltip" data-placement="top" title="Supprimer" >
+                                       <a class=" delete-confirm mb-2 btn btn-sm btn-danger"
+                                                    href="/delete_operator/{{ $itd->code  }}">
+                                                    <i class="fas far fa-times-circle text-white"> </i>
+                                                </a>
                                     </span>
                                 </td>
                             </tr>
+
+                            <?php $n = $n + 1; ?>
                         @endforeach
 
 
@@ -180,8 +181,8 @@
                     {
                         extend: 'pdfHtml5',
                         footer: true,
-                        filename: 'SOMME_PAR_ANNEES_DES_CREANCES_ET_DETTES_DE_' + myVariable,
-                        title: 'SOMME PAR ANNEES DES CREANCES ET DETTES DE ' + myVariable
+                        filename: 'IOT DISCOUNT DEALS BETWEEN TGOTC AND ROAMING PARTNERS',
+                        title: 'IOT DISCOUNT DEALS BETWEEN TGOTC AND ROAMING PARTNERS'
                     }
                 ],
                 language: {
@@ -224,6 +225,21 @@
                     search: "Rechercher:",
                     searchPlaceholder: "Tapez pour rechercher...",
                     thousands: "."
+                }
+            });
+        });
+
+        $('.delete-confirm').on('click', function(event) {
+            event.preventDefault();
+            const url = $(this).attr('href');
+            swal({
+                title: 'Voulez-vous vraiment supprimer cet IOT DISCOUNT ?',
+                text: 'Cet IOT DISCOUNT sera supprimé définitivement de cette liste!',
+                icon: 'warning',
+                buttons: ["Annuler", "Oui!"],
+            }).then(function(value) {
+                if (value) {
+                    window.location.href = url;
                 }
             });
         });

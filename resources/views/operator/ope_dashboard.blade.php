@@ -53,7 +53,10 @@
                     <br>
                     Année en cours : <br>
                     <p style="white-space: nowrap;"><span>
+                       @isset($sum_resum_total_annuelle->total_receivable)
                             {{ number_format($sum_resum_total_annuelle->total_receivable , 2, ',', ' ') }} {{ $operator->currency }}
+
+                        @endisset
                         </span></p>
 
                 </div>
@@ -82,6 +85,9 @@
                     Année en cours : <br>
                     <p>
 
+                        @isset($sum_resum_total_annuelle->total_receivable)
+
+
                         @if ( ($sum_resum_total_annuelle->total_receivable - $sum_resum_total_annuelle->total_debt+ $sum_resum_total_annuelle->decaissement - $sum_resum_total_annuelle->encaissement ) >= 0 )
                             <span style="white-space: nowrap; color:#03a04f">
                                 {{ number_format( $sum_resum_total_annuelle->total_receivable - $sum_resum_total_annuelle->total_debt+ $sum_resum_total_annuelle->decaissement - $sum_resum_total_annuelle->encaissement, 2, ',', ' ') }}
@@ -95,6 +101,8 @@
                                 {{ $operator->currency }}
                             </span>
                         @endif
+
+                        @endisset
                     </p>
 
 
@@ -140,7 +148,10 @@
                     <br>
                     Année en cours : <br>
                     <p style="white-space: nowrap;"><span>
-                            {{ number_format($sum_resum_total_annuelle->total_debt, 2, ',', ' ') }} {{ $operator->currency }}
+                        @isset($sum_resum_total_annuelle->total_debt)
+                        {{ number_format($sum_resum_total_annuelle->total_debt, 2, ',', ' ') }} {{ $operator->currency }}
+
+                        @endisset
                         </span></p>
 
 
@@ -149,7 +160,10 @@
                 <div style="font-size: 100%" class="card-body pull-center">
                     Total : <br>
                     <p style="white-space: nowrap;"><span>
-                            {{ number_format($sum_resum_total->total_debt , 2, ',', ' ') }} {{ $operator->currency }}
+                        @isset($sum_resum_total->total_debt)
+                        {{ number_format($sum_resum_total->total_debt , 2, ',', ' ') }} {{ $operator->currency }}
+
+                        @endisset
                         </span></p>
 
                 </div>

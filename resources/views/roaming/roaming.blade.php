@@ -40,7 +40,7 @@
                   <div class="list-inline text-center">
                     <div class="list-inline-item p-r-30"><i data-feather="arrow-down-circle"
                         class="col-orange"></i>
-                      <h5 class="m-b-0">{{ ($daily_trend_incoming_MAX - $daily_trend_incoming_MIN)/$daily_trend_incoming_MIN }}</h5>
+                      <h5 class="m-b-0"> </h5>
                       <p class="text-muted font-14 m-b-0">Average Time</p>
                     </div>
                   </div>
