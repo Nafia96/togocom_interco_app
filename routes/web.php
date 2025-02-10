@@ -116,6 +116,9 @@ Route::middleware([NotConnected::class])->group(function () {
 	Route::get('cancel_operation/{id_operation}', [OperationController::class, 'cancel_operation'])->name('cancel_operation');
 	Route::get('receivable_debt/{id_operator}', [OperationController::class, 'receivable_debt'])->name('receivable_debt');
 
+    // Teléhargement des factures
+    Route::get('downloadinvoice/{year}/{month}/{operatorId}', [OperationController::class, 'downloadInvoice'])->name('downloadinvoice');
+
 
 	//Fin route operations
 

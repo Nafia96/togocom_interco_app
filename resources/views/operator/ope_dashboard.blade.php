@@ -53,17 +53,18 @@
                     <br>
                     Année en cours : <br>
                     <p style="white-space: nowrap;"><span>
-                       @isset($sum_resum_total_annuelle->total_receivable)
-                            {{ number_format($sum_resum_total_annuelle->total_receivable , 2, ',', ' ') }} {{ $operator->currency }}
-
-                        @endisset
+                            @isset($sum_resum_total_annuelle->total_receivable)
+                                {{ number_format($sum_resum_total_annuelle->total_receivable, 2, ',', ' ') }}
+                                {{ $operator->currency }}
+                            @endisset
                         </span></p>
 
                 </div>
 
                 <div style="font-size: 100%" class=" mb-1 card-body pull-center">
                     Total : <br>
-                    <p style="white-space: nowrap;"><span> {{ number_format( $sum_resum_total->total_receivable , 2, ',', ' ') }}
+                    <p style="white-space: nowrap;"><span>
+                            {{ number_format($sum_resum_total->total_receivable, 2, ',', ' ') }}
                             {{ $operator->currency }} </span></p>
                 </div>
             </div>
@@ -88,19 +89,23 @@
                         @isset($sum_resum_total_annuelle->total_receivable)
 
 
-                        @if ( ($sum_resum_total_annuelle->total_receivable - $sum_resum_total_annuelle->total_debt+ $sum_resum_total_annuelle->decaissement - $sum_resum_total_annuelle->encaissement ) >= 0 )
-                            <span style="white-space: nowrap; color:#03a04f">
-                                {{ number_format( $sum_resum_total_annuelle->total_receivable - $sum_resum_total_annuelle->total_debt+ $sum_resum_total_annuelle->decaissement - $sum_resum_total_annuelle->encaissement, 2, ',', ' ') }}
-                                {{ $operator->currency }}
-                            </span>
+                            @if (
+                                $sum_resum_total_annuelle->total_receivable -
+                                    $sum_resum_total_annuelle->total_debt +
+                                    $sum_resum_total_annuelle->decaissement -
+                                    $sum_resum_total_annuelle->encaissement >=
+                                    0)
+                                <span style="white-space: nowrap; color:#03a04f">
+                                    {{ number_format($sum_resum_total_annuelle->total_receivable - $sum_resum_total_annuelle->total_debt + $sum_resum_total_annuelle->decaissement - $sum_resum_total_annuelle->encaissement, 2, ',', ' ') }}
+                                    {{ $operator->currency }}
+                                </span>
+                            @else
+                                <span style="white-space: nowrap; color:red">
 
-                        @else
-                            <span style="white-space: nowrap; color:red">
-
-                                {{ number_format( $sum_resum_total_annuelle->total_receivable - $sum_resum_total_annuelle->total_debt+ $sum_resum_total_annuelle->decaissement - $sum_resum_total_annuelle->encaissement , 2, ',', ' ') }}
-                                {{ $operator->currency }}
-                            </span>
-                        @endif
+                                    {{ number_format($sum_resum_total_annuelle->total_receivable - $sum_resum_total_annuelle->total_debt + $sum_resum_total_annuelle->decaissement - $sum_resum_total_annuelle->encaissement, 2, ',', ' ') }}
+                                    {{ $operator->currency }}
+                                </span>
+                            @endif
 
                         @endisset
                     </p>
@@ -148,10 +153,10 @@
                     <br>
                     Année en cours : <br>
                     <p style="white-space: nowrap;"><span>
-                        @isset($sum_resum_total_annuelle->total_debt)
-                        {{ number_format($sum_resum_total_annuelle->total_debt, 2, ',', ' ') }} {{ $operator->currency }}
-
-                        @endisset
+                            @isset($sum_resum_total_annuelle->total_debt)
+                                {{ number_format($sum_resum_total_annuelle->total_debt, 2, ',', ' ') }}
+                                {{ $operator->currency }}
+                            @endisset
                         </span></p>
 
 
@@ -160,10 +165,9 @@
                 <div style="font-size: 100%" class="card-body pull-center">
                     Total : <br>
                     <p style="white-space: nowrap;"><span>
-                        @isset($sum_resum_total->total_debt)
-                        {{ number_format($sum_resum_total->total_debt , 2, ',', ' ') }} {{ $operator->currency }}
-
-                        @endisset
+                            @isset($sum_resum_total->total_debt)
+                                {{ number_format($sum_resum_total->total_debt, 2, ',', ' ') }} {{ $operator->currency }}
+                            @endisset
                         </span></p>
 
                 </div>
@@ -422,10 +426,14 @@
                                             <tr style="font-weight: bold;">
                                                 <td>#</td>
                                                 <td>TOTAL </td>
-                                                <td>{{  number_format($sum_resum_total->total_receivable, 2, ',', ' ') }}</td>
-                                                <td>{{  number_format($sum_resum_total->encaissement , 2, ',', ' ')}}</td>
-                                                <td>{{  number_format($sum_resum_total->total_debt , 2, ',', ' ')}}</td>
-                                                <td>{{  number_format($sum_resum_total->decaissement, 2, ',', ' ') }}</td>
+                                                <td>{{ number_format($sum_resum_total->total_receivable, 2, ',', ' ') }}
+                                                </td>
+                                                <td>{{ number_format($sum_resum_total->encaissement, 2, ',', ' ') }}
+                                                </td>
+                                                <td>{{ number_format($sum_resum_total->total_debt, 2, ',', ' ') }}
+                                                </td>
+                                                <td>{{ number_format($sum_resum_total->decaissement, 2, ',', ' ') }}
+                                                </td>
                                                 <td>{{ number_format($sum_resum_total->total_receivable - $sum_resum_total->total_debt + $sum_resum_total->decaissement - $sum_resum_total->encaissement, 2, ',', ' ') }}
                                                 </td>
                                             </tr>
@@ -813,14 +821,21 @@
 
 
                                         <td style="width:10%">
-                                            @if ($operation->facture_name)
-                                                <span data-toggle="tooltip" data-placement="top"
-                                                    title="Voir la facture">
-                                                    <a class=" mb-2 btn btn-sm btn-primary"
-                                                        href="{{ $operation->facture_name }}" target="blank">
-                                                        <i class="fas fa-eye text-white "> </i>
-                                                    </a>
-                                                </span>
+
+                                            @php
+                                            $year = substr($operation->invoice->period, 0, 4);
+                                            $month = substr($operation->invoice->period, 5, 2);
+                                            $operatorId = $operator->id ?? null;
+                                        @endphp
+
+                                        @if ($year && $month && $operatorId)
+                                            <span data-toggle="tooltip" data-placement="top" title="Voir la facture">
+                                                <a class="mb-2 btn btn-sm btn-primary"
+                                                    href="{{ asset('invoices/depart/' . substr($operation->invoice->period, 0, 4) . '/' . $operator->id . '/' . substr($operation->invoice->period, 5, 2) . '.pdf') }}"
+                                                    target="_blank">
+                                                    <i class="fas fa-eye text-white"></i>
+                                                </a>
+                                            </span>
                                             @endif
                                             @if (getUserType()->type_user == 3 || getUserType()->type_user == 2)
                                                 <span data-toggle="tooltip" data-placement="top"
@@ -841,6 +856,20 @@
 
                                                     </a>
                                                 </span>
+
+
+                                                @if ($year && $month && $operatorId)
+                                                    <span data-toggle="tooltip" data-placement="top"
+                                                        title="Télécharger la facture">
+                                                        <a class="mb-2 btn btn-sm btn-success"
+                                                            href="{{ route('downloadinvoice', ['year' => $year, 'month' => $month, 'operatorId' => $operatorId]) }}"
+                                                            target="_blank">
+                                                            <i class="fas fa-download text-white"></i>
+                                                        </a>
+                                                    </span>
+
+
+                                                @endif
                                             @endif
 
                                         </td>

@@ -2103,6 +2103,20 @@ class OperationController extends Controller
         return view('operator.all_cancel_operation_list', compact('operations'))->render();
     }
 
+
+    public function downloadInvoice($year, $month, $operatorId)
+    {
+        $filename = $month . '.pdf';
+        $filePath = public_path('invoices/depart/' . $year . '/' . $operatorId . '/' . $filename);
+        $newFileName = 'facture_' . $year . '_' . $month . '_' . $operatorId . '.pdf';
+
+        if (file_exists($filePath)) {
+            return response()->download($filePath, $newFileName);
+        } else {
+            return redirect()->back()->with('error', 'Le fichier n\'existe pas.');
+        }
+    }
+
     //Liste des creances et des dettes
 
     public function receivable_debt($id_operator)
