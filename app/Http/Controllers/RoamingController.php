@@ -6,6 +6,7 @@ use App\Models\Agence;
 use App\Models\Client;
 use App\Models\Comptes;
 use App\Models\IotDiscount;
+use App\Models\IotDiscount_sms_data;
 use App\Models\Journal;
 use App\Models\Operation;
 use App\Models\User;
@@ -22,6 +23,21 @@ class RoamingController extends Controller
 
             $itds = IotDiscount::orderBy("created_at", 'DESC')->get();
             return view('roaming.iot_discount', compact('itds'));
+
+
+        }
+
+        return view('index');
+    }
+
+    public function iot_sms_data()
+    {
+        if (session('id') != null) {
+
+
+            $itds = IotDiscount_sms_data::orderBy("pays", 'ASC')->get();
+           // dd($itds);
+            return view('roaming.sms_data', compact('itds'));
 
 
         }
