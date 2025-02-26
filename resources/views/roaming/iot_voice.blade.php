@@ -86,7 +86,7 @@
     <div class="card">
         <div class="card-header" style="background-color:#16346d">
 
-            <h4 style="color: #fbd305"><i class="fas fa-file-invoice-dollar card-icon col-orange font-30 p-r-30"></i>  TARIFFS ROAMING OUT TOGOCOM (SMS et DATA) Tarifs End-user en FCFA TTC </h4>
+            <h4 style="color: #fbd305"><i class="fas fa-file-invoice-dollar card-icon col-orange font-30 p-r-30"></i>  TARIFFS ROAMING OUT TOGOCOM ( VOIX ) Tarifs End-user en FCFA TTC </h4>
         </div>
         <div class="card-body">
             <div class="table-responsive">
@@ -95,13 +95,21 @@
                         <tr>
                             <th class="recherche">N°</th>
                             <th class="recherche">Pays</th>
-                            <th class="recherche">Operateur</th>
-                            <th class="recherche">Code</th>
+                            <th class="recherche">Opérateur</th>
+                            <th class="recherche">Code opérateur</th>
+                            <th class="recherche">Country Code</th>
 
-                            <th class="recherche">1 SMS</th>
-                            <th class="recherche">10 Ko</th>
+                            <th class="recherche">MCC+MNC</th>
+                            <th class="recherche">Mobile réseau</th>
+                            <th class="recherche">Mobile réseau visité</th>
+                            <th class="recherche">réseau filaire</th>
+                            <th class="recherche">Vers CEDEAO</th>
+                            <th class="recherche">Vers reste Afrique</th>
+                            <th class="recherche">Vers Europ+Amérique nord</th>
+                            <th class="recherche">Reste du monde</th>
+                            <th class="recherche">Satelite</th>
+                            <th class="recherche">Toute origine</th>
                             <th class="recherche">Type</th>
-                            <th class="recherche">Mise à jours</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -114,8 +122,17 @@
                                 <td style="width:5%">{{ $itd->pays }} </td>
                                 <td style="width:10%">{{ $itd->operateur }} </td>
                                 <td style="width:10%">{{ $itd->code_operateur }} </td>
-                                <td style="width:10%">{{ $itd->for_one_sms }} </td>
-                                <td style="width:10%">{{ $itd->for_bundle }} </td>
+                                <td style="width:10%">{{ $itd->country_code }} </td>
+                                <td style="width:10%">{{ $itd->mcc_mnc }} </td>
+                                <td style="width:10%">{{ $itd->reseau_du_reseau }} </td>
+                                <td style="width:10%">{{ $itd->mobile_autre_reseau }} </td>
+                                <td style="width:10%">{{ $itd->mobile_filaire }} </td>
+                                <td style="width:10%">{{ $itd->vers_cedeao }} </td>
+                                <td style="width:10%">{{ $itd->vers_rest_europe_amerique }} </td>
+                                <td style="width:10%">{{ $itd->reste_monde }} </td>
+                                <td style="width:10%">{{ $itd->satellite }} </td>
+                                <td style="width:10%">{{ $itd->origine }} </td>
+
 
                                 @if ($itd->special_io == 1)
                                     <td style="width:10%">SPECIAL IOT</td>

@@ -44,6 +44,7 @@ Route::get('roaming', [HomeController::class, 'roaming2'])->name('roaming');
 //roaming rout
 Route::get('iot_discount', [RoamingController::class, 'iot_discount'])->name('iot_discount');
 Route::get('iot_sms_data', [RoamingController::class, 'iot_sms_data'])->name('iot_sms_data');
+Route::get('iot_sms_voice', [RoamingController::class, 'iot_sms_voice'])->name('iot_sms_voice');
 Route::post('iot_discount_register', [RoamingController::class, 'iot_discount_register'])->name('iot_discount_register');
 
 

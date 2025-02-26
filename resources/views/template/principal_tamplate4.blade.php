@@ -193,14 +193,14 @@
                         <li class="dropdown">
 
                             <a href="{{ url('/iot_sms_data') }}" class="nav-link"><i
-                                    data-feather="monitor"></i><span>OUT END_USR SMS-DATA </span></a>
+                                    data-feather="monitor"></i><span>Out end_usr sms-data </span></a>
 
 
                         </li>
                         <li class="dropdown">
 
-                            <a href="{{ url('/iot_discount') }}" class="nav-link"><i
-                                    data-feather="monitor"></i><span>OUT END_USR SMS-DATA </span></a>
+                            <a href="{{ url('/iot_sms_voice') }}" class="nav-link"><i
+                                    data-feather="monitor"></i><span>Out end_usr voice  </span></a>
 
 
                         </li>
