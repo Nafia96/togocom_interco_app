@@ -479,9 +479,6 @@ class HomeController extends Controller
            ->orderBy('start_hour', 'ASC')
            ->get();
 
-
-
-
             return view('roaming.roaming', compact('daily_trend_incoming', 'daily_trend_outgoing','daily_trend_incoming_MIN','daily_trend_incoming_MAX'))->render();
         }
         return view('index');
