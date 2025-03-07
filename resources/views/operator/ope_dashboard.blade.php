@@ -823,19 +823,31 @@
                                         <td style="width:10%">
 
                                             @php
-                                            $year = substr($operation->invoice->period, 0, 4);
-                                            $month = substr($operation->invoice->period, 5, 2);
-                                            $operatorId = $operator->id ?? null;
-                                        @endphp
+                                                $year = substr($operation->invoice->period, 0, 4);
+                                                $month = substr($operation->invoice->period, 5, 2);
+                                                $operatorId = $operator->id ?? null;
+                                            @endphp
 
-                                        @if ($year && $month && $operatorId)
-                                            <span data-toggle="tooltip" data-placement="top" title="Voir la facture">
-                                                <a class="mb-2 btn btn-sm btn-primary"
-                                                    href="{{ asset('invoices/depart/' . substr($operation->invoice->period, 0, 4) . '/' . $operator->id . '/' . substr($operation->invoice->period, 5, 2) . '.pdf') }}"
-                                                    target="_blank">
-                                                    <i class="fas fa-eye text-white"></i>
-                                                </a>
-                                            </span>
+                                            @if ($year && $month && $operatorId)
+                                                @if ($operation->invoice->tgc_invoice == 1)
+                                                    <span data-toggle="tooltip" data-placement="top"
+                                                        title="Voir la facture">
+                                                        <a class="mb-2 btn btn-sm btn-primary"
+                                                            href="{{ asset('invoices/depart/' . substr($operation->invoice->period, 0, 4) . '/' . $operator->id . '/' . substr($operation->invoice->period, 5, 2) . '.pdf') }}"
+                                                            target="_blank">
+                                                            <i class="fas fa-eye text-white"></i>
+                                                        </a>
+                                                    </span>
+                                                @else
+                                                    <span data-toggle="tooltip" data-placement="top"
+                                                        title="Voir la facture">
+                                                        <a class="mb-2 btn btn-sm btn-primary"
+                                                            href="{{ asset('invoices/arrive/' . substr($operation->invoice->period, 0, 4) . '/' . $operator->id . '/' . substr($operation->invoice->period, 5, 2) . '.pdf') }}"
+                                                            target="_blank">
+                                                            <i class="fas fa-eye text-white"></i>
+                                                        </a>
+                                                    </span>
+                                                @endif
                                             @endif
                                             @if (getUserType()->type_user == 3 || getUserType()->type_user == 2)
                                                 <span data-toggle="tooltip" data-placement="top"
@@ -867,8 +879,6 @@
                                                             <i class="fas fa-download text-white"></i>
                                                         </a>
                                                     </span>
-
-
                                                 @endif
                                             @endif
 

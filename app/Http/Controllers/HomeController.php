@@ -240,9 +240,12 @@ class HomeController extends Controller
                     ->orderBy('month', 'asc')
                     ->get();
 
+                    $operators = Operator::where('is_delete', 0)
+                    ->orderBy('created_at', 'DESC')
+                    ->get();
                 //  dd($comparaison_month_befor);
 
-                return view('no_dashboard', compact('comparaison_current_month_afq', 'comparaison_month_befor_afq', 'comparaison_month_befor', 'comparaison_current_month', 'sum_of_ope_afrique', 'volumEntrant_results', 'volumEntrantBefor_results', 'volumSortant_results', 'volumSortantBefor_results', 'curent_year_befor_result', 'year_befors', 'curent_year_recouvrement', 'recouvrement_results', 'curent_year_result', 'results', 'sum_of_user', 'sum_of_ope', 'sum_of_ope_cdeao', 'sum_of_invoice', 'sum_of_invoice_month'))->render();
+                return view('no_dashboard', compact('operators','comparaison_current_month_afq', 'comparaison_month_befor_afq', 'comparaison_month_befor', 'comparaison_current_month', 'sum_of_ope_afrique', 'volumEntrant_results', 'volumEntrantBefor_results', 'volumSortant_results', 'volumSortantBefor_results', 'curent_year_befor_result', 'year_befors', 'curent_year_recouvrement', 'recouvrement_results', 'curent_year_result', 'results', 'sum_of_user', 'sum_of_ope', 'sum_of_ope_cdeao', 'sum_of_invoice', 'sum_of_invoice_month'))->render();
             } elseif ($user->type_user == 3 || $user->type_user == 2 || $user->type_user == 1) {
 
                 $sum_of_user = User::where(['is_delete' => 0])->get()->count();
@@ -381,9 +384,14 @@ class HomeController extends Controller
                     ->orderBy('month', 'asc')
                     ->get();
 
+
+                    $operators = Operator::where('is_delete', 0)
+                    ->orderBy('created_at', 'DESC')
+                    ->get();
+
                 //  dd($comparaison_month_befor);
 
-                return view('dashboard', compact('comparaison_current_month_afq', 'comparaison_month_befor_afq', 'comparaison_month_befor', 'comparaison_current_month', 'sum_of_ope_afrique', 'volumEntrant_results', 'volumEntrantBefor_results', 'volumSortant_results', 'volumSortantBefor_results', 'curent_year_befor_result', 'year_befors', 'curent_year_recouvrement', 'recouvrement_results', 'curent_year_result', 'results', 'sum_of_user', 'sum_of_ope', 'sum_of_ope_cdeao', 'sum_of_invoice', 'sum_of_invoice_month'))->render();
+                return view('dashboard', compact('operators','comparaison_current_month_afq', 'comparaison_month_befor_afq', 'comparaison_month_befor', 'comparaison_current_month', 'sum_of_ope_afrique', 'volumEntrant_results', 'volumEntrantBefor_results', 'volumSortant_results', 'volumSortantBefor_results', 'curent_year_befor_result', 'year_befors', 'curent_year_recouvrement', 'recouvrement_results', 'curent_year_result', 'results', 'sum_of_user', 'sum_of_ope', 'sum_of_ope_cdeao', 'sum_of_invoice', 'sum_of_invoice_month'))->render();
             }
         }
         return view('index');
