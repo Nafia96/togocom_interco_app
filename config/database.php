@@ -33,37 +33,53 @@ return [
     |
     */
 
-  'connections' => [
-    'mysql' => [  // Connexion locale
-        'driver' => 'mysql',
-        'host' => env('DB_HOST', '127.0.0.1'),
-        'port' => env('DB_PORT', '3306'),
-        'database' => env('DB_DATABASE', 'forge'),
-        'username' => env('DB_USERNAME', 'forge'),
-        'password' => env('DB_PASSWORD', ''),
-        'unix_socket' => env('DB_SOCKET', ''),
-        'charset' => 'utf8mb4',
-        'collation' => 'utf8mb4_unicode_ci',
-        'prefix' => '',
-        'strict' => true,
-        'engine' => null,
-    ],
+    'connections' => [
+        'mysql' => [  // Connexion locale
+            'driver' => 'mysql',
+            'host' => env('DB_HOST', '127.0.0.1'),
+            'port' => env('DB_PORT', '3306'),
+            'database' => env('DB_DATABASE', 'forge'),
+            'username' => env('DB_USERNAME', 'forge'),
+            'password' => env('DB_PASSWORD', ''),
+            'unix_socket' => env('DB_SOCKET', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'engine' => null,
+        ],
 
-    'mysql_remote' => [  // Connexion distante
-        'driver' => 'mysql',
-        'host' => env('DB_REMOTE_HOST', '127.0.0.1'),
-        'port' => env('DB_REMOTE_PORT', '3306'),
-        'database' => env('DB_REMOTE_DATABASE', 'forge'),
-        'username' => env('DB_REMOTE_USERNAME', 'forge'),
-        'password' => env('DB_REMOTE_PASSWORD', ''),
-        'unix_socket' => env('DB_REMOTE_SOCKET', ''),
-        'charset' => 'utf8mb4',
-        'collation' => 'utf8mb4_unicode_ci',
-        'prefix' => '',
-        'strict' => true,
-        'engine' => null,
+        'inter_traffic' => [
+            'driver' => 'mysql',
+            'host' => env('DB_HOST', '127.0.0.1'), // même host que pour 'interco'
+            'port' => env('DB_PORT', '3306'),
+            'database' => 'inter_traffic', // nom de la 2e base
+            'username' => env('DB_USERNAME', 'forge'),
+            'password' => env('DB_PASSWORD', ''),
+            'unix_socket' => env('DB_SOCKET', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'engine' => null,
+        ],
+
+
+        'mysql_remote' => [  // Connexion distante
+            'driver' => 'mysql',
+            'host' => env('DB_REMOTE_HOST', '127.0.0.1'),
+            'port' => env('DB_REMOTE_PORT', '3306'),
+            'database' => env('DB_REMOTE_DATABASE', 'forge'),
+            'username' => env('DB_REMOTE_USERNAME', 'forge'),
+            'password' => env('DB_REMOTE_PASSWORD', ''),
+            'unix_socket' => env('DB_REMOTE_SOCKET', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'engine' => null,
+        ],
     ],
-],
 
 
     /*

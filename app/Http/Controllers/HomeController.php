@@ -481,24 +481,24 @@ class HomeController extends Controller
             */
            // dd($daily_trend_outgoing);
 
-           $daily_trend_incoming = DB::connection('mysql_remote')
+           $daily_trend_incoming = DB::connection('inter_traffic')
            ->table('live_roaming_trend')
-           ->selectRaw('*')
-           ->where('direction', '=', 'Incoming')
+           ->where('direction', 'Incoming')
            ->orderBy('start_hour', 'ASC')
            ->get();
 
-       $daily_trend_incoming_MAX = DB::connection('mysql_remote')
+
+       $daily_trend_incoming_MAX = DB::connection('inter_traffic')
            ->table('live_roaming_trend')
            ->where('direction', '=', 'Incoming')
            ->max('duration_min');
 
-       $daily_trend_incoming_MIN = DB::connection('mysql_remote')
+       $daily_trend_incoming_MIN = DB::connection('inter_traffic')
            ->table('live_roaming_trend')
            ->where('direction', '=', 'Incoming')
            ->min('duration_min');
 
-       $daily_trend_outgoing = DB::connection('mysql_remote')
+       $daily_trend_outgoing = DB::connection('inter_traffic')
            ->table('live_roaming_trend')
            ->selectRaw('*')
            ->where('direction', '=', 'Outgoing')
@@ -580,7 +580,7 @@ class HomeController extends Controller
 
         if (session('id') != null) {
 
-           $reports = DB::connection('mysql_remote')
+           $reports = DB::connection('inter_traffic')
            ->table('BI_Report')
            ->selectRaw('*')
            ->orderBy('start_date', 'DESC')
