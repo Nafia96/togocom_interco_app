@@ -34,7 +34,7 @@
 
 
                         <div class="form-group col-md-4">
-                            <label for="inputEmail4"> Encien mot de passe </label>
+                            <label for="inputEmail4"> Ancien mot de passe</label>
                             <input type="password" name="old_password" class="form-control @error('old_password') is-invalid @enderror"
                                 value="{{ @old('old_password') }}" placeholder="" required>
 

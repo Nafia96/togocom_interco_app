@@ -63,11 +63,15 @@
                                             @if( $user->type_user == 3)
                                             <td>Quatrième niveau</td>
                                             @endif
-                                           
+
+                                            @if( $user->type_user == 6)
+                                            <td>Agent BI</td>
+                                            @endif
+
                                             <td>{{ $user->created_at }}</td>
 
                                             <td style="width:10%">
-                                               
+
 
 
                                                 <span data-toggle="tooltip" data-placement="top"

@@ -8,6 +8,7 @@ use App\Models\Resum;
 use App\Models\Invoice;
 use App\Models\Journal;
 use App\Models\Operator;
+use App\Models\Rcredit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
@@ -41,7 +42,15 @@ class HomeController extends Controller
                             'user_id' => $currentUser->id,
                         ]);
 
-                        return redirect('lunchpade');
+                        if ($currentUser->type_user == 6) {
+
+                        return redirect('lunchpadb');
+
+                        }else{
+
+                            return redirect('lunchpade');
+                        }
+
                     } else {
 
                         return redirect()->back()->with('error', "Compte bloqué, Veuillez contacter votre administation")->withInput();
@@ -408,6 +417,15 @@ class HomeController extends Controller
         }
     }
 
+    public function lunchpadb(Request $request)
+    {
+        //dd('ok');
+        if (session('id') != null) {
+
+            return view('lunchpadb');
+        }
+    }
+
     public function national()
     {
         //dd(session('id'));
@@ -491,6 +509,88 @@ class HomeController extends Controller
         }
         return view('index');
     }
+    public function add_credit()
+    {
+        $rcredits = Rcredit::orderBy('date', 'DESC')->get();
+
+        //dd( $rcredits);
+        return view('BI.add_credit', compact('rcredits'));
+    }
+
+    public function add_roaming_credit(Request $request)
+    {
+        $request->validate([
+            'amount' => 'required|numeric|between:0,99999999999999999999.99',
+            'date' => 'required|date|unique:rcredit,date',
+        ], [
+            'date.unique' => 'Un crédit journalier avec cette date existe déjà.',
+        ]);
+
+        $data = $request->only(['amount', 'date']);
+
+        try {
+
+
+            Rcredit::create($data);
+            Journal::create([
+                'action' => "Ajout du crédit journalier " . $data['amount'],
+                'user_id' => session('id'),
+            ]);
+            return redirect()->back()->with('flash_message_success', 'Crédit ajouté avec succès.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('flash_message_error', 'Erreur lors de l\'ajout du crédit : ' . $e->getMessage());
+        }
+    }
+
+    public function update_credit(Request $request)
+    {
+        $request->validate([
+            'amount' => 'required|numeric|between:0,99999999999999999999.99',
+
+        ]);
+
+        $data = $request->only(['amount', 'id']);
+
+
+
+       rcredit::where('id', $data['id'])->update(['amount' => $data['amount']]);
+
+        Journal::create([
+            'action' => "Modification du crédit journalier " . $data['amount'],
+            'user_id' => session('id'),
+        ]);
+
+        return redirect()->back()->with('flash_message_success', 'Crédit mis à jour avec succès.');
+    }
+
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,csv,xls'
+        ]);
+
+        Excel::import(new UsersImport, $request->file('file'));
+
+        return redirect()->back()->with('success', 'Fichier importé avec succès.');
+    }
+
+    public function interco_details(Request $request)
+    {
+
+        if (session('id') != null) {
+
+           $reports = DB::connection('mysql_remote')
+           ->table('BI_Report')
+           ->selectRaw('*')
+           ->orderBy('start_date', 'DESC')
+           ->get();
+
+            return view('BI.interco_details', compact('reports'))->render();
+        }
+        return view('index');
+    }
+
 
     public function journaux(Request $request)
     {

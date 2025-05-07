@@ -98,7 +98,7 @@
                             </span>
                         @enderror
                     </div>
- 
+
                     <div class="form-group col-md-4">
                         <label for="inputEmail4">Niveau d'utilisateur </label>
                         <select name="type_user" id="inputState" class="form-control">
@@ -106,7 +106,8 @@
                             <option value="1"  >2 (visualiser et extraire les données)</option>
                             <option value="2"  >3 (Admin)</option>
                             <option value="3"  >4 (Super Admin)</option>
-                           
+                            <option value="6"  >5 (Agent BI)</option>
+
                         </select>
                     </div>
 
@@ -153,8 +154,8 @@
                             </span>
                         @enderror
                     </div>
- 
-                   
+
+
 
 
 
@@ -164,7 +165,7 @@
 
 
 
-  
+
 
                 <div class="row">
                     <div class="card-footer align-center ">

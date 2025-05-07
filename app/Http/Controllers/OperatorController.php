@@ -140,6 +140,10 @@ class OperatorController extends Controller
         return view('operator.liste_operator', compact('operators'));
     }
 
+
+
+   
+
     public function delete_operator_liste()
     {
 

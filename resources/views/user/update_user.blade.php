@@ -100,7 +100,7 @@
                             </span>
                         @enderror
                     </div>
- 
+
                     <div class="form-group col-md-4">
                         <label for="inputEmail4">Niveau d'utilisateur </label>
                         <select name="type_user" id="inputState" class="form-control">
@@ -108,7 +108,8 @@
                             <option {{$user->type_user == 1 ? 'selected' : ''}} value="1">2 (visualiser et extraire les données)</option>
                             <option {{$user->type_user == 2 ? 'selected' : ''}} value="2">3 (Admin)</option>
                             <option {{$user->type_user == 3 ? 'selected' : ''}} value="3">4 (Super Admin)</option>
-                           
+                            <option {{$user->type_user == 6 ? 'selected' : ''}} value="6">5 (BI Agent)</option>
+
                         </select>
                     </div>
 

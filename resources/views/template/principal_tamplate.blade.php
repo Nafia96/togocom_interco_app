@@ -7,7 +7,7 @@
 <head>
     <meta charset="UTF-8">
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" name="viewport">
-    <title>YAS APP - @yield('title')</title>
+    <title>INTERCO-YAS APP - @yield('title')</title>
     <!-- General CSS Files -->
     <link rel="stylesheet" href="{{ asset('assets/css/app.min.css') }}">
 
@@ -161,123 +161,124 @@
                     <div class="sidebar-brand">
                         <a href="{{ route('dashboard') }}"> <img alt="image"
                                 src="{{ asset('assets/img/logo.png') }}" class="header-logo" /> <span
-                                class="logo-name">YAS</span>
+                                class="logo-name">INTERCO</span>
                         </a>
                     </div>
                     <ul class="sidebar-menu">
                         <li class="menu-header">Menu principal</li>
                         <li class="dropdown">
 
-                                <a href="{{ url('/lunchpade') }}" class="nav-link"><i
-                                        data-feather="home"></i><span>Launchpad</span></a>
+                            <a href="{{ url('/lunchpade') }}" class="nav-link"><i
+                                    data-feather="home"></i><span>Launchpad</span></a>
 
 
                         </li>
+
+                        @if (getUserType()->type_user == 3 || getUserType()->type_user == 2 || getUserType()->type_user == 1)
+
                         <li class="dropdown">
 
                             <a href="{{ url('/dashboard') }}" class="nav-link"><i
                                     data-feather="monitor"></i><span>Tableau de Bord</span></a>
 
 
-                    </li>
+                        </li>
 
-                            <li class="menu-header">Gestions des données</li>
-                            <li
-                                class="dropdown  {{ Request::is('add_operator') ? 'active' : '' }}
+
+
+                        <li class="menu-header">Gestions des données</li>
+                        <li
+                            class="dropdown  {{ Request::is('add_operator') ? 'active' : '' }}
                                   {{ Request::is('liste_operator') ? 'active' : '' }}
                                   {{ Request::is('delete_operator_liste') ? 'active' : '' }}
                                   {{ Request::is('ope_dashboard') ? 'active' : '' }}
                                  ">
 
-                                <a href="#" class="menu-toggle nav-link has-dropdown"><i
-                                        data-feather="cpu"></i><span>Gestion des opérateurs</span></a>
-                                <ul class="dropdown-menu">
+                            <a href="#" class="menu-toggle nav-link has-dropdown"><i
+                                    data-feather="cpu"></i><span>Gestion des opérateurs</span></a>
+                            <ul class="dropdown-menu">
 
-                                    @if (getUserType()->type_user == 3 || getUserType()->type_user == 2)
-
+                                @if (getUserType()->type_user == 3 || getUserType()->type_user == 2)
                                     <li class="{{ Request::is('add_operator') ? 'active' : '' }}"><a
                                             class="nav-link " href="{{ route('add_operator') }}">Créer un opérateur
                                         </a></li>
+                                @endif
+                                <li class="{{ Request::is('liste_operator') ? 'active' : '' }}"><a class="nav-link "
+                                        href="{{ route('liste_operator') }}">Liste des
+                                        opérateurs</a>
+                                </li>
 
-                                    @endif
-                                    <li class="{{ Request::is('liste_operator') ? 'active' : '' }}"><a
-                                            class="nav-link " href="{{ route('liste_operator') }}">Liste des
-                                            opérateurs</a>
-                                    </li>
-
-                                    @if (getUserType()->type_user == 3 || getUserType()->type_user == 2)
-
+                                @if (getUserType()->type_user == 3 || getUserType()->type_user == 2)
                                     <li class="{{ Request::is('delete_operator_liste') ? 'active' : '' }}"><a
                                             class="nav-link " href="{{ route('delete_operator_liste') }}">Opérateurs
                                             supprimées</a>
                                     </li>
-
-                                    @endif
-
-
-                                </ul>
-                            </li>
+                                @endif
 
 
-                            <li
-                                class="dropdown  {{ Request::is('all_invoice_list') ? 'active' : '' }}
+                            </ul>
+                        </li>
+
+
+                        <li
+                            class="dropdown  {{ Request::is('all_invoice_list') ? 'active' : '' }}
                               {{ Request::is('all_resum_list') ? 'active' : '' }}
                               {{ Request::is('delete_invoice_list') ? 'active' : '' }}
                              ">
 
-                                <a href="#" class="menu-toggle nav-link has-dropdown"><i
-                                        data-feather="file-text"></i><span>Gestion des factures</span></a>
-                                <ul class="dropdown-menu">
+                            <a href="#" class="menu-toggle nav-link has-dropdown"><i
+                                    data-feather="file-text"></i><span>Gestion des factures</span></a>
+                            <ul class="dropdown-menu">
 
-                                    <li class="{{ Request::is('all_invoice_list') ? 'active' : '' }}"><a
-                                            class="nav-link " href="{{ route('all_invoice_list') }}">Toutes les
-                                            factures
-                                        </a></li>
-
-
-                                    <li class="{{ Request::is('all_resum_list') ? 'active' : '' }}"><a
-                                            class="nav-link " href="{{ route('all_resum_list') }}">Créances &
-                                            Dettes</a>
-                                    </li>
-
-                                    <li class="{{ Request::is('delete_invoice_list') ? 'active' : '' }}"><a
-                                            class="nav-link " href="{{ route('delete_invoice_list') }}">Factures
-                                            supprimées</a>
-                                    </li>
+                                <li class="{{ Request::is('all_invoice_list') ? 'active' : '' }}"><a
+                                        class="nav-link " href="{{ route('all_invoice_list') }}">Toutes les
+                                        factures
+                                    </a></li>
 
 
+                                <li class="{{ Request::is('all_resum_list') ? 'active' : '' }}"><a class="nav-link "
+                                        href="{{ route('all_resum_list') }}">Créances &
+                                        Dettes</a>
+                                </li>
 
-                                </ul>
-                            </li>
+                                <li class="{{ Request::is('delete_invoice_list') ? 'active' : '' }}"><a
+                                        class="nav-link " href="{{ route('delete_invoice_list') }}">Factures
+                                        supprimées</a>
+                                </li>
 
 
-                            <li
-                                class="dropdown  {{ Request::is('all_operations') ? 'active' : '' }}
+
+                            </ul>
+                        </li>
+
+
+                        <li
+                            class="dropdown  {{ Request::is('all_operations') ? 'active' : '' }}
                               {{ Request::is('all_cancel_operations') ? 'active' : '' }}
 
                              ">
 
-                                <a href="#" class="menu-toggle nav-link has-dropdown"><i
-                                        data-feather="slack"></i><span>Gestion des opérations</span></a>
-                                <ul class="dropdown-menu">
+                            <a href="#" class="menu-toggle nav-link has-dropdown"><i
+                                    data-feather="slack"></i><span>Gestion des opérations</span></a>
+                            <ul class="dropdown-menu">
 
-                                    <li class="{{ Request::is('all_operations') ? 'active' : '' }}"><a
-                                            class="nav-link " href="{{ route('all_operations') }}">Liste des
-                                            opperations
-                                        </a></li>
-                                    <li class="{{ Request::is('all_cancel_operations') ? 'active' : '' }}"><a
-                                            class="nav-link " href="{{ route('all_cancel_operations') }}">Opperations
-                                            supprimées</a>
-                                    </li>
+                                <li class="{{ Request::is('all_operations') ? 'active' : '' }}"><a class="nav-link "
+                                        href="{{ route('all_operations') }}">Liste des
+                                        opperations
+                                    </a></li>
+                                <li class="{{ Request::is('all_cancel_operations') ? 'active' : '' }}"><a
+                                        class="nav-link " href="{{ route('all_cancel_operations') }}">Opperations
+                                        supprimées</a>
+                                </li>
 
 
 
-                                </ul>
-                            </li>
-                            @if (getUserType()->type_user == 3 || getUserType()->type_user == 2)
-
+                            </ul>
+                        </li>
+                        @if (getUserType()->type_user == 3 || getUserType()->type_user == 2)
                             <li class="dropdown  {{ Request::is('sta_dashboard') ? 'active' : '' }}">
-                                <a href="{{ route('sta_dashboard') }}"class="nav-link"><i data-feather="aperture"></i><span>Statistiques</span></a>
+                                <a href="{{ route('sta_dashboard') }}"class="nav-link"><i
+                                        data-feather="aperture"></i><span>Statistiques</span></a>
                             </li>
                         @endif
 
@@ -309,25 +310,22 @@
                         @endif
 
                         @if (getUserType()->type_user == 3 || getUserType()->type_user == 2)
+                            <li class="dropdown  {{ Request::is('logs') ? 'active' : '' }}">
+                                <a href="{{ route('logs') }}" class="nav-link"><i
+                                        data-feather="package"></i><span>Journal des Actions</span></a>
+                            </li>
+                        @endif
 
-                        <li class="dropdown  {{ Request::is('logs') ? 'active' : '' }}">
-                            <a href="{{ route('logs') }}" class="nav-link"><i
-                                    data-feather="package"></i><span>Journal des Actions</span></a>
-                        </li>
+                        @if (getUserType()->type_user == 3)
+                            <li style="position: fixed; bottom: 0;"
+                                class="dropdown  {{ Request::is('setting') ? 'active' : '' }}">
+                                <a href="{{ route('setting') }}" class="nav-link"><i
+                                        data-feather="settings"></i><span>Paramètres </span></a>
+                            </li>
+                        @endif
+
 
 @endif
-
-@if (getUserType()->type_user == 3)
-
-<li style="position: fixed; bottom: 0;" class="dropdown  {{ Request::is('setting') ? 'active' : '' }}">
-    <a href="{{ route('setting') }}" class="nav-link"><i
-            data-feather="settings"></i><span>Paramètres </span></a>
-</li>
-
-@endif
-
-
-
 
 
 
@@ -367,7 +365,7 @@
                         @include('invoice.addInvoiceModal')
                         @include('invoice.settlementModal')
                     @endforeach
-                     @endif
+                @endif
 
 
 
@@ -393,7 +391,6 @@
                 @if (isset($resums))
                     @foreach ($resums as $resum)
                         @include('invoice.update_invoiceModal')
-
                     @endforeach
 
 
@@ -495,12 +492,12 @@
     <script src="{{ asset('assets/js/page/forms-advanced-forms.js') }}"></script>
 
     <script src="{{ asset('assets/bundles/amcharts4/core.js') }}"></script>
-  <script src="{{ asset('assets/bundles/amcharts4/charts.js') }}"></script>
-  <script src="{{ asset('assets/bundles/amcharts4/animated.js') }}"></script>
-  <script src="{{ asset('assets/bundles/amcharts4/worldLow.js') }}"></script>
-  <script src="{{ asset('assets/bundles/amcharts4/maps.js') }}"></script>
-  <!-- Page Specific JS File -->
-  <script src="{{ asset('assets/js/page/chart-amchart.js') }}"></script>
+    <script src="{{ asset('assets/bundles/amcharts4/charts.js') }}"></script>
+    <script src="{{ asset('assets/bundles/amcharts4/animated.js') }}"></script>
+    <script src="{{ asset('assets/bundles/amcharts4/worldLow.js') }}"></script>
+    <script src="{{ asset('assets/bundles/amcharts4/maps.js') }}"></script>
+    <!-- Page Specific JS File -->
+    <script src="{{ asset('assets/js/page/chart-amchart.js') }}"></script>
 
 
     <script src="{{ asset('assets/bundles/sweetalert/sweetalert.min.js') }}"></script>
