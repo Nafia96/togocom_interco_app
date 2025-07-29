@@ -67,7 +67,7 @@
                                 <div class="form-group col-md-4">
                                     <label>Periode de facturation:</label>
                                     <input class="form-control" type="month" id="start" name="period"
-                                        min="2020-01" value="{{ date('Y-m') }}-1" />
+                                        min="2020-01" value="{{ date('Y-m')}}" />
                                 </div>
 
 

@@ -1846,8 +1846,10 @@ class OperationController extends Controller
                     'id_invoice_2' => $invoice->id,
                     'id_operation_1' => $operation->id,
                     'id_operation_2' => $operation->id,
-                    'service' => 'Encaissment - ' . $data['invoice_date'],
+                    'service' => 'Encaissement - ' . $data['invoice_date'],
                     'periodDate' => $data['invoice_date'],
+                'period' => substr($data['invoice_date'], 0, 7)
+
 
                 ]);
             } elseif ($operator->currency == 'USD') {
@@ -1860,8 +1862,9 @@ class OperationController extends Controller
                     'id_invoice_2' => $invoice->id,
                     'id_operation_1' => $operation->id,
                     'id_operation_2' => $operation->id,
-                    'service' => 'Encaissment - ' . $data['invoice_date'],
+                    'service' => 'Encaissement - ' . $data['invoice_date'],
                     'periodDate' => $data['invoice_date'],
+                'period' => substr($data['invoice_date'], 0, 7)
 
                 ]);
             } elseif ($operator->currency == 'XAF') {
@@ -1874,8 +1877,9 @@ class OperationController extends Controller
                     'id_invoice_2' => $invoice->id,
                     'id_operation_1' => $operation->id,
                     'id_operation_2' => $operation->id,
-                    'service' => 'Encaissment - ' . $data['invoice_date'],
+                    'service' => 'Encaissement - ' . $data['invoice_date'],
                     'periodDate' => $data['invoice_date'],
+                'period' => substr($data['invoice_date'], 0, 7)
 
                 ]);
             } elseif ($operator->currency == 'XOF') {
@@ -1888,14 +1892,15 @@ class OperationController extends Controller
                     'id_invoice_2' => $invoice->id,
                     'id_operation_1' => $operation->id,
                     'id_operation_2' => $operation->id,
-                    'service' => 'Encaissment - ' . $data['invoice_date'],
+                    'service' => 'Encaissement - ' . $data['invoice_date'],
                     'periodDate' => $data['invoice_date'],
+                'period' => substr($data['invoice_date'], 0, 7)
 
                 ]);
             }
 
             Journal::create([
-                'action' => "Ajout d'un encaissment d'une valeur de  " . $data['amount'] . $operator->currency . " de l'opérateur " . $operator->name . " en faveur de TOGOCOM ",
+                'action' => "Ajout d'un encaissement d'une valeur de  " . $data['amount'] . $operator->currency . " de l'opérateur " . $operator->name . " en faveur de TOGOCOM ",
                 'user_id' => session('id'),
             ]);
 
@@ -1956,6 +1961,7 @@ class OperationController extends Controller
                     'id_operation_2' => $operation->id,
                     'service' => 'Decaissement - ' . $data['invoice_date'],
                     'periodDate' => $data['invoice_date'],
+                'period' => substr($data['invoice_date'], 0, 7)
 
                 ]);
             } elseif ($operator->currency == 'USD') {
@@ -1970,6 +1976,7 @@ class OperationController extends Controller
                     'id_operation_2' => $operation->id,
                     'service' => 'Decaissement - ' . $data['invoice_date'],
                     'periodDate' => $data['invoice_date'],
+                'period' => substr($data['invoice_date'], 0, 7)
 
                 ]);
             } elseif ($operator->currency == 'XAF') {
@@ -1984,6 +1991,7 @@ class OperationController extends Controller
                     'id_operation_2' => $operation->id,
                     'service' => 'Decaissement - ' . $data['invoice_date'],
                     'periodDate' => $data['invoice_date'],
+                'period' => substr($data['invoice_date'], 0, 7)
 
                 ]);
             } elseif ($operator->currency == 'XOF') {
@@ -1998,6 +2006,7 @@ class OperationController extends Controller
                     'id_operation_2' => $operation->id,
                     'service' => 'Decaissement - ' . $data['invoice_date'],
                     'periodDate' => $data['invoice_date'],
+                'period' => substr($data['invoice_date'], 0, 7)
 
                 ]);
             }

@@ -1168,7 +1168,7 @@ class StaController extends Controller
 
 
             Journal::create([
-                'action' => "Ajout d'un encaissment d'une valeur de  " . $data['amount'] . $operator->currency . " de l'opérateur " . $operator->name . " en faveur de TOGOCOM ",
+                'action' => "Ajout d'un encaissement d'une valeur de  " . $data['amount'] . $operator->currency . " de l'opérateur " . $operator->name . " en faveur de TOGOCOM ",
                 'user_id' => session('id'),
             ]);
 

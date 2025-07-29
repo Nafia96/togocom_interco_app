@@ -44,13 +44,11 @@ class HomeController extends Controller
 
                         if ($currentUser->type_user == 6) {
 
-                        return redirect('lunchpadb');
-
-                        }else{
+                            return redirect('lunchpadb');
+                        } else {
 
                             return redirect('lunchpade');
                         }
-
                     } else {
 
                         return redirect()->back()->with('error', "Compte bloqué, Veuillez contacter votre administation")->withInput();
@@ -249,12 +247,12 @@ class HomeController extends Controller
                     ->orderBy('month', 'asc')
                     ->get();
 
-                    $operators = Operator::where('is_delete', 0)
+                $operators = Operator::where('is_delete', 0)
                     ->orderBy('created_at', 'DESC')
                     ->get();
                 //  dd($comparaison_month_befor);
 
-                return view('no_dashboard', compact('operators','comparaison_current_month_afq', 'comparaison_month_befor_afq', 'comparaison_month_befor', 'comparaison_current_month', 'sum_of_ope_afrique', 'volumEntrant_results', 'volumEntrantBefor_results', 'volumSortant_results', 'volumSortantBefor_results', 'curent_year_befor_result', 'year_befors', 'curent_year_recouvrement', 'recouvrement_results', 'curent_year_result', 'results', 'sum_of_user', 'sum_of_ope', 'sum_of_ope_cdeao', 'sum_of_invoice', 'sum_of_invoice_month'))->render();
+                return view('no_dashboard', compact('operators', 'comparaison_current_month_afq', 'comparaison_month_befor_afq', 'comparaison_month_befor', 'comparaison_current_month', 'sum_of_ope_afrique', 'volumEntrant_results', 'volumEntrantBefor_results', 'volumSortant_results', 'volumSortantBefor_results', 'curent_year_befor_result', 'year_befors', 'curent_year_recouvrement', 'recouvrement_results', 'curent_year_result', 'results', 'sum_of_user', 'sum_of_ope', 'sum_of_ope_cdeao', 'sum_of_invoice', 'sum_of_invoice_month'))->render();
             } elseif ($user->type_user == 3 || $user->type_user == 2 || $user->type_user == 1) {
 
                 $sum_of_user = User::where(['is_delete' => 0])->get()->count();
@@ -394,13 +392,13 @@ class HomeController extends Controller
                     ->get();
 
 
-                    $operators = Operator::where('is_delete', 0)
+                $operators = Operator::where('is_delete', 0)
                     ->orderBy('created_at', 'DESC')
                     ->get();
 
                 //  dd($comparaison_month_befor);
 
-                return view('dashboard', compact('operators','comparaison_current_month_afq', 'comparaison_month_befor_afq', 'comparaison_month_befor', 'comparaison_current_month', 'sum_of_ope_afrique', 'volumEntrant_results', 'volumEntrantBefor_results', 'volumSortant_results', 'volumSortantBefor_results', 'curent_year_befor_result', 'year_befors', 'curent_year_recouvrement', 'recouvrement_results', 'curent_year_result', 'results', 'sum_of_user', 'sum_of_ope', 'sum_of_ope_cdeao', 'sum_of_invoice', 'sum_of_invoice_month'))->render();
+                return view('dashboard', compact('operators', 'comparaison_current_month_afq', 'comparaison_month_befor_afq', 'comparaison_month_befor', 'comparaison_current_month', 'sum_of_ope_afrique', 'volumEntrant_results', 'volumEntrantBefor_results', 'volumSortant_results', 'volumSortantBefor_results', 'curent_year_befor_result', 'year_befors', 'curent_year_recouvrement', 'recouvrement_results', 'curent_year_result', 'results', 'sum_of_user', 'sum_of_ope', 'sum_of_ope_cdeao', 'sum_of_invoice', 'sum_of_invoice_month'))->render();
             }
         }
         return view('index');
@@ -413,7 +411,9 @@ class HomeController extends Controller
         //dd('ok');
         if (session('id') != null) {
 
-            return view('lunchpad');
+            $operators = Operator::where(['is_delete' => 0])->get()->count();
+
+            return view('lunchpad', compact('operators'))->render();
         }
     }
 
@@ -453,7 +453,7 @@ class HomeController extends Controller
 
         if (session('id') != null) {
 
-      /*      $daily_trend_incoming = DB::connection('mysql_remote')
+            /*      $daily_trend_incoming = DB::connection('mysql_remote')
             ->table('live_roaming_trend')
             ->selectRaw('*')
             ->where('direction', '=', 'Incoming')
@@ -479,33 +479,33 @@ class HomeController extends Controller
 
 
             */
-           // dd($daily_trend_outgoing);
+            // dd($daily_trend_outgoing);
 
-           $daily_trend_incoming = DB::connection('inter_traffic')
-           ->table('live_roaming_trend')
-           ->where('direction', 'Incoming')
-           ->orderBy('start_hour', 'ASC')
-           ->get();
+            $daily_trend_incoming = DB::connection('inter_traffic')
+                ->table('live_roaming_trend')
+                ->where('direction', 'Incoming')
+                ->orderBy('start_hour', 'ASC')
+                ->get();
 
 
-       $daily_trend_incoming_MAX = DB::connection('inter_traffic')
-           ->table('live_roaming_trend')
-           ->where('direction', '=', 'Incoming')
-           ->max('duration_min');
+            $daily_trend_incoming_MAX = DB::connection('inter_traffic')
+                ->table('live_roaming_trend')
+                ->where('direction', '=', 'Incoming')
+                ->max('duration_min');
 
-       $daily_trend_incoming_MIN = DB::connection('inter_traffic')
-           ->table('live_roaming_trend')
-           ->where('direction', '=', 'Incoming')
-           ->min('duration_min');
+            $daily_trend_incoming_MIN = DB::connection('inter_traffic')
+                ->table('live_roaming_trend')
+                ->where('direction', '=', 'Incoming')
+                ->min('duration_min');
 
-       $daily_trend_outgoing = DB::connection('inter_traffic')
-           ->table('live_roaming_trend')
-           ->selectRaw('*')
-           ->where('direction', '=', 'Outgoing')
-           ->orderBy('start_hour', 'ASC')
-           ->get();
+            $daily_trend_outgoing = DB::connection('inter_traffic')
+                ->table('live_roaming_trend')
+                ->selectRaw('*')
+                ->where('direction', '=', 'Outgoing')
+                ->orderBy('start_hour', 'ASC')
+                ->get();
 
-            return view('roaming.roaming', compact('daily_trend_incoming', 'daily_trend_outgoing','daily_trend_incoming_MIN','daily_trend_incoming_MAX'))->render();
+            return view('roaming.roaming', compact('daily_trend_incoming', 'daily_trend_outgoing', 'daily_trend_incoming_MIN', 'daily_trend_incoming_MAX'))->render();
         }
         return view('index');
     }
@@ -553,7 +553,7 @@ class HomeController extends Controller
 
 
 
-       rcredit::where('id', $data['id'])->update(['amount' => $data['amount']]);
+        rcredit::where('id', $data['id'])->update(['amount' => $data['amount']]);
 
         Journal::create([
             'action' => "Modification du crédit journalier " . $data['amount'],
@@ -580,11 +580,11 @@ class HomeController extends Controller
 
         if (session('id') != null) {
 
-           $reports = DB::connection('inter_traffic')
-           ->table('BI_Report')
-           ->selectRaw('*')
-           ->orderBy('start_date', 'DESC')
-           ->get();
+            $reports = DB::connection('inter_traffic')
+                ->table('BI_Report')
+                ->selectRaw('*')
+                ->orderBy('start_date', 'DESC')
+                ->get();
 
             return view('BI.interco_details', compact('reports'))->render();
         }

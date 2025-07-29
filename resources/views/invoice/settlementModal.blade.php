@@ -7,7 +7,7 @@
                 <div class="row container-fluid mt-3 ">
                     <div class="mt-3 col-12 text-center  m-auto">
                         <h6 class="modal-title" style="background-color:#fcca29; color: #ec1f28 ; "
-                            id="myLargeModalLabel">AJOUT D'UN RÈGLEMENT DE {{ $operator->name }} AVEC TOGOCOM   </h6>
+                            id="myLargeModalLabel">AJOUT D'UN RÈGLEMENT DE {{ $operator->name }} AVEC TOGOCOM </h6>
                     </div>
                 </div>
 
@@ -35,28 +35,48 @@
 
                                 <div class="row">
 
-                                    <div class="col-md-6 col-6 b-r">
+                                    <div class="col-md-6 col-6 b-r" style="color:black;">
                                         <strong>CREANCES TOGOCOM AVEC {{ $operator->name }} </strong>
                                         <br>
-                                        <p class="text " style="color: #ec1f28; font-weight: bold;">{{ number_format($operator->account->receivable, 2, ',', ' ') }}
-                                            {{ $operator->currency }}</p>
+                                        <p style="white-space: nowrap;"><span>
+                                             @if (isset($sum_resum_total->total_receivable))
+                                                {{ number_format($sum_resum_total->total_receivable, 2, ',', ' ') }}
+                                                {{ $operator->currency }} </span></p>
+                                                @endif
                                     </div>
 
-                                    <div class="col-md-6 col-6 b-r">
+                                    <div class="col-md-6 col-6 b-r" style="color:black;">
                                         <strong>DETTES TOGOCOM AVEC {{ $operator->name }} </strong>
                                         <br>
-                                        <p class="text " style="color: #ec1f28; font-weight: bold;">{{ number_format($operator->account->debt, 2, ',', ' ') }}
-                                            {{ $operator->currency }} </p>
+                                        <p style="white-space: nowrap;"><span>
+                                                @isset($sum_resum_total_annuelle->total_debt)
+                                                    {{ number_format($sum_resum_total_annuelle->total_debt, 2, ',', ' ') }}
+                                                    {{ $operator->currency }}
+                                                @endisset
+                                            </span></p>
                                     </div>
 
                                 </div>
 
                                 <div class="row">
                                     <div class="mt-3  col-12 text-center  m-auto">
-                                       <h2> <strong>NETING ACTUEL</strong> </h2>
+                                        <h2> <strong>NETTING ACTUEL</strong> </h2>
                                         <br>
-                                    <h3>    <p class="text " style="color: #ec1f28; font-weight: bold; ">{{  number_format($operator->account->receivable -  $operator->account->debt, 2, ',', ' ') }}
-                                            {{ $operator->currency }} </p> </h3>
+                                        <h3>
+                                            @isset($op_account->receivable)
+                                            @if (($sum_resum_total->total_receivable - $sum_resum_total->encaissement ) - ($sum_resum_total->total_debt  + $sum_resum_total->decaissement) >= 0)
+                                                <span style="white-space: nowrap; color:#03a04f">
+
+                                                    {{ number_format(($sum_resum_total->total_receivable - $sum_resum_total->encaissement ) - ($sum_resum_total->total_debt  + $sum_resum_total->decaissement), 2, ',', ' ') }}
+                                                </span>
+                                            @else
+                                                <span style="white-space: nowrap; color:red">
+
+                                                    {{ number_format(($sum_resum_total->total_receivable - $sum_resum_total->encaissement ) - ($sum_resum_total->total_debt  + $sum_resum_total->decaissement), 2, ',', ' ') }}
+                                                </span>
+                                            @endif
+                                             @endisset
+                                        </h3>
                                     </div>
 
                                 </div>
@@ -73,7 +93,7 @@
                             <div class="form-row">
 
                                 <div class="form-group col-md-4">
-                                    <label>Date de valeur  :</label>
+                                    <label>Date de valeur :</label>
                                     <input name="invoice_date" type="text" class="form-control datepicker">
                                 </div>
 
@@ -87,9 +107,9 @@
                                                 {{ $operator->currency }}
                                             </div>
                                         </div>
-                                        <input name="amount" type="number" step="0.01" min="0" lang="en"
-                                         class="form-control  @error('amount') is-invalid @enderror" value="{{ @old('amount') }}"
-                                            placeholder="" required>
+                                        <input name="amount" type="number" step="0.01" min="0"
+                                            lang="en" class="form-control  @error('amount') is-invalid @enderror"
+                                            value="{{ @old('amount') }}" placeholder="" required>
 
                                         @error('amount')
                                             <span class="invalid-feedback" role="alert">

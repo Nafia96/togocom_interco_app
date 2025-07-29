@@ -30,7 +30,7 @@
                                                 <div class="card-content">
                                                     <h5 class="font-15" style="color:#16346d;"> INTERNATIONALES</h5>
                                                     <h2 class="mb-3 font-18" style="color:#16346d;">Interconnexions</h2>
-                                                    <p class="mb-0"><span class="col-orange">34</span> Opérateurs
+                                                    <p class="mb-0"><span class="col-orange">{{ $operators }}</span> Opérateurs
                                                     </p>
                                                 </div>
                                             </div>
@@ -83,8 +83,7 @@
                                             <div class="card-content">
                                                 <h5 class="font-15" style="color:#16346d;">ROAMING</h5>
                                                 <h2 class="mb-3 font-18" style="color:#16346d;"> Services</h2>
-                                                <p class="mb-0"><span class="col-green">112 </span>Opérateurs
-                                                </p>
+                                               
                                             </div>
                                         </div>
                                         <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pl-0">

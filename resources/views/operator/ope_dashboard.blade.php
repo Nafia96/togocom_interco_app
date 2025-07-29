@@ -90,19 +90,16 @@
 
 
                             @if (
-                                $sum_resum_total_annuelle->total_receivable -
-                                    $sum_resum_total_annuelle->total_debt +
-                                    $sum_resum_total_annuelle->decaissement -
-                                    $sum_resum_total_annuelle->encaissement >=
+                               ($sum_resum_total_annuelle->total_receivable - $sum_resum_total_annuelle->encaissement) - ($sum_resum_total_annuelle->total_debt  + $sum_resum_total_annuelle->decaissement ) >=
                                     0)
                                 <span style="white-space: nowrap; color:#03a04f">
-                                    {{ number_format($sum_resum_total_annuelle->total_receivable - $sum_resum_total_annuelle->total_debt + $sum_resum_total_annuelle->decaissement - $sum_resum_total_annuelle->encaissement, 2, ',', ' ') }}
+                                    {{ number_format(($sum_resum_total_annuelle->total_receivable - $sum_resum_total_annuelle->encaissement) - ($sum_resum_total_annuelle->total_debt  + $sum_resum_total_annuelle->decaissement ), 2, ',', ' ') }}
                                     {{ $operator->currency }}
                                 </span>
                             @else
                                 <span style="white-space: nowrap; color:red">
 
-                                    {{ number_format($sum_resum_total_annuelle->total_receivable - $sum_resum_total_annuelle->total_debt + $sum_resum_total_annuelle->decaissement - $sum_resum_total_annuelle->encaissement, 2, ',', ' ') }}
+                                    {{ number_format(($sum_resum_total_annuelle->total_receivable - $sum_resum_total_annuelle->encaissement) - ($sum_resum_total_annuelle->total_debt  + $sum_resum_total_annuelle->decaissement ), 2, ',', ' ') }}
                                     {{ $operator->currency }}
                                 </span>
                             @endif
@@ -122,15 +119,15 @@
 
 
                     <p>
-                        @if ($op_account->receivable - $op_account->debt >= 0)
+                        @if (($sum_resum_total->total_receivable - $sum_resum_total->encaissement ) - ($sum_resum_total->total_debt  + $sum_resum_total->decaissement) >= 0)
                             <span style="white-space: nowrap; color:#03a04f">
 
-                                {{ number_format($sum_resum_total->total_receivable - $sum_resum_total->total_debt + $sum_resum_total->decaissement - $sum_resum_total->encaissement, 2, ',', ' ') }}
+                                {{ number_format(($sum_resum_total->total_receivable - $sum_resum_total->encaissement ) - ($sum_resum_total->total_debt  + $sum_resum_total->decaissement), 2, ',', ' ') }}
                             </span>
                         @else
                             <span style="white-space: nowrap; color:red">
 
-                                {{ number_format($sum_resum_total->total_receivable - $sum_resum_total->total_debt + $sum_resum_total->decaissement - $sum_resum_total->encaissement, 2, ',', ' ') }}
+                                {{ number_format(($sum_resum_total->total_receivable - $sum_resum_total->encaissement ) - ($sum_resum_total->total_debt  + $sum_resum_total->decaissement), 2, ',', ' ') }}
                             </span>
                         @endif
                     </p>
@@ -368,7 +365,8 @@
                                                     @endif
 
                                                     @if ($resum->total_receivable != null)
-                                                        <td style="width:15%">
+                                                        <td style="width:15%"
+                                                            data-order="{{ $resum->total_receivable }}">
                                                             {{ number_format($resum->total_receivable, 2, ',', ' ') }}
                                                         </td>
                                                     @endif
@@ -379,7 +377,8 @@
                                                     @endif
 
                                                     @if ($resum->encaissement != null)
-                                                        <td style="width:15%">
+                                                        <td style="width:15%"
+                                                            data-order="{{ $resum->encaissement }}">
                                                             {{ number_format($resum->encaissement, 2, ',', ' ') }}
                                                         </td>
                                                     @endif
@@ -390,7 +389,7 @@
                                                     @endif
 
                                                     @if ($resum->total_debt != null)
-                                                        <td style="width:15%">
+                                                        <td style="width:15%" data-order="{{ $resum->total_debt }}">
                                                             {{ number_format($resum->total_debt, 2, ',', ' ') }}
                                                         </td>
                                                     @endif
@@ -403,12 +402,14 @@
                                                     @endif
 
                                                     @if ($resum->decaissement != null)
-                                                        <td style="width:15%">
+                                                        <td style="width:15%"
+                                                            data-order="{{ $resum->decaissement }}">
                                                             {{ number_format($resum->decaissement, 2, ',', ' ') }}
                                                     @endif
 
-                                                    <td style="width:15%">
-                                                        {{ number_format($resum->total_receivable - $resum->total_debt + $resum->decaissement - $resum->encaissement, 2, ',', ' ') }}
+                                                    <td style="width:15%"
+                                                        data-order="{{ ($resum->total_receivable - $resum->encaissement) - ($resum->total_debt + $resum->decaissement) }}">
+                                                        {{ number_format(($resum->total_receivable - $resum->encaissement) - ($resum->total_debt + $resum->decaissement) , 2, ',', ' ') }}
 
                                                     </td>
 
@@ -426,15 +427,21 @@
                                             <tr style="font-weight: bold;">
                                                 <td>#</td>
                                                 <td>TOTAL </td>
-                                                <td>{{ number_format($sum_resum_total->total_receivable, 2, ',', ' ') }}
+                                                <td data-order="{{ $sum_resum_total->total_receivable }}">
+                                                    {{ number_format($sum_resum_total->total_receivable, 2, ',', ' ') }}
                                                 </td>
-                                                <td>{{ number_format($sum_resum_total->encaissement, 2, ',', ' ') }}
+                                                <td data-order="{{ $sum_resum_total->encaissement }}">
+                                                    {{ number_format($sum_resum_total->encaissement, 2, ',', ' ') }}
                                                 </td>
-                                                <td>{{ number_format($sum_resum_total->total_debt, 2, ',', ' ') }}
+                                                <td data-order="{{ $sum_resum_total->total_debt }}">
+                                                    {{ number_format($sum_resum_total->total_debt, 2, ',', ' ') }}
                                                 </td>
-                                                <td>{{ number_format($sum_resum_total->decaissement, 2, ',', ' ') }}
+                                                <td data-order="{{ $sum_resum_total->decaissement }}">
+                                                    {{ number_format($sum_resum_total->decaissement, 2, ',', ' ') }}
                                                 </td>
-                                                <td>{{ number_format($sum_resum_total->total_receivable - $sum_resum_total->total_debt + $sum_resum_total->decaissement - $sum_resum_total->encaissement, 2, ',', ' ') }}
+                                                <td
+                                                    data-order="{{ ($sum_resum_total->total_receivable - $sum_resum_total->encaissement ) - ($sum_resum_total->total_debt  + $sum_resum_total->decaissement) }}">
+                                                    {{ number_format(($sum_resum_total->total_receivable - $sum_resum_total->encaissement ) - ($sum_resum_total->total_debt  + $sum_resum_total->decaissement), 2, ',', ' ') }}
                                                 </td>
                                             </tr>
 
@@ -467,8 +474,7 @@
                                                 <th class="recherche">PRESTATIONS </th>
                                                 <th class="recherche">PERIODES</th>
                                                 <th class="recherche">CREANCES ({{ $operator->currency }})</th>
-                                                <th style="width:8%" class="recherche">ENCAISSEMENT
-                                                    ({{ $operator->currency }})</th>
+                                                <th class="recherche">ENCAISSEMENT ({{$operator->currency }})</th>
                                                 <th class="recherche">DETTES ({{ $operator->currency }})</th>
                                                 <th class="recherche">DECAISSEMENT ({{ $operator->currency }})</th>
                                                 <th class="recherche"> NETTING ({{ $operator->currency }})</th>
@@ -481,89 +487,71 @@
                                             @foreach ($resums as $resum)
                                                 <tr>
                                                     <td>{{ $n }} </td>
-                                                    <td style="width:18%">{{ $resum->service }} </td>
+                                                    <td style="width:10%">{{ $resum->service }} </td>
 
                                                     @if ($resum->period == null)
-                                                        <td>---------</td>
-                                                    @endif
-
-                                                    @if ($resum->period != null)
-                                                        <td>{{ periodePrint($resum->period) }}</td>
+                                                        <td data-order="0">---------</td>
+                                                    @else
+                                                        <td data-order="{{ $resum->period }}">
+                                                            {{ periodePrint($resum->period) }}</td>
                                                     @endif
 
                                                     @if ($resum->receivable == null)
-                                                        <td>0</td>
-                                                    @endif
-
-                                                    @if ($resum->receivable != null)
-                                                        <td>{{ number_format($resum->receivable, 2, ',', ' ') }}
+                                                        <td data-order="0">0</td>
+                                                    @else
+                                                        <td data-order="{{ $resum->receivable }}">
+                                                            {{ number_format($resum->receivable, 2, ',', ' ') }}
                                                         </td>
                                                     @endif
 
-
                                                     @if ($resum->incoming_payement == null)
-                                                        <td style="width:8%">0</td>
-                                                    @endif
-
-                                                    @if ($resum->incoming_payement != null)
-                                                        <td style="width:8%">
+                                                        <td style="width:8%" data-order="0">0</td>
+                                                    @else
+                                                        <td style="width:8%"
+                                                            data-order="{{ $resum->incoming_payement }}">
                                                             {{ number_format($resum->incoming_payement, 2, ',', ' ') }}
                                                         </td>
                                                     @endif
 
-
                                                     @if ($resum->operation2->invoice->invoice_type == 'estimated')
                                                         @if ($resum->debt == null)
-                                                            <td>0</td>
-                                                        @endif
-
-                                                        @if ($resum->debt != null && $resum->service != 'Facture de service voix')
-                                                            <td> {{ number_format($resum->debt, 2, ',', ' ') }}
+                                                            <td data-order="0">0</td>
+                                                        @elseif ($resum->service != 'Facture de service voix')
+                                                            <td data-order="{{ $resum->debt }}">
+                                                                {{ number_format($resum->debt, 2, ',', ' ') }}
                                                             </td>
-                                                        @endif
-
-                                                        @if ($resum->debt != null && $resum->service == 'Facture de service voix')
-                                                            <td style="background-color: #fcca29;">
-
-
-
+                                                        @else
+                                                            <td data-order="{{ $resum->debt }}"
+                                                                style="background-color: #fcca29;">
                                                                 <div style="display:block;" data-toggle="modal"
                                                                     data-target="{{ '#update_invoiceModal' . $resum->id }}">
                                                                     {{ number_format($resum->debt, 2, ',', ' ') }}
                                                                 </div>
-
-
                                                             </td>
                                                         @endif
-                                                    @endif
-
-                                                    @if ($resum->operation2->invoice->invoice_type != 'estimated')
+                                                    @else
                                                         @if ($resum->debt == null)
-                                                            <td>0</td>
-                                                        @endif
-
-                                                        @if ($resum->debt != null)
-                                                            <td>{{ number_format($resum->debt, 2, ',', ' ') }}
+                                                            <td data-order="0">0</td>
+                                                        @else
+                                                            <td data-order="{{ $resum->debt }}">
+                                                                {{ number_format($resum->debt, 2, ',', ' ') }}
                                                             </td>
                                                         @endif
                                                     @endif
-
 
                                                     @if ($resum->payout == null)
-                                                        <td>0</td>
+                                                        <td data-order="0">0</td>
+                                                    @else
+                                                        <td data-order="{{ $resum->payout }}">
+                                                            {{ number_format($resum->payout, 2, ',', ' ') }}
+                                                        </td>
                                                     @endif
 
-                                                    @if ($resum->payout != null)
-                                                        <td>{{ number_format($resum->payout, 2, ',', ' ') }}
-                                                    @endif
-
-                                                    <td>{{ number_format($resum->netting, 2, ',', ' ') }}
+                                                    <td data-order="{{ $resum->netting }}">
+                                                        {{ number_format(($resum->receivable-$resum->incoming_payement)-($resum->debt+$resum->payout) , 2, ',', ' ') }}
                                                     </td>
 
-
-
                                                     <td style="width:10%">
-
                                                         @if ($resum->operation2->operation_type != '3')
                                                             <span data-toggle="tooltip" data-placement="top"
                                                                 title="Voir la facture de créance">
@@ -596,18 +584,13 @@
                                                                 </a>
                                                             </span>
                                                         @endif
-
-
-
                                                     </td>
                                                 </tr>
                                                 <?php $n = $n + 1; ?>
                                             @endforeach
-
-
-
                                         </tbody>
                                     </table>
+
                                 </div>
                             </div>
 
@@ -979,6 +962,11 @@
     </div>
 </div>
 
+<script>
+    $(function() {
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+</script>
 
 @endsection
 
@@ -1009,27 +997,74 @@
             orderCellsTop: true,
             fixedHeader: true,
             dom: 'Bfrtip',
+            footer: true, // ← AJOUT ICI ! Important
 
 
-            buttons: [
-
-                {
-                    extend: 'copyHtml5',
-                    footer: true
-                },
-                {
+            buttons: [{
                     extend: 'excelHtml5',
-                    footer: true
+                    footer: true,
+                    filename: 'SOMME PAR ANNEES DES CREANCES ET DETTES DE : '.concat(myVariable),
+                    title: 'SOMME PAR ANNEES DES CREANCES ET DETTES DE : '.concat(myVariable),
+                    exportOptions: {
+                        columns: ':visible',
+                        format: {
+                            body: function(data, row, column, node) {
+                                return typeof data === 'string' ?
+                                    data.replace(/\s/g, '').replace(',', '.') :
+                                    data;
+                            }
+                        }
+                    },
+                    customize: function(xlsx) {
+                        const sheet = xlsx.xl.worksheets['sheet1.xml'];
+                        const rows = $('row', sheet);
+
+                        // Identifier les lignes du footer en supposant qu’il s’agit des dernières
+                        rows.each(function(index) {
+                            if (index >= rows.length - 1) { // dernière ligne = footer
+                                $('c', this).each(function() {
+                                    const valueNode = $(this).find('v');
+                                    let value = valueNode.text();
+                                    if (value && value.includes(' ')) {
+                                        value = value.replace(/\s/g, '')
+                                            .replace(',', '.');
+                                        valueNode.text(value);
+                                    }
+                                });
+                            }
+                        });
+                    }
+
                 },
                 {
                     extend: 'csvHtml5',
-                    footer: true
+                    footer: true,
+                    exportOptions: {
+                        columns: ':visible',
+                        format: {
+                            body: function(data, row, column, node) {
+                                return typeof data === 'string' ?
+                                    data.replace(/\s/g, '').replace(',', '.') :
+                                    data;
+                            }
+                        }
+                    }
                 },
                 {
                     extend: 'pdfHtml5',
                     footer: true,
                     filename: 'SOMME PAR ANNEES DES CREANCES ET DETTES DE : '.concat(myVariable),
-                    title: 'SOMME PAR ANNEES DES CREANCES ET DETTES DE : '.concat(myVariable)
+                    title: 'SOMME PAR ANNEES DES CREANCES ET DETTES DE : '.concat(myVariable),
+                    exportOptions: {
+                        columns: ':visible',
+                        format: {
+                            body: function(data, row, column, node) {
+                                return typeof data === 'string' ?
+                                    data.replace(/\s/g, '').replace(',', '.') :
+                                    data;
+                            }
+                        }
+                    }
                 }
             ],
             "language": {
@@ -1187,184 +1222,107 @@
     });
 
     $(document).ready(function() {
-        // Setup - add a text input to each footer cell
+        // Ajout des champs de recherche
         $('#tableExpor thead tr .recherche').clone(true).appendTo('#tableExpor thead').addClass("rech");
-        $('#tableExpor thead .rech ').each(function(i) {
+        $('#tableExpor thead .rech').each(function(i) {
             var title = $(this).text();
             $(this).html('<input type="text" class="form-control" placeholder="Rechercher ' + title +
                 '" />');
-
             $('input', this).on('keyup change', function() {
                 if (table.column(i).search() !== this.value) {
-                    table
-                        .column(i)
-                        .search(this.value)
-                        .draw();
+                    table.column(i).search(this.value).draw();
                 }
             });
         });
+
+        var myVariable = <?php echo json_encode($operator->name); ?>;
 
         var table = $('#tableExpor').DataTable({
             orderCellsTop: true,
             fixedHeader: true,
             dom: 'Bfrtip',
-
-            buttons: [
-                'copy', 'csv', 'excel', 'pdf', 'print'
-            ],
-            "language": {
-                "emptyTable": "Aucune donnée disponible dans le tableau",
-                "lengthMenu": "Afficher _MENU_ éléments",
-                "loadingRecords": "Chargement...",
-                "processing": "Traitement...",
-                "zeroRecords": "Aucun élément correspondant trouvé",
-                "paginate": {
-                    "first": "Premier",
-                    "last": "Dernier",
-                    "next": "Suivant",
-                    "previous": "Précédent"
-                },
-                "aria": {
-                    "sortAscending": ": activer pour trier la colonne par ordre croissant",
-                    "sortDescending": ": activer pour trier la colonne par ordre décroissant"
-                },
-                "select": {
-                    "rows": {
-                        "_": "%d lignes sélectionnées",
-                        "0": "Aucune ligne sélectionnée",
-                        "1": "1 ligne sélectionnée"
-                    },
-                    "1": "1 ligne selectionnée",
-                    "_": "%d lignes selectionnées",
-                    "cells": {
-                        "1": "1 cellule sélectionnée",
-                        "_": "%d cellules sélectionnées"
-                    },
-                    "columns": {
-                        "1": "1 colonne sélectionnée",
-                        "_": "%d colonnes sélectionnées"
-                    }
-                },
-                "autoFill": {
-                    "cancel": "Annuler",
-                    "fill": "Remplir toutes les cellules avec <i>%d<\/i>",
-                    "fillHorizontal": "Remplir les cellules horizontalement",
-                    "fillVertical": "Remplir les cellules verticalement",
-                    "info": "Exemple de remplissage automatique"
-                },
-                "searchBuilder": {
-                    "conditions": {
-                        "date": {
-                            "after": "Après le",
-                            "before": "Avant le",
-                            "between": "Entre",
-                            "empty": "Vide",
-                            "equals": "Egal à",
-                            "not": "Différent de",
-                            "notBetween": "Pas entre",
-                            "notEmpty": "Non vide"
-                        },
-                        "moment": {
-                            "after": "Après le",
-                            "before": "Avant le",
-                            "between": "Entre",
-                            "empty": "Vide",
-                            "equals": "Egal à",
-                            "not": "Différent de",
-                            "notBetween": "Pas entre",
-                            "notEmpty": "Non vide"
-                        },
-                        "number": {
-                            "between": "Entre",
-                            "empty": "Vide",
-                            "equals": "Egal à",
-                            "gt": "Supérieur à",
-                            "gte": "Supérieur ou égal à",
-                            "lt": "Inférieur à",
-                            "lte": "Inférieur ou égal à",
-                            "not": "Différent de",
-                            "notBetween": "Pas entre",
-                            "notEmpty": "Non vide"
-                        },
-                        "string": {
-                            "contains": "Contient",
-                            "empty": "Vide",
-                            "endsWith": "Se termine par",
-                            "equals": "Egal à",
-                            "not": "Différent de",
-                            "notEmpty": "Non vide",
-                            "startsWith": "Commence par"
-                        },
-                        "array": {
-                            "equals": "Egal à",
-                            "empty": "Vide",
-                            "contains": "Contient",
-                            "not": "Différent de",
-                            "notEmpty": "Non vide",
-                            "without": "Sans"
+            footer: true, // Nécessaire pour inclure le footer dans les exports
+            buttons: [{
+                    extend: 'excelHtml5',
+                    footer: true,
+                    filename: 'LISTE DES CREANCES ET DETTES DE : ' + myVariable,
+                    title: 'LISTE DES CREANCES ET DETTES DE : ' + myVariable,
+                    exportOptions: {
+                        columns: ':not(:last-child)', // Exclut la colonne ACTION
+                        format: {
+                            body: function(data, row, column, node) {
+                                var cleanText = $('<div>').html(data).text(); // Supprime HTML
+                                return cleanText.replace(/\s/g, '').replace(',',
+                                    '.'); // Nettoyage nombre
+                            },
+                            footer: function(data, row, column, node) {
+                                var cleanText = $('<div>').html(data).text();
+                                return cleanText.replace(/\s/g, '').replace(',', '.');
+                            }
                         }
                     },
-                    "add": "Ajouter une condition",
-                    "button": {
-                        "0": "Recherche avancée",
-                        "_": "Recherche avancée (%d)"
-                    },
-                    "clearAll": "Effacer tout",
-                    "condition": "Condition",
-                    "data": "Donnée",
-                    "deleteTitle": "Supprimer la règle de filtrage",
-                    "logicAnd": "Et",
-                    "logicOr": "Ou",
-                    "title": {
-                        "0": "Recherche avancée",
-                        "_": "Recherche avancée (%d)"
-                    },
-                    "value": "Valeur"
-                },
-                "searchPanes": {
-                    "clearMessage": "Effacer tout",
-                    "count": "{total}",
-                    "title": "Filtres actifs - %d",
-                    "collapse": {
-                        "0": "Volet de recherche",
-                        "_": "Volet de recherche (%d)"
-                    },
-                    "countFiltered": "{shown} ({total})",
-                    "emptyPanes": "Pas de volet de recherche",
-                    "loadMessage": "Chargement du volet de recherche..."
-                },
-                "buttons": {
-                    "copyKeys": "Appuyer sur ctrl ou u2318 + C pour copier les données du tableau dans votre presse-papier.",
-                    "collection": "Collection",
-                    "colvis": "Visibilité colonnes",
-                    "colvisRestore": "Rétablir visibilité",
+                    customize: function(xlsx) {
+                        var sheet = xlsx.xl.worksheets['sheet1.xml'];
 
-                    "copySuccess": {
-                        "1": "1 ligne copiée dans le presse-papier",
-                        "_": "%ds lignes copiées dans le presse-papier"
-                    },
-                    "copyTitle": "Copier dans le presse-papier",
-                    "csv": "CSV",
-                    "excel": "Excel",
-                    "pageLength": {
-                        "-1": "Afficher toutes les lignes",
-                        "1": "Afficher 1 ligne",
-                        "_": "Afficher %d lignes"
-                    },
-                    "pdf": "PDF",
+                        // Parcourt chaque cellule
+                        $('row c[r]', sheet).each(function() {
+                            var cell = $(this);
+                            var value = $('v', cell).text();
 
+                            // Si valeur numérique avec virgule ou espace
+                            if (value && /^[\d\s,.]+$/.test(value)) {
+                                var cleaned = value.replace(/\s/g, '').replace(',',
+                                    '.');
+                                $('v', cell).text(cleaned);
+                                cell.attr('t', 'n'); // force le type 'number'
+                            }
+                        });
+                    }
                 },
-                "decimal": ",",
-                "info": "Affichage de _START_ à _END_ sur _TOTAL_ éléments",
-                "infoEmpty": "Affichage de 0 à 0 sur 0 éléments",
-                "infoFiltered": "(filtrés de _MAX_ éléments au total)",
-                "infoThousands": ".",
-                "search": "Rechercher:",
-                "searchPlaceholder": "...",
-                "thousands": "."
-            }
+                {
+                    extend: 'csvHtml5',
+                    footer: true,
+                    filename: 'LISTE DES CREANCES ET DETTES DE : ' + myVariable,
+                    title: 'LISTE DES CREANCES ET DETTES DE : ' + myVariable,
+                    exportOptions: {
+                        columns: ':not(:last-child)',
+                        format: {
+                            body: function(data, row, column, node) {
+                                var cleanText = $('<div>').html(data).text();
+                                return cleanText.replace(/\s/g, '').replace(',', '.');
+                            },
+                            footer: function(data, row, column, node) {
+                                var cleanText = $('<div>').html(data).text();
+                                return cleanText.replace(/\s/g, '').replace(',', '.');
+                            }
+                        }
+                    }
+                },
+                {
+                    extend: 'pdfHtml5',
+                    footer: true,
+                    filename: 'LISTE DES CREANCES ET DETTES DE : ' + myVariable,
+                    title: 'LISTE DES CREANCES ET DETTES DE : ' + myVariable,
+                    exportOptions: {
+                        columns: ':not(:last-child)',
+                        format: {
+                            body: function(data, row, column, node) {
+                                var cleanText = $('<div>').html(data).text();
+                                return cleanText.replace(/\s/g, '').replace(',', '.');
+                            },
+                            footer: function(data, row, column, node) {
+                                var cleanText = $('<div>').html(data).text();
+                                return cleanText.replace(/\s/g, '').replace(',', '.');
+                            }
+                        }
+                    }
+                }
+            ]
         });
     });
+
+
+
 
     $(document).ready(function() {
         // Setup - add a text input to each footer cell

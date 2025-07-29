@@ -55,7 +55,7 @@
 
                                 <div class="form-group col-md-4">
                                     <label for="inputEmail4">Numeros de la facture</label>
-                                    <input disabled name="invoice_number" type="text"
+                                    <input  name="invoice_number" type="text"
                                         class="form-control "
                                         value="{{ $resum->operation2->invoice->invoice_number }}" placeholder="" required>
 
@@ -87,7 +87,7 @@
                                             </div>
                                         </div>
                                         <input  name="amount" type="number" step="0.01" min="0" lang="en"
-                                         class="form-control  @error('amount') is-invalid @enderror" value="{{ @old('amount') }}"
+                                         class="form-control  @error('amount') is-invalid @enderror" value="{{ $resum->operation2->invoice->amount }}"
                                             placeholder="" required>
 
                                         @error('amount')
@@ -107,7 +107,7 @@
                                                 <i class="fas fa-phone"></i>
                                             </div>
                                         </div>
-                                        <input disabled name="call_volume" type="text" class="form-control " value="{{ $resum->operation2->invoice->call_volume }}" >
+                                        <input name="call_volume" type="text" class="form-control " value="{{ $resum->operation2->invoice->call_volume }}" >
 
 
                                     </div>
@@ -125,14 +125,14 @@
                                                 <i class="fas fa-phone"></i>
                                             </div>
                                         </div>
-                                        <input disabled name="number_of_call" type="text" class="form-control" value="{{ $resum->operation2->invoice->number_of_call }}" >
+                                        <input  name="number_of_call" type="text" class="form-control" value="{{ $resum->operation2->invoice->number_of_call }}" >
 
 
                                     </div>
                                 </div>
                                 <div class="form-group col-md-8">
                                     <label>Commentaire sur la facture</label>
-                                    <textarea disabled name="comment" class="form-control ">{{  $resum->operation2->invoice->comment }}</textarea>
+                                    <textarea  name="comment" class="form-control ">{{  $resum->operation2->invoice->comment }}</textarea>
 
 
                                 </div>
