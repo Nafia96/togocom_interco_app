@@ -140,9 +140,75 @@ class OperatorController extends Controller
         return view('operator.liste_operator', compact('operators'));
     }
 
+    public function liste_operator_netting(Request $request)
+{
+  $debut = $request->input('start_period');  // ✔ correspond à name="start_period"
+$fin = $request->input('end_period');
+
+    $resums_query = Resum::selectRaw('id_operator,
+        SUM(receivable) as total_receivable,
+        SUM(debt) as total_debt,
+        SUM(incoming_payement) as encaissement,
+        SUM(payout) as decaissement')
+        ->where('is_delete', 0);
+
+    // Appliquer les filtres de période
+    if ($debut && $fin) {
+        $resums_query->whereBetween('period', [$debut, $fin]);
+    } elseif ($debut) {
+        $resums_query->where('period', '>=', $debut);
+    } elseif ($fin) {
+        $resums_query->where('period', '<=', $fin);
+    }
+
+    $resums = $resums_query->groupBy('id_operator')->get()->keyBy('id_operator');
+
+    $operators = Operator::where('is_delete', 0)
+        ->orderBy('created_at', 'DESC')
+        ->get();
+
+    // Totaux globaux
+    $total_global_creance = 0;
+    $total_global_dette = 0;
+    $total_global_encaissement = 0;
+    $total_global_decaissement = 0;
+
+    foreach ($operators as $operator) {
+        if (isset($resums[$operator->id])) {
+            $r = $resums[$operator->id];
+            $operator->netting = ($r->total_receivable - $r->encaissement) - ($r->total_debt + $r->decaissement);
+            $operator->total_receivable = $r->total_receivable;
+            $operator->total_debt = $r->total_debt;
+            $operator->encaissement = $r->encaissement;
+            $operator->decaissement = $r->decaissement;
+
+            $total_global_creance += $r->total_receivable;
+            $total_global_dette += $r->total_debt;
+            $total_global_encaissement += $r->encaissement;
+            $total_global_decaissement += $r->decaissement;
+        } else {
+            $operator->netting = 0;
+            $operator->total_receivable = 0;
+            $operator->total_debt = 0;
+            $operator->encaissement = 0;
+            $operator->decaissement = 0;
+        }
+    }
+
+       return view('operator.liste_operator_netting', compact(
+       'operators',
+        'total_global_creance',
+        'total_global_dette',
+        'total_global_encaissement',
+        'total_global_decaissement',
+        'debut',
+        'fin'
+    ));
+
+}
 
 
-   
+
 
     public function delete_operator_liste()
     {

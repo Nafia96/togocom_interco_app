@@ -192,6 +192,7 @@
                                   {{ Request::is('liste_operator') ? 'active' : '' }}
                                   {{ Request::is('delete_operator_liste') ? 'active' : '' }}
                                   {{ Request::is('ope_dashboard') ? 'active' : '' }}
+                                  {{ Request::is('liste_operator_netting') ? 'active' : '' }}
                                  ">
 
                             <a href="#" class="menu-toggle nav-link has-dropdown"><i
@@ -205,6 +206,11 @@
                                 @endif
                                 <li class="{{ Request::is('liste_operator') ? 'active' : '' }}"><a class="nav-link "
                                         href="{{ route('liste_operator') }}">Liste des
+                                        opérateurs</a>
+                                </li>
+
+                                <li class="{{ Request::is('liste_operator_netting') ? 'active' : '' }}"><a class="nav-link "
+                                        href="{{ route('liste_operator_netting') }}">Netting des
                                         opérateurs</a>
                                 </li>
 

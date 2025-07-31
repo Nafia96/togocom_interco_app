@@ -97,6 +97,9 @@ Route::middleware([NotConnected::class])->group(function () {
 
         Route::get('liste_operator', [OperatorController::class, 'liste_operator'])->name('liste_operator');
 
+         Route::get('liste_operator_netting', [OperatorController::class, 'liste_operator_netting'])->name('liste_operator_netting');
+
+
         //Rout  pour le national
         Route::get('show_tgt_tgc', [NationalController::class, 'show_tgt_tgc'])->name('show_tgt_tgc');
 
