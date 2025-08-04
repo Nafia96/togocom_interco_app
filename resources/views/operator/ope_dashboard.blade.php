@@ -90,16 +90,16 @@
 
 
                             @if (
-                               ($sum_resum_total_annuelle->total_receivable - $sum_resum_total_annuelle->encaissement) - ($sum_resum_total_annuelle->total_debt  + $sum_resum_total_annuelle->decaissement ) >=
+                               ($sum_resum_total_annuelle->total_receivable - $sum_resum_total_annuelle->encaissement) - ($sum_resum_total_annuelle->total_debt  - $sum_resum_total_annuelle->decaissement ) >=
                                     0)
                                 <span style="white-space: nowrap; color:#03a04f">
-                                    {{ number_format(($sum_resum_total_annuelle->total_receivable - $sum_resum_total_annuelle->encaissement) - ($sum_resum_total_annuelle->total_debt  + $sum_resum_total_annuelle->decaissement ), 2, ',', ' ') }}
+                                    {{ number_format(($sum_resum_total_annuelle->total_receivable - $sum_resum_total_annuelle->encaissement) - ($sum_resum_total_annuelle->total_debt  - $sum_resum_total_annuelle->decaissement ), 2, ',', ' ') }}
                                     {{ $operator->currency }}
                                 </span>
                             @else
                                 <span style="white-space: nowrap; color:red">
 
-                                    {{ number_format(($sum_resum_total_annuelle->total_receivable - $sum_resum_total_annuelle->encaissement) - ($sum_resum_total_annuelle->total_debt  + $sum_resum_total_annuelle->decaissement ), 2, ',', ' ') }}
+                                    {{ number_format(($sum_resum_total_annuelle->total_receivable - $sum_resum_total_annuelle->encaissement) - ($sum_resum_total_annuelle->total_debt  - $sum_resum_total_annuelle->decaissement ), 2, ',', ' ') }}
                                     {{ $operator->currency }}
                                 </span>
                             @endif
@@ -119,15 +119,15 @@
 
 
                     <p>
-                        @if (($sum_resum_total->total_receivable - $sum_resum_total->encaissement ) - ($sum_resum_total->total_debt  + $sum_resum_total->decaissement) >= 0)
+                        @if (($sum_resum_total->total_receivable - $sum_resum_total->encaissement ) - ($sum_resum_total->total_debt  - $sum_resum_total->decaissement) >= 0)
                             <span style="white-space: nowrap; color:#03a04f">
 
-                                {{ number_format(($sum_resum_total->total_receivable - $sum_resum_total->encaissement ) - ($sum_resum_total->total_debt  + $sum_resum_total->decaissement), 2, ',', ' ') }}
+                                {{ number_format(($sum_resum_total->total_receivable - $sum_resum_total->encaissement ) - ($sum_resum_total->total_debt  - $sum_resum_total->decaissement), 2, ',', ' ') }}
                             </span>
                         @else
                             <span style="white-space: nowrap; color:red">
 
-                                {{ number_format(($sum_resum_total->total_receivable - $sum_resum_total->encaissement ) - ($sum_resum_total->total_debt  + $sum_resum_total->decaissement), 2, ',', ' ') }}
+                                {{ number_format(($sum_resum_total->total_receivable - $sum_resum_total->encaissement ) - ($sum_resum_total->total_debt  - $sum_resum_total->decaissement), 2, ',', ' ') }}
                             </span>
                         @endif
                     </p>
@@ -408,8 +408,8 @@
                                                     @endif
 
                                                     <td style="width:15%"
-                                                        data-order="{{ ($resum->total_receivable - $resum->encaissement) - ($resum->total_debt + $resum->decaissement) }}">
-                                                        {{ number_format(($resum->total_receivable - $resum->encaissement) - ($resum->total_debt + $resum->decaissement) , 2, ',', ' ') }}
+                                                        data-order="{{ ($resum->total_receivable - $resum->encaissement) - ($resum->total_debt - $resum->decaissement) }}">
+                                                        {{ number_format(($resum->total_receivable - $resum->encaissement) - ($resum->total_debt - $resum->decaissement) , 2, ',', ' ') }}
 
                                                     </td>
 
@@ -440,8 +440,8 @@
                                                     {{ number_format($sum_resum_total->decaissement, 2, ',', ' ') }}
                                                 </td>
                                                 <td
-                                                    data-order="{{ ($sum_resum_total->total_receivable - $sum_resum_total->encaissement ) - ($sum_resum_total->total_debt  + $sum_resum_total->decaissement) }}">
-                                                    {{ number_format(($sum_resum_total->total_receivable - $sum_resum_total->encaissement ) - ($sum_resum_total->total_debt  + $sum_resum_total->decaissement), 2, ',', ' ') }}
+                                                    data-order="{{ ($sum_resum_total->total_receivable - $sum_resum_total->encaissement ) - ($sum_resum_total->total_debt  - $sum_resum_total->decaissement) }}">
+                                                    {{ number_format(($sum_resum_total->total_receivable - $sum_resum_total->encaissement ) - ($sum_resum_total->total_debt  - $sum_resum_total->decaissement), 2, ',', ' ') }}
                                                 </td>
                                             </tr>
 
@@ -547,8 +547,8 @@
                                                         </td>
                                                     @endif
 
-                                                    <td data-order="{{ $resum->netting }}">
-                                                        {{ number_format(($resum->receivable-$resum->incoming_payement)-($resum->debt+$resum->payout) , 2, ',', ' ') }}
+                                                    <td data-order="{{ ($resum->receivable-$resum->incoming_payement)-($resum->debt-$resum->payout)}}">
+                                                        {{ number_format(($resum->receivable-$resum->incoming_payement)-($resum->debt-$resum->payout) , 2, ',', ' ') }}
                                                     </td>
 
                                                     <td style="width:10%">

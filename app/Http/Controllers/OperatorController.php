@@ -176,7 +176,7 @@ $fin = $request->input('end_period');
     foreach ($operators as $operator) {
         if (isset($resums[$operator->id])) {
             $r = $resums[$operator->id];
-            $operator->netting = ($r->total_receivable - $r->encaissement) - ($r->total_debt + $r->decaissement);
+            $operator->netting = ($r->total_receivable - $r->encaissement) - ($r->total_debt - $r->decaissement);
             $operator->total_receivable = $r->total_receivable;
             $operator->total_debt = $r->total_debt;
             $operator->encaissement = $r->encaissement;

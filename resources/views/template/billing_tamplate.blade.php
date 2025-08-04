@@ -7,7 +7,7 @@
 <head>
     <meta charset="UTF-8">
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" name="viewport">
-    <title>INTERCO-YAS APP - @yield('title')</title>
+    <title>YAS APP - @yield('title')</title>
     <!-- General CSS Files -->
     <link rel="stylesheet" href="{{ asset('assets/css/app.min.css') }}">
 
@@ -117,7 +117,7 @@
                 <ul class="navbar-nav navbar-right">
 
                     <li class="dropdown"><a href="#" data-toggle="dropdown"
-                            class="nav-link dropdown-toggle nav-link-lg nav-link-user"><img alt="image"
+                            class="nav-link dropdown-toggle nav-link-lg nav-link-user"> <img alt="image"
                                 src="/avatar/default.png" class="user-img-radious-style"> <span
                                 class="d-sm-none d-lg-inline-block"></span></a>
                         <div class="dropdown-menu dropdown-menu-right pullDown">
@@ -161,7 +161,7 @@
                     <div class="sidebar-brand">
                         <a href="{{ route('dashboard') }}"> <img alt="image"
                                 src="{{ asset('assets/img/logo.png') }}" class="header-logo" /> <span
-                                class="logo-name">INTERCO</span>
+                                class="logo-name">STATS</span>
                         </a>
                     </div>
                     <ul class="sidebar-menu">
@@ -173,9 +173,6 @@
 
 
                         </li>
-
-                        @if (getUserType()->type_user == 3 || getUserType()->type_user == 2 || getUserType()->type_user == 1)
-
                         <li class="dropdown">
 
                             <a href="{{ url('/dashboard') }}" class="nav-link"><i
@@ -184,39 +181,32 @@
 
                         </li>
 
-
-
-                        <li class="menu-header">Gestions des données</li>
+                        <li class="menu-header">Gestions des volumes</li>
                         <li
-                            class="dropdown  {{ Request::is('add_operator') ? 'active' : '' }}
+                            class="dropdown  {{ Request::is('show_tgt_tgc') ? 'active' : '' }}
                                   {{ Request::is('liste_operator') ? 'active' : '' }}
                                   {{ Request::is('delete_operator_liste') ? 'active' : '' }}
                                   {{ Request::is('ope_dashboard') ? 'active' : '' }}
-                                  {{ Request::is('liste_operator_netting') ? 'active' : '' }}
                                  ">
 
                             <a href="#" class="menu-toggle nav-link has-dropdown"><i
-                                    data-feather="cpu"></i><span>Gestion des opérateurs</span></a>
+                                    data-feather="radio"></i><span>TOGOTELECOM </span></a>
                             <ul class="dropdown-menu">
 
-                                <li class="{{ Request::is('liste_operator_netting') ? 'active' : '' }}"><a class="nav-link "
-                                        href="{{ route('liste_operator_netting') }}">Netting des
-                                        opérateurs</a>
-                                </li>
-                                  <li class="{{ Request::is('liste_operator') ? 'active' : '' }}"><a class="nav-link "
-                                        href="{{ route('liste_operator') }}">Liste des
-                                        opérateurs</a>
-                                </li>
                                 @if (getUserType()->type_user == 3 || getUserType()->type_user == 2)
-                                    <li class="{{ Request::is('add_operator') ? 'active' : '' }}"><a
-                                            class="nav-link " href="{{ route('add_operator') }}">Créer un opérateur
+                                    <li class="{{ Request::is('show_tgt_tgc') ? 'active' : '' }}"><a
+                                            class="nav-link " href="{{ route('show_tgt_tgc') }}">TGT - TGC National
                                         </a></li>
                                 @endif
+                                <li class="{{ Request::is('show_tgt_tgc') ? 'active' : '' }}"><a class="nav-link "
+                                        href="{{ route('show_tgt_tgc') }}">TGT - TGC International
+                                    </a>
+                                </li>
 
                                 @if (getUserType()->type_user == 3 || getUserType()->type_user == 2)
                                     <li class="{{ Request::is('delete_operator_liste') ? 'active' : '' }}"><a
-                                            class="nav-link " href="{{ route('delete_operator_liste') }}">Opérateurs
-                                            supprimées</a>
+                                            class="nav-link " href="{{ route('delete_operator_liste') }}">MOOV - TGC via TGT
+                                    </a>
                                     </li>
                                 @endif
 
@@ -232,23 +222,20 @@
                              ">
 
                             <a href="#" class="menu-toggle nav-link has-dropdown"><i
-                                    data-feather="file-text"></i><span>Gestion des factures</span></a>
+                                    data-feather="radio"></i><span>TOGOCOCEL </span></a>
                             <ul class="dropdown-menu">
 
                                 <li class="{{ Request::is('all_invoice_list') ? 'active' : '' }}"><a
-                                        class="nav-link " href="{{ route('all_invoice_list') }}">Toutes les
-                                        factures
+                                        class="nav-link " href="{{ route('all_invoice_list') }}">TGC - TGT National
                                     </a></li>
 
 
                                 <li class="{{ Request::is('all_resum_list') ? 'active' : '' }}"><a class="nav-link "
-                                        href="{{ route('all_resum_list') }}">Créances &
-                                        Dettes</a>
+                                        href="{{ route('all_resum_list') }}">TGC - TGT International</a>
                                 </li>
 
                                 <li class="{{ Request::is('delete_invoice_list') ? 'active' : '' }}"><a
-                                        class="nav-link " href="{{ route('delete_invoice_list') }}">Factures
-                                        supprimées</a>
+                                        class="nav-link " href="{{ route('delete_invoice_list') }}">TGC - Moov</a>
                                 </li>
 
 
@@ -264,55 +251,30 @@
                              ">
 
                             <a href="#" class="menu-toggle nav-link has-dropdown"><i
-                                    data-feather="slack"></i><span>Gestion des opérations</span></a>
+                                    data-feather="radio"></i><span>MOOV</span></a>
                             <ul class="dropdown-menu">
 
                                 <li class="{{ Request::is('all_operations') ? 'active' : '' }}"><a class="nav-link "
-                                        href="{{ route('all_operations') }}">Liste des
-                                        opperations
+                                        href="{{ route('all_operations') }}"> MOOV - TGT International
                                     </a></li>
                                 <li class="{{ Request::is('all_cancel_operations') ? 'active' : '' }}"><a
-                                        class="nav-link " href="{{ route('all_cancel_operations') }}">Opperations
-                                        supprimées</a>
+                                        class="nav-link " href="{{ route('all_cancel_operations') }}"> MOOV - TGT
+                                        national</a>
+                                </li>
+
+                                <li class="{{ Request::is('all_cancel_operations') ? 'active' : '' }}"><a
+                                        class="nav-link " href="{{ route('all_cancel_operations') }}"> MOOV - TGC
+                                        national</a>
                                 </li>
 
 
 
                             </ul>
                         </li>
-                        @if (getUserType()->type_user == 3 || getUserType()->type_user == 2)
-                            <li class="dropdown  {{ Request::is('sta_dashboard') ? 'active' : '' }}">
-                                <a href="{{ route('sta_dashboard') }}"class="nav-link"><i
-                                        data-feather="aperture"></i><span>Statistiques</span></a>
-                            </li>
-                        @endif
 
-                        @if (getUserType()->type_user == 3)
-                            <li
-                                class="dropdown  {{ Request::is('add_user') ? 'active' : '' }}
-                                      {{ Request::is('users_list') ? 'active' : '' }}
-                                        {{ Request::is('delete_user_liste') ? 'active' : '' }} ">
-
-                                <a href="#" class="menu-toggle nav-link has-dropdown"><i
-                                        data-feather="users"></i><span>Gestion des utilisateurs</span></a>
-                                <ul class="dropdown-menu">
-
-                                    <li class="{{ Request::is('add_user') ? 'active' : '' }}"><a class="nav-link "
-                                            href="{{ route('add_user') }}">Ajouter un utilisateur
-                                        </a></li>
-                                    <li class="{{ Request::is('users_list') ? 'active' : '' }}"><a class="nav-link "
-                                            href="{{ route('users_list') }}">Liste des utilisateurs
-                                        </a></li>
-
-                                    <li class="{{ Request::is('delete_user_liste') ? 'active' : '' }}"><a
-                                            class="nav-link " href="{{ route('delete_user_liste') }}">Utilisateurs
-                                            suprimés
-                                        </a></li>
+                        <li class="menu-header">Gestions des comptes</li>
 
 
-                                </ul>
-                            </li>
-                        @endif
 
                         @if (getUserType()->type_user == 3 || getUserType()->type_user == 2)
                             <li class="dropdown  {{ Request::is('logs') ? 'active' : '' }}">
@@ -330,7 +292,7 @@
                         @endif
 
 
-@endif
+
 
 
 
@@ -362,6 +324,8 @@
 
 
                 </section>
+
+                @include('national.addMesureModal')
 
                 @if (isset($operators))
                     @foreach ($operators as $operator)

@@ -437,6 +437,19 @@ class HomeController extends Controller
         return view('index');
     }
 
+     public function billing()
+    {
+
+        if (session('id') != null) {
+        $operators = Operator::where('is_delete', 0)
+        ->orderBy('created_at', 'DESC')
+        ->get();
+            return view('billing.billing',compact('operators'));
+        }
+
+        return view('index');
+    }
+
     public function roaming()
     {
         //dd(session('id'));

@@ -19,7 +19,7 @@
                 </div>
                 <div class="row ">
 
-                    <a class="col-xl-4 col-lg-12 col-md-12 col-sm-12 col-xs-12" href="{{ url('/dashboard') }}">
+                    <a class="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-xs-12" href="{{ url('/dashboard') }}">
 
                         <div>
                             <div class="card">
@@ -48,7 +48,7 @@
 
                     </a>
 
-                    <a class="col-xl-4 col-lg-6 col-md-6 col-sm-6 col-xs-12" href="{{ url('/national') }}">
+                    <a class="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-xs-12" href="{{ url('/national') }}">
                         <div>
                             <div class="card">
                                 <div class="card-statistic-4">
@@ -74,7 +74,29 @@
                         </div>
                     </a>
 
-                    <a class="col-xl-4 col-lg-6 col-md-6 col-sm-6 col-xs-12" href="{{ url('/roaming') }}">
+                    <a class="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-xs-12" href="{{ url('/billing') }}">
+                        <div class="card">
+                            <div class="card-statistic-4">
+                                <div class="align-items-center justify-content-between">
+                                    <div class="row ">
+                                        <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pr-0 pt-3">
+                                            <div class="card-content">
+                                                <h5 class="font-15" style="color:#16346d;">BILLING_STAT &</h5>
+                                                <h2 class="mb-3 font-15" style="color:#16346d;"> COMPLATION_STAT</h2>
+
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pl-0">
+                                            <div class="banner-img">
+                                                <img src="{{ asset('assets/img/banner/1.png')}}" alt="">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                    <a class="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-xs-12" href="{{ url('/roaming') }}">
                         <div class="card">
                             <div class="card-statistic-4">
                                 <div class="align-items-center justify-content-between">
@@ -83,7 +105,7 @@
                                             <div class="card-content">
                                                 <h5 class="font-15" style="color:#16346d;">ROAMING</h5>
                                                 <h2 class="mb-3 font-18" style="color:#16346d;"> Services</h2>
-                                               
+
                                             </div>
                                         </div>
                                         <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pl-0">
