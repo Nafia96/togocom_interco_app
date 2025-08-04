@@ -140,10 +140,10 @@ class OperatorController extends Controller
         return view('operator.liste_operator', compact('operators'));
     }
 
-    public function liste_operator_netting(Request $request)
+  public function liste_operator_netting(Request $request)
 {
-  $debut = $request->input('start_period');  // ✔ correspond à name="start_period"
-$fin = $request->input('end_period');
+    $debut = $request->input('start_period');  // name="start_period"
+    $fin = $request->input('end_period');
 
     $resums_query = Resum::selectRaw('id_operator,
         SUM(receivable) as total_receivable,
@@ -152,7 +152,7 @@ $fin = $request->input('end_period');
         SUM(payout) as decaissement')
         ->where('is_delete', 0);
 
-    // Appliquer les filtres de période
+    // Filtres période
     if ($debut && $fin) {
         $resums_query->whereBetween('period', [$debut, $fin]);
     } elseif ($debut) {
@@ -176,7 +176,10 @@ $fin = $request->input('end_period');
     foreach ($operators as $operator) {
         if (isset($resums[$operator->id])) {
             $r = $resums[$operator->id];
+
+            // ✅ Formule officielle du netting :
             $operator->netting = ($r->total_receivable - $r->encaissement) - ($r->total_debt - $r->decaissement);
+
             $operator->total_receivable = $r->total_receivable;
             $operator->total_debt = $r->total_debt;
             $operator->encaissement = $r->encaissement;
@@ -195,8 +198,8 @@ $fin = $request->input('end_period');
         }
     }
 
-       return view('operator.liste_operator_netting', compact(
-       'operators',
+    return view('operator.liste_operator_netting', compact(
+        'operators',
         'total_global_creance',
         'total_global_dette',
         'total_global_encaissement',
@@ -204,7 +207,6 @@ $fin = $request->input('end_period');
         'debut',
         'fin'
     ));
-
 }
 
 

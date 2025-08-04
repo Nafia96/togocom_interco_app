@@ -408,7 +408,7 @@
                                                     @endif
 
                                                     <td style="width:15%"
-                                                        data-order="{{ ($resum->total_receivable - $resum->encaissement) - ($resum->total_debt - $resum->decaissement) }}">
+                                                           data-order="{{ ($resum->total_receivable - $resum->encaissement) - ($resum->total_debt - $resum->decaissement) }}">
                                                         {{ number_format(($resum->total_receivable - $resum->encaissement) - ($resum->total_debt - $resum->decaissement) , 2, ',', ' ') }}
 
                                                     </td>
