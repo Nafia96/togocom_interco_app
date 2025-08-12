@@ -25,6 +25,8 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         // $schedule->command('inspire')->hourly();
+        // Envoi le 1er de chaque mois à 08:00
+    $schedule->command('factures:envoyer')->monthlyOn(10, '08:00');
     }
 
     /**

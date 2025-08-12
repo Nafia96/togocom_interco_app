@@ -10,7 +10,7 @@
     <title>YAS APP - @yield('title')</title>
     <!-- General CSS Files -->
     <link rel="stylesheet" href="{{ asset('assets/css/app.min.css') }}">
-
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css"/>
     <link rel="stylesheet" href="{{ asset('assets/bundles/jqvmap/dist/jqvmap.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/bundles/flag-icon-css/css/flag-icon.min.css') }}">
 
@@ -65,10 +65,18 @@
             height: 500px;
             width: 100%;
         }
-
         .table.revenu tr:last-child {
             background: #03a04f;
             color: #fcca29;
+        }
+        /* Ajoutez ceci pour forcer la largeur */
+        .main-content, .main-wrapper, .main-wrapper-1 {
+            margin-left: 0 !important;
+            width: 100% !important;
+            max-width: 100vw !important;
+        }
+        body, html {
+            overflow-x: hidden;
         }
     </style>
 
@@ -91,323 +99,78 @@
         </script>
     @endif
     <div class="loader"></div>
-    <div id="app">
-        <div class="main-wrapper main-wrapper-1">
-            <div class="navbar-bg"></div>
-            <nav class="navbar navbar-expand-lg main-navbar sticky">
-                <div class="form-inline mr-auto">
-                    <ul class="navbar-nav mr-3">
-                        <li><a href="#" data-toggle="sidebar"
-                                class="nav-link nav-link-lg
-                           collapse-btn"> <i
-                                    data-feather="align-justify"></i></a></li>
-                        <li><a href="#" class="nav-link nav-link-lg fullscreen-btn">
-                                <i data-feather="maximize"></i>
-                            </a></li>
+            <div id="app">
+                <div class="main-wrapper main-wrapper-1">
+                    <div class="navbar-bg"></div>
+                    <nav class="navbar navbar-expand-lg main-navbar sticky">
+                        <div class="form-inline mr-auto">
+                            <ul class="navbar-nav mr-3">
+                                <li><a href="#" data-toggle="sidebar"
+                                        class="nav-link nav-link-lg
+                                   collapse-btn"> <i
+                                            data-feather="align-justify"></i></a></li>
+                                <li><a href="#" class="nav-link nav-link-lg fullscreen-btn">
+                                        <i data-feather="maximize"></i>
+                                    </a></li>
 
-                        <li style="transform: translate(250px)">
-                            @if (session()->has('register_success'))
-                                <div class="alert alert-success">
-                                    {{ session()->get('register_success') }}
-                                </div>
-                            @endif
-                        </li>
-                    </ul>
-                </div>
-                <ul class="navbar-nav navbar-right">
-
-                    <li class="dropdown"><a href="#" data-toggle="dropdown"
-                            class="nav-link dropdown-toggle nav-link-lg nav-link-user"> <img alt="image"
-                                src="/avatar/default.png" class="user-img-radious-style"> <span
-                                class="d-sm-none d-lg-inline-block"></span></a>
-                        <div class="dropdown-menu dropdown-menu-right pullDown">
-                            @if (getUserType()->type_user == 3)
-                                <div class="dropdown-title">SUPER ADMIN : {{ getUserAuth()->first_name }}
-                                    {{ getUserAuth()->last_name }}</div>
-                            @endif
-
-                            @if (getUserType()->type_user == 2)
-                                <div class="dropdown-title">ADMIN : {{ getUserAuth()->first_name }}
-                                    {{ getUserAuth()->last_name }}</div>
-                            @endif
-
-                            @if (getUserType()->type_user == 1)
-                                <div class="dropdown-title"> UTILISATEUR : {{ getUserAuth()->first_name }}
-                                    {{ getUserAuth()->last_name }}</div>
-                            @endif
-
-                            @if (getUserType()->type_user == 0)
-                                <div class="dropdown-title">VISITEUR : {{ getUserAuth()->first_name }}
-                                    {{ getUserAuth()->last_name }}</div>
-                            @endif
-                            <!--<a href="/profile" class="dropdown-item has-icon"> <i class="far
-          fa-user"></i> Profile
-      </a>-->
-                            <div class="dropdown-divider"></div>
-                            <a href="{{ url('/update_password') }}" class="dropdown-item has-icon text-success"> <i
-                                    class="fas fa-user-cog text-blue"></i>
-                                Modifier mot de passe
-                            </a>
-                            <a href="{{ url('/logout') }}" class="dropdown-item has-icon text-danger"> <i
-                                    class="fas fa-sign-out-alt"></i>
-                                Déconnexion
-                            </a>
+                                <li style="transform: translate(250px)">
+                                    @if (session()->has('register_success'))
+                                        <div class="alert alert-success">
+                                            {{ session()->get('register_success') }}
+                                        </div>
+                                    @endif
+                                </li>
+                            </ul>
                         </div>
-                    </li>
-                </ul>
-            </nav>
-            <div class="main-sidebar sidebar-style-2">
-                <aside id="sidebar-wrapper">
-                    <div class="sidebar-brand">
-                        <a href="{{ route('dashboard') }}"> <img alt="image"
-                                src="{{ asset('assets/img/logo.png') }}" class="header-logo" /> <span
-                                class="logo-name">STATS</span>
-                        </a>
-                    </div>
-                    <ul class="sidebar-menu">
-                        <li class="menu-header">Menu principal</li>
-                        <li class="dropdown">
-
-                            <a href="{{ url('/lunchpade') }}" class="nav-link"><i
-                                    data-feather="home"></i><span>Launchpad</span></a>
-
-
-                        </li>
-                        <li class="dropdown">
-
-                            <a href="{{ url('/dashboard') }}" class="nav-link"><i
-                                    data-feather="monitor"></i><span>Tableau de Bord</span></a>
-
-
-                        </li>
-
-                        <li class="menu-header">Gestions des volumes</li>
-                        <li
-                            class="dropdown  {{ Request::is('show_tgt_tgc') ? 'active' : '' }}
-                                  {{ Request::is('liste_operator') ? 'active' : '' }}
-                                  {{ Request::is('delete_operator_liste') ? 'active' : '' }}
-                                  {{ Request::is('ope_dashboard') ? 'active' : '' }}
-                                 ">
-
-                            <a href="#" class="menu-toggle nav-link has-dropdown"><i
-                                    data-feather="radio"></i><span>TOGOTELECOM </span></a>
-                            <ul class="dropdown-menu">
-
-                                @if (getUserType()->type_user == 3 || getUserType()->type_user == 2)
-                                    <li class="{{ Request::is('show_tgt_tgc') ? 'active' : '' }}"><a
-                                            class="nav-link " href="{{ route('show_tgt_tgc') }}">TGT - TGC National
-                                        </a></li>
-                                @endif
-                                <li class="{{ Request::is('show_tgt_tgc') ? 'active' : '' }}"><a class="nav-link "
-                                        href="{{ route('show_tgt_tgc') }}">TGT - TGC International
+                        <ul class="navbar-nav navbar-right">
+                            <!-- ...dropdown user menu... -->
+                            <li class="dropdown"><a href="#" data-toggle="dropdown"
+                                    class="nav-link dropdown-toggle nav-link-lg nav-link-user"> <img alt="image"
+                                        src="/avatar/default.png" class="user-img-radious-style"> <span
+                                        class="d-sm-none d-lg-inline-block"></span></a>
+                                <div class="dropdown-menu dropdown-menu-right pullDown">
+                                    <!-- ...user type logic... -->
+                                    <div class="dropdown-divider"></div>
+                                    <a href="{{ url('/update_password') }}" class="dropdown-item has-icon text-success"> <i
+                                            class="fas fa-user-cog text-blue"></i>
+                                        Modifier mot de passe
                                     </a>
-                                </li>
-
-                                @if (getUserType()->type_user == 3 || getUserType()->type_user == 2)
-                                    <li class="{{ Request::is('delete_operator_liste') ? 'active' : '' }}"><a
-                                            class="nav-link " href="{{ route('delete_operator_liste') }}">MOOV - TGC via TGT
+                                    <a href="{{ url('/logout') }}" class="dropdown-item has-icon text-danger"> <i
+                                            class="fas fa-sign-out-alt"></i>
+                                        Déconnexion
                                     </a>
-                                    </li>
-                                @endif
-
-
-                            </ul>
-                        </li>
-
-
-                        <li
-                            class="dropdown  {{ Request::is('all_invoice_list') ? 'active' : '' }}
-                              {{ Request::is('all_resum_list') ? 'active' : '' }}
-                              {{ Request::is('delete_invoice_list') ? 'active' : '' }}
-                             ">
-
-                            <a href="#" class="menu-toggle nav-link has-dropdown"><i
-                                    data-feather="radio"></i><span>TOGOCOCEL </span></a>
-                            <ul class="dropdown-menu">
-
-                                <li class="{{ Request::is('all_invoice_list') ? 'active' : '' }}"><a
-                                        class="nav-link " href="{{ route('all_invoice_list') }}">TGC - TGT National
-                                    </a></li>
-
-
-                                <li class="{{ Request::is('all_resum_list') ? 'active' : '' }}"><a class="nav-link "
-                                        href="{{ route('all_resum_list') }}">TGC - TGT International</a>
-                                </li>
-
-                                <li class="{{ Request::is('delete_invoice_list') ? 'active' : '' }}"><a
-                                        class="nav-link " href="{{ route('delete_invoice_list') }}">TGC - Moov</a>
-                                </li>
-
-
-
-                            </ul>
-                        </li>
-
-
-                        <li
-                            class="dropdown  {{ Request::is('all_operations') ? 'active' : '' }}
-                              {{ Request::is('all_cancel_operations') ? 'active' : '' }}
-
-                             ">
-
-                            <a href="#" class="menu-toggle nav-link has-dropdown"><i
-                                    data-feather="radio"></i><span>MOOV</span></a>
-                            <ul class="dropdown-menu">
-
-                                <li class="{{ Request::is('all_operations') ? 'active' : '' }}"><a class="nav-link "
-                                        href="{{ route('all_operations') }}"> MOOV - TGT International
-                                    </a></li>
-                                <li class="{{ Request::is('all_cancel_operations') ? 'active' : '' }}"><a
-                                        class="nav-link " href="{{ route('all_cancel_operations') }}"> MOOV - TGT
-                                        national</a>
-                                </li>
-
-                                <li class="{{ Request::is('all_cancel_operations') ? 'active' : '' }}"><a
-                                        class="nav-link " href="{{ route('all_cancel_operations') }}"> MOOV - TGC
-                                        national</a>
-                                </li>
-
-
-
-                            </ul>
-                        </li>
-
-                        <li class="menu-header">Gestions des comptes</li>
-
-
-
-                        @if (getUserType()->type_user == 3 || getUserType()->type_user == 2)
-                            <li class="dropdown  {{ Request::is('logs') ? 'active' : '' }}">
-                                <a href="{{ route('logs') }}" class="nav-link"><i
-                                        data-feather="package"></i><span>Journal des Actions</span></a>
+                                </div>
                             </li>
-                        @endif
-
-                        @if (getUserType()->type_user == 3)
-                            <li style="position: fixed; bottom: 0;"
-                                class="dropdown  {{ Request::is('setting') ? 'active' : '' }}">
-                                <a href="{{ route('setting') }}" class="nav-link"><i
-                                        data-feather="settings"></i><span>Paramètres </span></a>
-                            </li>
-                        @endif
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                    </ul>
-                </aside>
-            </div>
-            <!-- Main Content -->
-            <div class="main-content">
-                <section class="section">
-
-                    <div class="section-body">
-                        <!-- add content here -->
-
-                        @yield('breadcrumb')
-
-
-                        @yield('content')
-
-
+                        </ul>
+                    </nav>
+                    <!-- Sidebar supprimé ici -->
+                    <!-- Main Content -->
+                    <div class="main-content" style="margin-left:0; width:100%;">
+                        <section class="section">
+                            <div class="section-body">
+                                <!-- add content here -->
+                                @yield('breadcrumb')
+                                @yield('content')
+                            </div>
+                        </section>
+                        @include('national.addMesureModal')
                     </div>
-
-
-                </section>
-
-                @include('national.addMesureModal')
-
-                @if (isset($operators))
-                    @foreach ($operators as $operator)
-                        @include('operator.voirOperatorModal')
-                        @include('invoice.invoiceModal')
-                        @include('invoice.addInvoiceModal')
-                        @include('invoice.settlementModal')
-                    @endforeach
-                @endif
-
-
-
-                @if (isset($operator))
-                    @include('invoice.invoiceModal')
-                    @include('invoice.addInvoiceModal')
-                    @include('invoice.settlementModal')
-                @endif
-
-
-
-                @if (isset($operations))
-                    @foreach ($operations as $operation)
-                        @include('invoice.invoice')
-                        @include('invoice.conteste_invoiceModal')
-                        @include('invoice.update_all_invoiceModal')
-                        @include('invoice.cn_Modal')
-                    @endforeach
-
-
-                @endif
-
-                @if (isset($resums))
-                    @foreach ($resums as $resum)
-                        @include('invoice.update_invoiceModal')
-                    @endforeach
-
-
-                @endif
-
-
-
-                @if (isset($agents))
-                    @foreach ($agents as $agent)
-                        @include('agents.voirAgentModal')
-                    @endforeach
-
-
-                @endif
-
-                @if (isset($clients))
-                    @foreach ($clients as $client)
-                        @include('client.voirClientModal')
-                    @endforeach
-
-
-                @endif
-
-
-
-
-
-
-
-
-
-
-
+                    <footer class="main-footer">
+                        <div class="simple-footer" style="width: 100%; margin: auto  !important;">
+                            <a href="#"
+                                style="color: #16346d;font-weight: bold; text-align: center !important; margin: auto !important;">
+                                Copyright &copy; YAS {{ date('Y') }}</a>
+                        </div>
+                        <div class="footer-right">
+                        </div>
+                    </footer>
+                </div>
             </div>
-            <footer class="main-footer">
-                <div class="simple-footer" style="width: 100%; margin: auto  !important;">
-                    <a href="#"
-                        style="color: #16346d;font-weight: bold; text-align: center !important; margin: auto !important;">
-                        Copyright &copy; YAS {{ date('Y') }}</a>
-                </div>
-                <div class="footer-right">
-                </div>
-            </footer>
-        </div>
-    </div>
 
 
-
+      <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+      
+        @yield('scripts')
     <script src={{ asset('assets/js/app.min.js') }}></script>
     <!-- JS Libraies -->
     <script src={{ asset('assets/bundles/apexcharts/apexcharts.min.js') }}></script>
@@ -477,7 +240,7 @@
         integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
         crossorigin=""></script>
 
-    @yield('script')
+
 </body>
 
 

@@ -39,7 +39,8 @@ Route::post('update_password_save', [HomeController::class, 'update_password_sav
 
 Route::get('dashboard', [HomeController::class, 'dashboard'])->name('dashboard');
 Route::get('national', [HomeController::class, 'national'])->name('national');
-Route::get('billing', [HomeController::class, 'billing'])->name('billing');
+Route::get('billing', [HomeController::class, 'billing2'])->name('billing2');
+Route::get('billing2', [HomeController::class, 'billing2'])->name('billing2');
 Route::get('roaming', [HomeController::class, 'roaming2'])->name('roaming');
 
 //roaming rout

@@ -59,186 +59,102 @@
 
         </div>
 
-        <div class="col-12 col-md-12 col-lg-12">
-            <div class="card">
-                <div class="card-header" style="background-color:#F5F5DC ">
-                    <h6> <i class="fas fa-search card-icon col-green font-30 p-r-30"></i> Filtrer les volumes en fonction
-                        des
-                        périodes </h6>
+        <!-- Filtres -->
+        <div class="container-fluid">
+
+            {{-- Filtres --}}
+            <form method="GET" action="{{ url('billing') }}" class="mb-4">
+                <div class="form-row">
+                    <div class="form-group col-md-2">
+                        <label>Direction</label>
+                        <select name="direction" class="form-control">
+                            <option value="">-- Toutes --</option>
+                            <option value="Entrant" {{ request('direction') == 'Entrant' ? 'selected' : '' }}>Entrant
+                            </option>
+                            <option value="Sortant" {{ request('direction') == 'Sortant' ? 'selected' : '' }}>Sortant
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="form-group col-md-2">
+                        <label>Opérateur</label>
+                        <select name="operator" class="form-control">
+                            <option value="">-- Tous --</option>
+                            @foreach ($operators as $operator)
+                                <option value="{{ $operator }}"
+                                    {{ request('operator') == $operator ? 'selected' : '' }}>{{ $operator }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="form-group col-md-2">
+                        <label>Période début</label>
+                        <input type="month" class="form-control" name="start_period"
+                            value="{{ request('start_period') }}">
+                    </div>
+
+                    <div class="form-group col-md-2">
+                        <label>Période fin</label>
+                        <input type="month" class="form-control" name="end_period" value="{{ request('end_period') }}">
+                    </div>
+
+                    <div class="form-group col-md-2 d-flex align-items-end">
+                        <button class="btn btn-success" type="submit">Filtrer</button>
+                    </div>
                 </div>
-                <div class="padding-10">
+            </form>
 
-                    <form action="{{ url('sor_by_group') }}" enctype="multipart/form-data" method="post">
-                        {{ csrf_field() }}
-
-
-
-
-                        <div class="form-row filtre_form">
-
-
-                            <div class="form-group col-md-2">
-                                <label for="inputEmail4"> Direction </label>
-                                <select name="mois" id="inputState" class="form-control ">
-                                    <option value="1" selected="selected">Entrant</option>
-                                    <option value="2" >Sortant</option>
-                                    <option value="3" >Entrant & Sortant</option>
-
-                                </select>
-                            </div>
-
-                            <div class="form-group col-md-3">
-                                <label for="inputEmail4"> Opérateurs </label>
-                                <select name="operators[]" class="demo" multiple>
-    @foreach ($operators as $operator)
-        <option value="{{ $operator->id }}">{{ $operator->name }}</option>
-    @endforeach
-</select>
-
-                            </div>
-
-                            <div class="form-group col-md-2">
-                                <label for="inputEmail4"> Type de filtre </label>
-                                <select name="mois" id="inputState" class="form-control ">
-                                    <option value="1" selected="selected">Volume</option>
-                                    <option value="2" selected="">Créances + Dettes</option>
-                                    <option value="3" selected="">Netting</option>
-
-                                </select>
-                            </div>
-
-                            <div class="form-group col-md-2">
-                                <label>Choisir periode debut:</label>
-                                <input class="form-control" type="month" id="start" name="period" min="2020-01"
-                                    value="{{ date('Y-m') }}" />
-                            </div>
-
-                            <div class="form-group col-md-2">
-                                <label>Choisir periode fin:</label>
-                                <input class="form-control" type="month" id="start" name="period" min="2020-01"
-                                    value="{{ date('Y-m') }}" />
-                            </div>
+            {{-- Tableau --}}
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped" id="tableExpor">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Opérateur</th>
+                            <th>Minutes Charge</th>
+                            <th>Montant Charge</th>
+                            <th>Minutes Revenue</th>
+                            <th>Montant Revenue</th>
+                            <th>Netting (Montant)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($data as $i => $row)
+                            <tr>
+                                <td>{{ $i + 1 }}</td>
+                                <td>{{ $row['carrier_name'] }}</td>
+                                <td>{{ number_format($row['charge_minutes'], 0, ',', ' ') }}</td>
+                                <td>{{ number_format($row['charge_amount'], 0, ',', ' ') }}</td>
+                                <td>{{ number_format($row['revenue_minutes'], 0, ',', ' ') }}</td>
+                                <td>{{ number_format($row['revenue_amount'], 0, ',', ' ') }}</td>
+                                <td>
+                                    {{ number_format($row['revenue_amount'] - $row['charge_amount'], 0, ',', ' ') }}
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th colspan="2">Totaux</th>
+                            <th>{{ number_format($totals['charge_minutes'], 0, ',', ' ') }}</th>
+                            <th>{{ number_format($totals['charge_amount'], 0, ',', ' ') }}</th>
+                            <th>{{ number_format($totals['revenue_minutes'], 0, ',', ' ') }}</th>
+                            <th>{{ number_format($totals['revenue_amount'], 0, ',', ' ') }}</th>
+                            <th>{{ number_format($totals['revenue_amount'] - $totals['charge_amount'], 0, ',', ' ') }}</th>
+                        </tr>
+                    </tfoot>
+                </table>
 
 
-                            <input type="hidden" name="gp" value="0">
-
-                            <div class="form-group col-md-2">
-                                <label for="inputEmail4">. </label><br>
-
-                                <button class=" btn btn-success align-content-center">
-                                    <i class="material-icons ">sort</i>
-
-                                    Filtrer</button>
-
-                            </div>
-                        </div>
-
-
-
-
-
-                    </form>
-                </div>
             </div>
+
+          
         </div>
 
     </section>
 
 
-    <div class="settingSidebar">
-        <a href="javascript:void(0)" class="settingPanelToggle"> <i class="fa fa-spin fa-cog"></i>
-        </a>
-        <div class="settingSidebar-body ps-container ps-theme-default">
-            <div class=" fade show active">
-                <div class="setting-panel-header">Setting Panel
-                </div>
-                <div class="p-15 border-bottom">
-                    <h6 class="font-medium m-b-10">Select Layout</h6>
-                    <div class="selectgroup layout-color w-50">
-                        <label class="selectgroup-item">
-                            <input type="radio" name="value" value="1"
-                                class="selectgroup-input-radio select-layout" checked>
-                            <span class="selectgroup-button">Light</span>
-                        </label>
-                        <label class="selectgroup-item">
-                            <input type="radio" name="value" value="2"
-                                class="selectgroup-input-radio select-layout">
-                            <span class="selectgroup-button">Dark</span>
-                        </label>
-                    </div>
-                </div>
-                <div class="p-15 border-bottom">
-                    <h6 class="font-medium m-b-10">Sidebar Color</h6>
-                    <div class="selectgroup selectgroup-pills sidebar-color">
-                        <label class="selectgroup-item">
-                            <input type="radio" name="icon-input" value="1" class="selectgroup-input select-sidebar">
-                            <span class="selectgroup-button selectgroup-button-icon" data-toggle="tooltip"
-                                data-original-title="Light Sidebar"><i class="fas fa-sun"></i></span>
-                        </label>
-                        <label class="selectgroup-item">
-                            <input type="radio" name="icon-input" value="2"
-                                class="selectgroup-input select-sidebar" checked>
-                            <span class="selectgroup-button selectgroup-button-icon" data-toggle="tooltip"
-                                data-original-title="Dark Sidebar"><i class="fas fa-moon"></i></span>
-                        </label>
-                    </div>
-                </div>
-                <div class="p-15 border-bottom">
-                    <h6 class="font-medium m-b-10">Color Theme</h6>
-                    <div class="theme-setting-options">
-                        <ul class="choose-theme list-unstyled mb-0">
-                            <li title="white" class="active">
-                                <div class="white"></div>
-                            </li>
-                            <li title="cyan">
-                                <div class="cyan"></div>
-                            </li>
-                            <li title="black">
-                                <div class="black"></div>
-                            </li>
-                            <li title="purple">
-                                <div class="purple"></div>
-                            </li>
-                            <li title="orange">
-                                <div class="orange"></div>
-                            </li>
-                            <li title="green">
-                                <div class="green"></div>
-                            </li>
-                            <li title="red">
-                                <div class="red"></div>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="p-15 border-bottom">
-                    <div class="theme-setting-options">
-                        <label class="m-b-0">
-                            <input type="checkbox" name="custom-switch-checkbox" class="custom-switch-input"
-                                id="mini_sidebar_setting">
-                            <span class="custom-switch-indicator"></span>
-                            <span class="control-label p-l-10">Mini Sidebar</span>
-                        </label>
-                    </div>
-                </div>
-                <div class="p-15 border-bottom">
-                    <div class="theme-setting-options">
-                        <label class="m-b-0">
-                            <input type="checkbox" name="custom-switch-checkbox" class="custom-switch-input"
-                                id="sticky_header_setting">
-                            <span class="custom-switch-indicator"></span>
-                            <span class="control-label p-l-10">Sticky Header</span>
-                        </label>
-                    </div>
-                </div>
-                <div class="mt-4 mb-4 p-3 align-center rt-sidebar-last-ele">
-                    <a href="#" class="btn btn-icon icon-left btn-primary btn-restore-theme">
-                        <i class="fas fa-undo"></i> Restore Default
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
+
 
 
 
@@ -248,183 +164,53 @@
 @section('script')
     <script>
         $(document).ready(function() {
-            // Setup - add a text input to each footer cell
-            $('#tableExpor thead tr .recherche').clone(true).appendTo('#tableExpor thead').addClass("rech");
-            $('#tableExpor thead .rech ').each(function(i) {
-                var title = $(this).text();
-                $(this).html('<input type="text" class="form-control" placeholder="Rechercher ' + title +
-                    '" />');
+            // Ajout champs de recherche
+            $('#tableExpor thead tr')
+                .clone(true)
+                .addClass('filters')
+                .appendTo('#tableExpor thead');
 
-                $('input', this).on('keyup change', function() {
-                    if (table.column(i).search() !== this.value) {
-                        table
-                            .column(i)
-                            .search(this.value)
-                            .draw();
-                    }
-                });
-            });
-
-            var table = $('#tableExpor').DataTable({
+            $('#tableExpor').DataTable({
                 orderCellsTop: true,
                 fixedHeader: true,
                 dom: 'Bfrtip',
-                buttons: [
-                    'copy', 'csv', 'excel', 'pdf', 'print'
-                ],
-                "language": {
-                    "emptyTable": "Aucune donnée disponible dans le tableau",
-                    "lengthMenu": "Afficher _MENU_ éléments",
-                    "loadingRecords": "Chargement...",
-                    "processing": "Traitement...",
-                    "zeroRecords": "Aucun élément correspondant trouvé",
-                    "paginate": {
-                        "first": "Premier",
-                        "last": "Dernier",
-                        "next": "Suivant",
-                        "previous": "Précédent"
-                    },
-                    "aria": {
-                        "sortAscending": ": activer pour trier la colonne par ordre croissant",
-                        "sortDescending": ": activer pour trier la colonne par ordre décroissant"
-                    },
-                    "select": {
-                        "rows": {
-                            "_": "%d lignes sélectionnées",
-                            "0": "Aucune ligne sélectionnée",
-                            "1": "1 ligne sélectionnée"
-                        },
-                        "1": "1 ligne selectionnée",
-                        "_": "%d lignes selectionnées",
-                        "cells": {
-                            "1": "1 cellule sélectionnée",
-                            "_": "%d cellules sélectionnées"
-                        },
-                        "columns": {
-                            "1": "1 colonne sélectionnée",
-                            "_": "%d colonnes sélectionnées"
+                buttons: [{
+                        extend: 'excelHtml5',
+                        footer: true,
+                        filename: 'Statistiques_Opérateurs',
+                        exportOptions: {
+                            columns: ':not(:last-child)',
+                            format: {
+                                body: function(data) {
+                                    return $('<div>').html(data).text().replace(/\s/g, '').replace(
+                                        ',', '.');
+                                }
+                            }
                         }
                     },
-                    "autoFill": {
-                        "cancel": "Annuler",
-                        "fill": "Remplir toutes les cellules avec <i>%d<\/i>",
-                        "fillHorizontal": "Remplir les cellules horizontalement",
-                        "fillVertical": "Remplir les cellules verticalement",
-                        "info": "Exemple de remplissage automatique"
+                    {
+                        extend: 'csvHtml5',
+                        footer: true
                     },
-                    "searchBuilder": {
-                        "conditions": {
-                            "date": {
-                                "after": "Après le",
-                                "before": "Avant le",
-                                "between": "Entre",
-                                "empty": "Vide",
-                                "equals": "Egal à",
-                                "not": "Différent de",
-                                "notBetween": "Pas entre",
-                                "notEmpty": "Non vide"
-                            },
-                            "moment": {
-                                "after": "Après le",
-                                "before": "Avant le",
-                                "between": "Entre",
-                                "empty": "Vide",
-                                "equals": "Egal à",
-                                "not": "Différent de",
-                                "notBetween": "Pas entre",
-                                "notEmpty": "Non vide"
-                            },
-                            "number": {
-                                "between": "Entre",
-                                "empty": "Vide",
-                                "equals": "Egal à",
-                                "gt": "Supérieur à",
-                                "gte": "Supérieur ou égal à",
-                                "lt": "Inférieur à",
-                                "lte": "Inférieur ou égal à",
-                                "not": "Différent de",
-                                "notBetween": "Pas entre",
-                                "notEmpty": "Non vide"
-                            },
-                            "string": {
-                                "contains": "Contient",
-                                "empty": "Vide",
-                                "endsWith": "Se termine par",
-                                "equals": "Egal à",
-                                "not": "Différent de",
-                                "notEmpty": "Non vide",
-                                "startsWith": "Commence par"
-                            },
-                            "array": {
-                                "equals": "Egal à",
-                                "empty": "Vide",
-                                "contains": "Contient",
-                                "not": "Différent de",
-                                "notEmpty": "Non vide",
-                                "without": "Sans"
+                    {
+                        extend: 'pdfHtml5',
+                        footer: true
+                    }
+                ],
+                initComplete: function() {
+                    var api = this.api();
+                    api.columns().every(function() {
+                        var column = this;
+                        $('input', this.header()).on('keyup change clear', function() {
+                            if (column.search() !== this.value) {
+                                column.search(this.value).draw();
                             }
-                        },
-                        "add": "Ajouter une condition",
-                        "button": {
-                            "0": "Recherche avancée",
-                            "_": "Recherche avancée (%d)"
-                        },
-                        "clearAll": "Effacer tout",
-                        "condition": "Condition",
-                        "data": "Donnée",
-                        "deleteTitle": "Supprimer la règle de filtrage",
-                        "logicAnd": "Et",
-                        "logicOr": "Ou",
-                        "title": {
-                            "0": "Recherche avancée",
-                            "_": "Recherche avancée (%d)"
-                        },
-                        "value": "Valeur"
-                    },
-                    "searchPanes": {
-                        "clearMessage": "Effacer tout",
-                        "count": "{total}",
-                        "title": "Filtres actifs - %d",
-                        "collapse": {
-                            "0": "Volet de recherche",
-                            "_": "Volet de recherche (%d)"
-                        },
-                        "countFiltered": "{shown} ({total})",
-                        "emptyPanes": "Pas de volet de recherche",
-                        "loadMessage": "Chargement du volet de recherche..."
-                    },
-                    "buttons": {
-                        "copyKeys": "Appuyer sur ctrl ou u2318 + C pour copier les données du tableau dans votre presse-papier.",
-                        "collection": "Collection",
-                        "colvis": "Visibilité colonnes",
-                        "colvisRestore": "Rétablir visibilité",
-
-                        "copySuccess": {
-                            "1": "1 ligne copiée dans le presse-papier",
-                            "_": "%ds lignes copiées dans le presse-papier"
-                        },
-                        "copyTitle": "Copier dans le presse-papier",
-                        "csv": "CSV",
-                        "excel": "Excel",
-                        "pageLength": {
-                            "-1": "Afficher toutes les lignes",
-                            "1": "Afficher 1 ligne",
-                            "_": "Afficher %d lignes"
-                        },
-                        "pdf": "PDF",
-
-                    },
-                    "decimal": ",",
-                    "info": "Affichage de _START_ à _END_ sur _TOTAL_ éléments",
-                    "infoEmpty": "Affichage de 0 à 0 sur 0 éléments",
-                    "infoFiltered": "(filtrés de _MAX_ éléments au total)",
-                    "infoThousands": ".",
-                    "search": "Rechercher:",
-                    "searchPlaceholder": "...",
-                    "thousands": "."
+                        });
+                    });
                 }
             });
         });
+
 
         $('.delete-confirm').on('click', function(event) {
             event.preventDefault();
@@ -442,10 +228,9 @@
         });
 
 
-    new SlimSelect({
-        select: '.demo',
-        placeholder: 'Sélectionnez un ou plusieurs opérateurs'
-    })
-
+        new SlimSelect({
+            select: '.demo',
+            placeholder: 'Sélectionnez un ou plusieurs opérateurs'
+        })
     </script>
 @stop

@@ -3,16 +3,18 @@
 namespace App\Http\Controllers;
 
 use Session;
+use Carbon\Carbon;
 use App\Models\User;
 use App\Models\Resum;
 use App\Models\Invoice;
 use App\Models\Journal;
-use App\Models\Operator;
 use App\Models\Rcredit;
+use App\Models\Operator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class HomeController extends Controller
 {
@@ -436,19 +438,372 @@ class HomeController extends Controller
 
         return view('index');
     }
-
-     public function billing()
+    public function billing3(Request $request)
     {
+        // Construire la requête de base
+        $query = DB::table('billing_stat')
+            ->select(
+                'direction',
+                'carrier_name',
+                DB::raw('DATE(start_date) as periode'),
+                DB::raw('SUM(CAST(REPLACE(minutes, ",", ".") AS DECIMAL(10,2))) as minutes'),
+                DB::raw('SUM(CAST(REPLACE(amount_cfa, ",", "") AS DECIMAL(15,2))) as amount_cfa')
+            )
+            ->groupBy('direction', 'carrier_name', DB::raw('DATE(start_date)'))
+            ->orderBy('periode', 'desc');
 
-        if (session('id') != null) {
-        $operators = Operator::where('is_delete', 0)
-        ->orderBy('created_at', 'DESC')
-        ->get();
-            return view('billing.billing',compact('operators'));
+        // Appliquer les filtres si disponibles
+        if ($request->filled('direction')) {
+            $query->where('direction', $request->direction);
         }
 
-        return view('index');
+        if ($request->filled('start_period')) {
+            $query->whereDate('start_date', '>=', $request->start_period . '-01');
+        }
+
+        if ($request->filled('end_period')) {
+            $query->whereDate('start_date', '<=', $request->end_period . '-31');
+        }
+
+        if ($request->filled('operator')) {
+            $query->where('carrier_name', $request->operator);
+        }
+
+        $results = $query->get(); // ✅ Important
+
+        // Transmettre à la vue
+        return view('billing.billing2', compact('results'));
     }
+
+    public function billing22222222(Request $request)
+    {
+        ini_set('memory_limit', '512M');
+
+        if (!session('id')) return view('index');
+
+        $direction = $request->input('direction');
+        $viewType = $request->input('view_type', 'daily_carrier');
+
+        $start = $request->input('start_period') ? $request->input('start_period') . '-01' : now()->subMonth()->startOfMonth()->toDateString();
+        $end = $request->input('end_period') ? Carbon::parse($request->input('end_period'))->endOfMonth()->toDateString() : now()->toDateString();
+
+        $carrier = $request->input('carrier_name');
+
+
+        //dd($start, $end, $direction, $carrier, $viewType);
+
+        // Construction de la requête
+        $query = DB::connection('inter_traffic')->table('BILLING_STAT')
+            ->whereBetween('start_date', [$start, $end]);
+
+        if ($direction && in_array($direction, ['Revenue', 'Charge'])) {
+            $query->where('direction', $direction);
+        }
+
+
+        if ($carrier) {
+            if (is_array($carrier)) {
+                $query->whereIn('carrier_name', $carrier);
+            } else {
+                $query->where('carrier_name', $carrier);
+            }
+        }
+
+        // Sélection et groupement selon le type de vue
+        switch ($viewType) {
+            case 'daily_summary':
+                $query->selectRaw("
+                DATE(start_date) as period,
+                direction,
+                SUM(CAST(minutes AS DECIMAL(10,2))) as total_minutes,
+                SUM(CAST(amount_cfa AS DECIMAL(20,2))) as total_amount
+            ")
+                    ->groupBy(DB::raw('DATE(start_date)'), 'direction');
+                break;
+
+            case 'daily_carrier':
+                $query->selectRaw("
+                DATE(start_date) as period,
+                carrier_name,
+                direction,
+                SUM(CAST(minutes AS DECIMAL(10,2))) as total_minutes,
+                SUM(CAST(amount_cfa AS DECIMAL(20,2))) as total_amount
+            ")
+                    ->groupBy(DB::raw('DATE(start_date)'), 'carrier_name', 'direction');
+                break;
+
+            case 'monthly_summary':
+                $query->selectRaw("
+                DATE_FORMAT(start_date, '%Y-%m') as period,
+                direction,
+                SUM(CAST(minutes AS DECIMAL(10,2))) as total_minutes,
+                SUM(CAST(amount_cfa AS DECIMAL(20,2))) as total_amount
+            ")
+                    ->groupBy(DB::raw("DATE_FORMAT(start_date, '%Y-%m')"), 'direction');
+                break;
+
+            case 'monthly_carrier':
+                $query->selectRaw("
+                DATE_FORMAT(start_date, '%Y-%m') as period,
+                carrier_name,
+                direction,
+                SUM(CAST(minutes AS DECIMAL(10,2))) as total_minutes,
+                SUM(CAST(amount_cfa AS DECIMAL(20,2))) as total_amount
+            ")
+                    ->groupBy(DB::raw("DATE_FORMAT(start_date, '%Y-%m')"), 'carrier_name', 'direction');
+                break;
+
+            case 'monthly_details':
+            default:
+                $query->selectRaw("
+                DATE(start_date) as period,
+                carrier_name,
+                direction,
+                SUM(CAST(minutes AS DECIMAL(10,2))) as total_minutes,
+                SUM(CAST(amount_cfa AS DECIMAL(20,2))) as total_amount
+            ")
+                    ->groupBy(DB::raw('DATE(start_date)'), 'carrier_name', 'direction');
+                break;
+        }
+
+        $data = $query->orderBy('period', 'desc')->paginate(100);
+
+        $operators = DB::connection('inter_traffic')->table('BILLING_STAT')
+            ->select('carrier_name')
+            ->distinct()
+            ->orderBy('carrier_name')
+            ->pluck('carrier_name');
+
+        return view('billing.billing2', [
+            'data' => $data,
+            'operators' => $operators,
+            'filters' => compact('direction', 'start', 'end', 'carrier', 'viewType')
+        ]);
+    }
+
+
+    public function billing2(Request $request)
+    {
+        ini_set('memory_limit', '512M');
+        if (!session('id')) return view('index');
+
+        $direction = $request->input('direction');
+        $viewType = $request->input('view_type', 'daily_carrier');
+        $start = $request->input('start_period') ? $request->input('start_period') . '-01' : now()->subMonth()->startOfMonth()->toDateString();
+        $end = $request->input('end_period') ? Carbon::parse($request->input('end_period'))->endOfMonth()->toDateString() : now()->toDateString();
+        $carrier = $request->input('carrier_name');
+
+        // Nouveaux filtres
+        $origNet = $request->input('orig_net_name');
+        $destNet = $request->input('dest_net_name');
+        $origCountry = $request->input('orig_country_name');
+        $destCountry = $request->input('dest_country_name');
+
+        $query = DB::connection('inter_traffic')->table('BILLING_STAT')
+            ->whereBetween('start_date', [$start, $end]);
+
+        if ($direction && in_array($direction, ['Revenue', 'Charge'])) {
+            $query->where('direction', $direction);
+        }
+        if ($carrier) {
+            if (is_array($carrier)) {
+                $query->whereIn('carrier_name', $carrier);
+            } else {
+                $query->where('carrier_name', $carrier);
+            }
+        }
+        if ($origNet) {
+            $query->where('orig_net_name', $origNet);
+        }
+        if ($destNet) {
+            $query->where('dest_net_name', $destNet);
+        }
+        if ($origCountry) {
+            $query->where('orig_country_name', $origCountry);
+        }
+        if ($destCountry) {
+            $query->where('dest_country_name', $destCountry);
+        }
+
+        // Sélection et groupement selon le type de vue
+        switch ($viewType) {
+            case 'daily_summary':
+                $query->selectRaw("
+                DATE(start_date) as period,
+                direction,
+                SUM(CAST(minutes AS DECIMAL(10,2))) as total_minutes,
+                SUM(CAST(amount_cfa AS DECIMAL(20,2))) as total_amount
+            ")
+                    ->groupBy(DB::raw('DATE(start_date)'), 'direction');
+                break;
+
+            case 'daily_carrier':
+                $query->selectRaw("
+                DATE(start_date) as period,
+                carrier_name,
+                direction,
+                SUM(CAST(minutes AS DECIMAL(10,2))) as total_minutes,
+                SUM(CAST(amount_cfa AS DECIMAL(20,2))) as total_amount
+            ")
+                    ->groupBy(DB::raw('DATE(start_date)'), 'carrier_name', 'direction');
+                break;
+
+            case 'monthly_summary':
+                $query->selectRaw("
+                DATE_FORMAT(start_date, '%Y-%m') as period,
+                direction,
+                SUM(CAST(minutes AS DECIMAL(10,2))) as total_minutes,
+                SUM(CAST(amount_cfa AS DECIMAL(20,2))) as total_amount
+            ")
+                    ->groupBy(DB::raw("DATE_FORMAT(start_date, '%Y-%m')"), 'direction');
+                break;
+
+            case 'monthly_carrier':
+                $query->selectRaw("
+                DATE_FORMAT(start_date, '%Y-%m') as period,
+                carrier_name,
+                direction,
+                SUM(CAST(minutes AS DECIMAL(10,2))) as total_minutes,
+                SUM(CAST(amount_cfa AS DECIMAL(20,2))) as total_amount
+            ")
+                    ->groupBy(DB::raw("DATE_FORMAT(start_date, '%Y-%m')"), 'carrier_name', 'direction');
+                break;
+
+            case 'monthly_details':
+            default:
+                $query->selectRaw("
+                DATE(start_date) as period,
+                carrier_name,
+                direction,
+                SUM(CAST(minutes AS DECIMAL(10,2))) as total_minutes,
+                SUM(CAST(amount_cfa AS DECIMAL(20,2))) as total_amount
+            ")
+                    ->groupBy(DB::raw('DATE(start_date)'), 'carrier_name', 'direction');
+                break;
+        }
+
+        $data = $query->orderBy('period', 'desc')->paginate(100);
+
+        // Pour les filtres dynamiques dans la vue
+        $operators = DB::connection('inter_traffic')->table('BILLING_STAT')->select('carrier_name')->distinct()->orderBy('carrier_name')->pluck('carrier_name');
+        $origNets = DB::connection('inter_traffic')->table('BILLING_STAT')->select('orig_net_name')->distinct()->orderBy('orig_net_name')->pluck('orig_net_name');
+        $destNets = DB::connection('inter_traffic')->table('BILLING_STAT')->select('dest_net_name')->distinct()->orderBy('dest_net_name')->pluck('dest_net_name');
+        $origCountries = DB::connection('inter_traffic')->table('BILLING_STAT')->select('orig_country_name')->distinct()->orderBy('orig_country_name')->pluck('orig_country_name');
+        $destCountries = DB::connection('inter_traffic')->table('BILLING_STAT')->select('dest_country_name')->distinct()->orderBy('dest_country_name')->pluck('dest_country_name');
+
+        return view('billing.billing2', [
+            'data' => $data,
+            'operators' => $operators,
+            'origNets' => $origNets,
+            'destNets' => $destNets,
+            'origCountries' => $origCountries,
+            'destCountries' => $destCountries,
+            'filters' => compact('direction', 'start', 'end', 'carrier', 'viewType', 'origNet', 'destNet', 'origCountry', 'destCountry')
+        ]);
+    }
+
+
+
+
+    public function billing(Request $request)
+    {
+        ini_set('memory_limit', '512M');
+
+        if (!session('id')) {
+            return view('index');
+        }
+
+        $query = DB::connection('inter_traffic')->table('BILLING_STAT');
+
+        // 🔍 Appliquer les filtres
+        if ($request->filled('direction')) {
+            $query->where('direction', $request->direction);
+        }
+
+        if ($request->filled('operator')) {
+            $query->where('carrier_name', $request->operator);
+        }
+
+        if ($request->filled('start_period')) {
+            $start = Carbon::parse($request->start_period)->startOfMonth();
+            $query->where('period', '>=', $start);
+        }
+
+        if ($request->filled('end_period')) {
+            $end = Carbon::parse($request->end_period)->endOfMonth();
+            $query->where('period', '<=', $end);
+        }
+
+        // ✅ Obtenir toutes les données (charge et revenue)
+        $rawData = $query->select(
+            'direction',
+            'carrier_name',
+            DB::raw('SUM(minutes) as minutes'),
+            DB::raw('SUM(amount_cfa) as amount_cfa')
+        )
+            ->groupBy('direction', 'carrier_name')
+            ->get();
+
+        // ✅ Transformer les données en tableau dynamique [charge/revenue par opérateur]
+        $groupedData = [];
+        foreach ($rawData as $row) {
+            $operator = $row->carrier_name;
+            $dir = strtolower($row->direction); // charge ou revenue
+
+            if (!isset($groupedData[$operator])) {
+                $groupedData[$operator] = [
+                    'carrier_name' => $operator,
+                    'charge_minutes' => 0,
+                    'charge_amount' => 0,
+                    'revenue_minutes' => 0,
+                    'revenue_amount' => 0,
+                ];
+            }
+
+            if ($dir === 'charge') {
+                $groupedData[$operator]['charge_minutes'] = $row->minutes;
+                $groupedData[$operator]['charge_amount'] = $row->amount_cfa;
+            } elseif ($dir === 'revenue') {
+                $groupedData[$operator]['revenue_minutes'] = $row->minutes;
+                $groupedData[$operator]['revenue_amount'] = $row->amount_cfa;
+            }
+        }
+
+        // ✅ Calculer les totaux
+        $totals = [
+            'charge_minutes' => 0,
+            'charge_amount' => 0,
+            'revenue_minutes' => 0,
+            'revenue_amount' => 0,
+        ];
+
+        foreach ($groupedData as $row) {
+            $totals['charge_minutes'] += $row['charge_minutes'];
+            $totals['charge_amount'] += $row['charge_amount'];
+            $totals['revenue_minutes'] += $row['revenue_minutes'];
+            $totals['revenue_amount'] += $row['revenue_amount'];
+        }
+
+        // ✅ Opérateurs disponibles pour le filtre
+        $allOperators = DB::connection('inter_traffic')
+            ->table('BILLING_STAT')
+            ->distinct()
+            ->pluck('carrier_name')
+            ->sort()
+            ->values();
+
+        return view('billing.billing', [
+            'data' => array_values($groupedData), // ✅ plus besoin de paginate ici
+            'totals' => $totals,
+            'operators' => $allOperators,
+            'filters' => $request->all(), // pour réutiliser dans la vue
+        ]);
+    }
+
+
+
+
+
 
     public function roaming()
     {
