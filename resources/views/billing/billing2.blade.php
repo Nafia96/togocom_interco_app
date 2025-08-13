@@ -114,12 +114,13 @@
                                 <div class="form-group col-md-2">
                                     <label>Type de vue</label>
                                     <select class="form-control" name="view_type">
+                                         <option value="daily_carrier"
+                                            {{ request('view_type') == 'daily_carrier' ? 'selected' : '' }}>Daily Carrier
+                                        </option>
                                         <option value="daily_summary"
                                             {{ request('view_type') == 'daily_summary' ? 'selected' : '' }}>Daily Summary
                                         </option>
-                                        <option value="daily_carrier"
-                                            {{ request('view_type') == 'daily_carrier' ? 'selected' : '' }}>Daily Carrier
-                                        </option>
+                                       
                                         <option value="monthly_summary"
                                             {{ request('view_type') == 'monthly_summary' ? 'selected' : '' }}>Monthly
                                             Summary</option>
@@ -164,79 +165,67 @@
                         <div class="table-responsive">
                             @if (getUserType()->type_user == 3 || getUserType()->type_user == 2 || getUserType()->type_user == 1)
                                 <table class="table table-striped table-hover category" id="tableExpor" style="width:100%;">
-                            @else
-                                <table class="table table-striped table-hover category" id="save-stage" style="width:100%;">
+                                @else
+                                    <table class="table table-striped table-hover category" id="save-stage"
+                                        style="width:100%;">
                             @endif
-                            <thead>
-                                <tr>
-                                    <th class="recherche">Direction</th>
-                                    @if (in_array(request('view_type'), ['daily_carrier', 'monthly_carrier', 'monthly_details']))
-                                        <th class="recherche">Opérateur</th>
-                                    @endif
-                                    @if(request('show_net_name') == '1' || request('orig_net_name') || request('dest_net_name'))
-                                        <th class="recherche">Réseau origine</th>
-                                        <th class="recherche">Réseau destination</th>
-                                    @endif
-                                    @if(request('show_country_name') == '1' || request('orig_country_name') || request('dest_country_name'))
-                                        <th class="recherche">Pays origine</th>
-                                        <th class="recherche">Pays destination</th>
-                                    @endif
-                                    <th class="recherche">Période</th>
-                                    <th class="recherche">Minutes</th>
-                                    <th class="recherche">Montant CFA</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($data as $row)
-                                    <tr>
-                                        <td>{{ $row->direction }}</td>
-                                        @if (in_array(request('view_type'), ['daily_carrier', 'monthly_carrier', 'monthly_details']))
-                                            <td>{{ $row->carrier_name }}</td>
-                                        @endif
-                                        @if(request('show_net_name') == '1' || request('orig_net_name') || request('dest_net_name'))
-                                            <td>{{ $row->orig_net_name }}</td>
-                                            <td>{{ $row->dest_net_name }}</td>
-                                        @endif
-                                        @if(request('show_country_name') == '1' || request('orig_country_name') || request('dest_country_name'))
-                                            <td>{{ $row->orig_country_name }}</td>
-                                            <td>{{ $row->dest_country_name }}</td>
-                                        @endif
+@php
+    // Forcer la même valeur par défaut que dans le contrôleur
+    $viewType = request('view_type') ?: 'daily_carrier';
+@endphp
 
-                                        {{-- Ajout de l'affichage conditionnel si les champs existent --}}
-                                        @if(isset($row->orig_net_name))
-                                            <td>{{ $row->orig_net_name }}</td>
-                                            <td>{{ $row->dest_net_name }}</td>
-                                        @endif
-                                        @if(isset($row->orig_country_name))
-                                            <td>{{ $row->orig_country_name }}</td>
-                                            <td>{{ $row->dest_country_name }}</td>
-                                        @endif
+<thead>
+    <tr>
+        <th class="recherche">Direction</th>
 
-                                        <td>{{ $row->period }}</td>
-                                        <td>{{ number_format($row->total_minutes, 0, ',', ' ') }}</td>
-                                        <td>{{ number_format($row->total_amount, 0, ',', ' ') }}</td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                            <tfoot>
-                                <tr>
-                                    @php
-                                        $colspan = 1;
-                                        if (in_array(request('view_type'), ['daily_carrier', 'monthly_carrier', 'monthly_details'])) $colspan++;
-                                        if(request('show_net_name') == '1' || request('orig_net_name') || request('dest_net_name')) $colspan += 2;
-                                        if(request('show_country_name') == '1' || request('orig_country_name') || request('dest_country_name')) $colspan += 2;
-                                    @endphp
-                                    <th colspan="{{ $colspan }}" style="text-align:right">
-                                        Total:
-                                    </th>
-                                    <th>
-                                        {{ number_format($data->sum('total_minutes'), 0, ',', ' ') }}
-                                    </th>
-                                    <th>
-                                        {{ number_format($data->sum('total_amount'), 0, ',', ' ') }}
-                                    </th>
-                                </tr>
-                            </tfoot>
+        @if (in_array($viewType, ['daily_carrier', 'monthly_carrier', 'monthly_details']))
+            <th class="recherche">Opérateur</th>
+        @endif
+
+        @if (request('show_net_name') == '1' || request('orig_net_name') || request('dest_net_name'))
+            <th class="recherche">Réseau origine</th>
+            <th class="recherche">Réseau destination</th>
+        @endif
+
+        @if (request('show_country_name') == '1' || request('orig_country_name') || request('dest_country_name'))
+            <th class="recherche">Pays origine</th>
+            <th class="recherche">Pays destination</th>
+        @endif
+
+        <th class="recherche">Période</th>
+        <th class="recherche">Minutes</th>
+        <th class="recherche">Montant CFA</th>
+    </tr>
+</thead>
+
+<tbody>
+    @foreach ($data as $row)
+        <tr>
+            <td>{{ $row->direction }}</td>
+
+            @if (in_array($viewType, ['daily_carrier', 'monthly_carrier', 'monthly_details']))
+                <td>{{ $row->carrier_name }}</td>
+            @endif
+
+            @if (request('show_net_name') == '1' || request('orig_net_name') || request('dest_net_name'))
+                <td>{{ $row->orig_net_name }}</td>
+                <td>{{ $row->dest_net_name }}</td>
+            @endif
+
+            @if (request('show_country_name') == '1' || request('orig_country_name') || request('dest_country_name'))
+                <td>{{ $row->orig_country_name }}</td>
+                <td>{{ $row->dest_country_name }}</td>
+            @endif
+
+            <td>{{ $row->period }}</td>
+            <td>{{ number_format($row->total_minutes, 0, ',', ' ') }}</td>
+            <td>{{ number_format($row->total_amount, 0, ',', ' ') }}</td>
+        </tr>
+    @endforeach
+</tbody>
+
+
+
                             </table>
                         </div>
                     </div>
@@ -251,21 +240,21 @@
 
         <script>
             document.addEventListener('DOMContentLoaded', function() {
-               
-                 new SlimSelect({
+
+                new SlimSelect({
                     select: '.demo1'
                 });
 
-                 new SlimSelect({
+                new SlimSelect({
                     select: '.demo2'
                 });
-                 new SlimSelect({
+                new SlimSelect({
                     select: '.demo3'
                 });
-                 new SlimSelect({
+                new SlimSelect({
                     select: '.demo4'
                 });
-                 new SlimSelect({
+                new SlimSelect({
                     select: '.demo5'
                 });
             });
