@@ -642,93 +642,120 @@ class HomeController extends Controller
             : $query->where('dest_country_name', $destCountry);
     }
 
-    // Sélection et groupement selon le type de vue
-    switch ($viewType) {
-        case 'daily_summary':
-            // Résumé par jour, tous opérateurs confondus
-            $query->selectRaw("
-                DATE(start_date) as period,
-                direction,
-                SUM(CAST(minutes AS DECIMAL(10,2))) as total_minutes,
-                SUM(CAST(amount_cfa AS DECIMAL(20,2))) as total_amount
-            ")
-            ->groupBy(
-                DB::raw('DATE(start_date)'),
-                'direction'
-            );
-            break;
+    // Détection des colonnes optionnelles à inclure
+$selectNetNames = '';
+$groupNetNames = [];
+if (request('show_net_name') == '1' || request('orig_net_name') || request('dest_net_name')) {
+    $selectNetNames = ",
+        orig_net_name,
+        dest_net_name";
+    $groupNetNames = ['orig_net_name', 'dest_net_name'];
+}
 
-        case 'daily_carrier':
-            // Résumé par jour et par opérateur
-            $query->selectRaw("
-                DATE(start_date) as period,
-                carrier_name,
-                direction,
-                SUM(CAST(minutes AS DECIMAL(10,2))) as total_minutes,
-                SUM(CAST(amount_cfa AS DECIMAL(20,2))) as total_amount
-            ")
-            ->groupBy(
-                DB::raw('DATE(start_date)'),
-                'carrier_name',
-                'direction'
-            );
-            break;
+$selectCountryNames = '';
+$groupCountryNames = [];
+if (request('show_country_name') == '1' || request('orig_country_name') || request('dest_country_name')) {
+    $selectCountryNames = ",
+        orig_country_name,
+        dest_country_name";
+    $groupCountryNames = ['orig_country_name', 'dest_country_name'];
+}
 
-        case 'monthly_summary':
-            // Résumé par mois, tous opérateurs confondus
-            $query->selectRaw("
-                DATE_FORMAT(start_date, '%Y-%m') as period,
-                direction,
-                SUM(CAST(minutes AS DECIMAL(10,2))) as total_minutes,
-                SUM(CAST(amount_cfa AS DECIMAL(20,2))) as total_amount
-            ")
-            ->groupBy(
-                DB::raw("DATE_FORMAT(start_date, '%Y-%m')"),
-                'direction'
-            );
-            break;
+// Sélection et groupement selon le type de vue
+switch ($viewType) {
+    case 'daily_summary':
+        $query->selectRaw("
+            DATE(start_date) as period,
+            direction
+            $selectNetNames
+            $selectCountryNames,
+            SUM(CAST(minutes AS DECIMAL(10,2))) as total_minutes,
+            SUM(CAST(amount_cfa AS DECIMAL(20,2))) as total_amount
+        ")
+        ->groupBy(
+            DB::raw('DATE(start_date)'),
+            'direction',
+            ...$groupNetNames,
+            ...$groupCountryNames
+        );
+        break;
 
-        case 'monthly_carrier':
-            // Résumé par mois et par opérateur
-            $query->selectRaw("
-                DATE_FORMAT(start_date, '%Y-%m') as period,
-                carrier_name,
-                direction,
-                SUM(CAST(minutes AS DECIMAL(10,2))) as total_minutes,
-                SUM(CAST(amount_cfa AS DECIMAL(20,2))) as total_amount
-            ")
-            ->groupBy(
-                DB::raw("DATE_FORMAT(start_date, '%Y-%m')"),
-                'carrier_name',
-                'direction'
-            );
-            break;
+    case 'daily_carrier':
+        $query->selectRaw("
+            DATE(start_date) as period,
+            carrier_name,
+            direction
+            $selectNetNames
+            $selectCountryNames,
+            SUM(CAST(minutes AS DECIMAL(10,2))) as total_minutes,
+            SUM(CAST(amount_cfa AS DECIMAL(20,2))) as total_amount
+        ")
+        ->groupBy(
+            DB::raw('DATE(start_date)'),
+            'carrier_name',
+            'direction',
+            ...$groupNetNames,
+            ...$groupCountryNames
+        );
+        break;
 
-        case 'monthly_details':
-        default:
-            // Détails par jour, opérateur, réseau, pays
-            $query->selectRaw("
-                DATE(start_date) as period,
-                carrier_name,
-                direction,
-                orig_net_name,
-                dest_net_name,
-                orig_country_name,
-                dest_country_name,
-                SUM(CAST(minutes AS DECIMAL(10,2))) as total_minutes,
-                SUM(CAST(amount_cfa AS DECIMAL(20,2))) as total_amount
-            ")
-            ->groupBy(
-                DB::raw('DATE(start_date)'),
-                'carrier_name',
-                'direction',
-                'orig_net_name',
-                'dest_net_name',
-                'orig_country_name',
-                'dest_country_name'
-            );
-            break;
-    }
+    case 'monthly_summary':
+        $query->selectRaw("
+            DATE_FORMAT(start_date, '%Y-%m') as period,
+            direction
+            $selectNetNames
+            $selectCountryNames,
+            SUM(CAST(minutes AS DECIMAL(10,2))) as total_minutes,
+            SUM(CAST(amount_cfa AS DECIMAL(20,2))) as total_amount
+        ")
+        ->groupBy(
+            DB::raw("DATE_FORMAT(start_date, '%Y-%m')"),
+            'direction',
+            ...$groupNetNames,
+            ...$groupCountryNames
+        );
+        break;
+
+    case 'monthly_carrier':
+        $query->selectRaw("
+            DATE_FORMAT(start_date, '%Y-%m') as period,
+            carrier_name,
+            direction
+            $selectNetNames
+            $selectCountryNames,
+            SUM(CAST(minutes AS DECIMAL(10,2))) as total_minutes,
+            SUM(CAST(amount_cfa AS DECIMAL(20,2))) as total_amount
+        ")
+        ->groupBy(
+            DB::raw("DATE_FORMAT(start_date, '%Y-%m')"),
+            'carrier_name',
+            'direction',
+            ...$groupNetNames,
+            ...$groupCountryNames
+        );
+        break;
+
+    case 'monthly_details':
+    default:
+        $query->selectRaw("
+            DATE(start_date) as period,
+            carrier_name,
+            direction
+            $selectNetNames
+            $selectCountryNames,
+            SUM(CAST(minutes AS DECIMAL(10,2))) as total_minutes,
+            SUM(CAST(amount_cfa AS DECIMAL(20,2))) as total_amount
+        ")
+        ->groupBy(
+            DB::raw('DATE(start_date)'),
+            'carrier_name',
+            'direction',
+            ...$groupNetNames,
+            ...$groupCountryNames
+        );
+        break;
+}
+
 
     $data = $query->orderBy('period', 'desc')->paginate(1000);
 
