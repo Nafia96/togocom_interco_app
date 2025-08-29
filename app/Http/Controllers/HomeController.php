@@ -581,6 +581,72 @@ class HomeController extends Controller
         ]);
     }
 
+public function billingPivot(Request $request)
+{
+    ini_set('memory_limit', '512M');
+    if (!session('id')) return view('index');
+
+    // Période par défaut : mois précédent
+    $start = $request->input('start_period')
+        ? $request->input('start_period') . '-01'
+        : now()->subMonth()->startOfMonth()->toDateString();
+
+    $end = $request->input('end_period')
+        ? Carbon::parse($request->input('end_period'))->endOfMonth()->toDateString()
+        : now()->toDateString();
+
+    $direction = $request->input('direction', 'Entrant'); // on peut choisir Entrant / Sortant
+    $carrier = $request->input('carrier_name');
+
+    // Récupération brute
+    $start = "2020-01-01";
+$end = now()->toDateString();
+
+    $query = DB::connection('inter_traffic')->table('BILLING_STAT')
+        ->selectRaw("DATE(start_date) as period, carrier_name, SUM(CAST(minutes AS DECIMAL(10,2))) as total_minutes")
+        ->whereBetween('start_date', [$start, $end])
+        ->where('direction', $direction)
+        ->groupBy(DB::raw('DATE(start_date)'), 'carrier_name');
+
+    if ($carrier) {
+        $query->where('carrier_name', $carrier);
+    }
+
+    $data = $query->get();
+
+    // Transformer en pivot [operateur][jour] = minutes
+    $pivotData = [];
+    foreach ($data as $row) {
+        $carrier = $row->carrier_name;
+        $day = $row->period;
+        $minutes = $row->total_minutes;
+
+        if (!isset($pivotData[$carrier])) {
+            $pivotData[$carrier] = [];
+        }
+        $pivotData[$carrier][$day] = $minutes;
+    }
+
+    // Extraire toutes les dates distinctes (colonnes)
+    $dates = collect($data)->pluck('period')->unique()->sort()->values();
+
+    // Liste opérateurs (pour filtres)
+    $operators = DB::connection('inter_traffic')
+        ->table('BILLING_STAT')
+        ->select('carrier_name')
+        ->distinct()
+        ->orderBy('carrier_name')
+        ->pluck('carrier_name');
+
+    return view('billing.billingPivot', [
+        'pivotData' => $pivotData,
+        'dates' => $dates,
+        'operators' => $operators,
+        'filters' => compact('direction', 'start', 'end', 'carrier')
+    ]);
+}
+
+
 
 
  public function billing2(Request $request)
@@ -594,12 +660,12 @@ class HomeController extends Controller
     $direction = $request->input('direction', null);
 
     // Période par défaut : mois précédent au complet
-    $start = $request->input('start_period') 
-        ? $request->input('start_period') . '-01' 
+    $start = $request->input('start_period')
+        ? $request->input('start_period') . '-01'
         : now()->subMonth()->startOfMonth()->toDateString();
 
-    $end = $request->input('end_period') 
-        ? Carbon::parse($request->input('end_period'))->endOfMonth()->toDateString() 
+    $end = $request->input('end_period')
+        ? Carbon::parse($request->input('end_period'))->endOfMonth()->toDateString()
         : now()->toDateString();
 
     $carrier = $request->input('carrier_name');

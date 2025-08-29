@@ -16,82 +16,72 @@
                 </button>
             </div>
             <div class="modal-body">
-                <form action="{{ url('ope_to_tgc_invoice') }}" enctype="multipart/form-data" method="post">
+                <form action="{{ url('mesure_tgt_tgc') }}" enctype="multipart/form-data" method="post">
 
                     @csrf
 
 
-                        <div class="tab-content tab-bordered" id="myTab3Content">
+                    <div class="tab-content tab-bordered" id="myTab3Content">
 
-                            <br>
-
-
-                            <div class="form-row">
-
-                                <div class="form-group col-md-4">
-                                    <label>Periode :</label>
-                                    <input class="form-control" type="month" id="start" name="period"
-                                        min="2020-01" value="{{ date('Y-m') }}" />
-                                </div>
+                        <br>
 
 
+                        <div class="form-row">
 
-                                <div class="form-group col-md-4">
-                                    <label>Mesure de Togocel :</label>
-                                    <input name="invoice_date" type="text" class="form-control datepicker">
-                                </div>
-
-
-                                <div class="form-group col-md-4">
-                                    <label for="inputEmail4">Mesure de TGT</label>
-                                    <input name="invoice_number" type="text"
-                                        class="form-control  @error('invoice_number') is-invalid @enderror"
-                                        value="" placeholder="" required>
-
-                                    @error('invoice_number')
-                                        <span class="invalid-feedback" role="alert">
-                                            <strong>{{ $message }}</strong>
-                                        </span>
-                                    @enderror
-                                </div>
+                            <div class="form-group col-md-4">
+                                <label>Periode :</label>
+                                <input class="form-control" type="month" id="start" name="periode" min="2020-01" value="{{ date('Y-m') }}" />
                             </div>
+                            <div class="form-group col-md-4">
+                                <label>Mesure de TGT :</label>
+                                 <input name="m_tgt" type="number" step="0.01" min="0"
+                                            lang="en" class="form-control  @error('m_tgt') is-invalid @enderror"
+                                            value="{{ @old('m_tgt') }}" placeholder="" required>
 
-                            <div class="form-row">
-
-
-
-
-                                <div class="form-group col-md-4">
-                                    <label>Importer la facture</label>
-                                    <div class="input-group">
-
-                                        <input name="the_file" type="file" class="form-control">
-
-
-                                    </div>
-                                </div>
-
-                                <div class="form-group col-md-6">
-                                    <label>Commentaire sur la facture</label>
-                                    <textarea name="comment" class="form-control @error('comment') is-invalid @enderror">{{ @old('comment') }}</textarea>
-
-                                    @error('comment')
-                                        <span class="invalid-feedback" role="alert">
-                                            <strong>{{ $message }}</strong>
-                                        </span>
-                                    @enderror
-                                </div>
-
+                                        @error('m_tgt')
+                                            <span class="invalid-feedback" role="alert">
+                                                <strong>{{ $message }}</strong>
+                                            </span>
+                                        @enderror
                             </div>
 
 
+                            <div class="form-group col-md-4">
+                                <label for="inputEmail4">Mesure de TGC</label>
+                                <input name="m_tgc"  type="number" step="0.01" min="0"
+                                            lang="en" class="form-control  @error('m_tgt') is-invalid @enderror"
+                                            value="{{ @old('m_tgt') }}" placeholder="" required>
+
+                                @error('m_tgc')
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                @enderror
+                            </div>
                         </div>
 
-                        <div class="d-flex justify-content-end container-fluid">
+                        <div class="form-row">
 
-                            <button type="submit" class="btn btn-primary waves-effect mb-2">Ajouter la
-                                facture</button>
+                            <div class="form-group col-md-12">
+                                <label>Commentaire sur la facture</label>
+                                <textarea name="comment" class="form-control @error('comment') is-invalid @enderror">{{ @old('comment') }}</textarea>
+
+                                @error('comment')
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                @enderror
+                            </div>
+
                         </div>
+
+
+                    </div>
+
+                    <div class="d-flex justify-content-end container-fluid">
+
+                        <button type="submit" class="btn btn-primary waves-effect mb-2">Ajouter la facture</button>
+                    </div>
 
 
                 </form>

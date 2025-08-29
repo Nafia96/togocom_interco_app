@@ -79,10 +79,6 @@
 
                     </p>
 
-
-
-
-
                 </div>
 
                 <div style="font-size: 100%" class="card-body pull-center">

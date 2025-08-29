@@ -42,6 +42,7 @@ Route::get('national', [HomeController::class, 'national'])->name('national');
 Route::get('billing', [HomeController::class, 'billing2'])->name('billing2');
 Route::get('billing2', [HomeController::class, 'billing2'])->name('billing2');
 Route::get('roaming', [HomeController::class, 'roaming2'])->name('roaming');
+Route::get('billingp', [HomeController::class, 'billingpivot'])->name('billingp');
 
 //roaming rout
 Route::get('iot_discount', [RoamingController::class, 'iot_discount'])->name('iot_discount');
@@ -104,6 +105,7 @@ Route::middleware([NotConnected::class])->group(function () {
 
         //Rout  pour le national
         Route::get('show_tgt_tgc', [NationalController::class, 'show_tgt_tgc'])->name('show_tgt_tgc');
+        Route::post('mesure_tgt_tgc', [NationalController::class, 'mesure_tgt_tgc'])->name('mesure_tgt_tgc');
 
         //Route des operations
 
@@ -117,6 +119,9 @@ Route::middleware([NotConnected::class])->group(function () {
         Route::get('operations_list/{id_operator}', [OperationController::class, 'operations_list'])->name('operations_list');
         Route::get('invoice_list/{id_operator}', [OperationController::class, 'invoice_list'])->name('invoice_list');
         Route::get('all_invoice_list', [OperationController::class, 'all_invoice_list'])->name('all_invoice_list');
+        Route::get('send_invoices', [OperationController::class, 'send_invoices'])->name('send_invoices');
+        Route::post('selection', [OperationController::class, 'selection'])->name('selection');
+        Route::POST('/envoyerFactures', [OperationController::class, 'envoyerFactures'])->name('envoyerFactures');
         Route::get('all_resum_list', [OperationController::class, 'all_resum_list'])->name('all_resum_list');
         Route::get('delete_invoice_list', [OperationController::class, 'delete_invoice_list'])->name('delete_invoice_list');
         Route::get('all_operations', [OperationController::class, 'all_operations'])->name('all_operations');

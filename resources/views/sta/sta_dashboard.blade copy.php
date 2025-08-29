@@ -2,6 +2,15 @@
 
 @section('title', 'Statistique dashboard')
 
+<td>
+                                        @if($op->facture_path)
+                                            <a href="{{ asset($op->facture_path) }}" target="_blank" class="btn btn-sm btn-info">
+                                                Voir PDF
+                                            </a>
+                                        @else
+                                            <span class="text-muted">Aucune</span>
+                                        @endif
+                                    </td>
 @section('content')
     <div class="col-12 col-md-12 col-lg-12">
         <div class="card">

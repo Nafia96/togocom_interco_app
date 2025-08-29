@@ -102,10 +102,10 @@
 
          <div class="col-12 col-sm-12 col-lg-12">
             <div class="card">
-                <div class="card-header">
-                    <h4>LISTE DES OPERATEURS D'INTERCONNEXION </h4>
+                 <div class="card-header" style="background-color:#F5F5DC ">
+                <h4>  Liste des opérateurs d'interconnexion </h4>
+            </div>
 
-                </div>
 
 
 
@@ -134,13 +134,13 @@
 
                                 @foreach ($operators as $operator)
                                     <tr>
-                                        <td style="width:3%">{{ $n }} </td>
+                                        <td style="width:1%">{{ $n }} </td>
 
-                                        <td style="width:17%;"> <a style="background-color:green; color:aliceblue " class=" mb-2 btn btn-sm btn-info"
-                                                    href="{{ url('ope_dashboard/'.$operator->id) }}">
-                                                    {{ $operator->name }}
-                                                </a>
-                                            </td>
+                                         <td style="width:18%">
+                                        <a class="btn btn-sm btn-success text-white" href="{{ url('ope_dashboard/'.$operator->id) }}">
+                                            {{ $operator->name }}
+                                        </a>
+                                    </td>
 
                                         <td style="width:10%">{{ $operator->email }}</td>
                                         <td>{{ $operator->tel }}</td>

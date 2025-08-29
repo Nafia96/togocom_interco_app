@@ -9,10 +9,14 @@ use App\Models\Creditnote;
 use App\Models\Invoice;
 use App\Models\Journal;
 use App\Models\Operation;
+use App\Models\Operateur;
 use App\Models\Operator;
 use App\Models\Resum;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+
+
 
 class OperationController extends Controller
 {
@@ -51,10 +55,10 @@ class OperationController extends Controller
 
             if ($request->hasfile('the_file')) {
 
-                $format_name = str_replace("/","_",$request->invoice_number);
+                $format_name = str_replace("/", "_", $request->invoice_number);
                 $imageIcon = $request->file('the_file');
                 $exten = $imageIcon->getClientOriginalExtension();
-                $imageIconName = date('Y-m') . '-' . $format_name .'_'. uniqid() . '.' . $exten;
+                $imageIconName = date('Y-m') . '-' . $format_name . '_' . uniqid() . '.' . $exten;
                 $destinationPath = public_path('/facture');
                 $ulpoadImageSuccess = $imageIcon->move($destinationPath, $imageIconName);
                 $facture_name = "/facture/" . $imageIconName;
@@ -347,15 +351,13 @@ class OperationController extends Controller
 
             if ($request->hasfile('the_file')) {
 
-                $format_name = str_replace("/","_",$request->invoice_number);
+                $format_name = str_replace("/", "_", $request->invoice_number);
                 $imageIcon = $request->file('the_file');
                 $exten = $imageIcon->getClientOriginalExtension();
-                $imageIconName = date('Y-m') . '-' . $format_name .'_'. uniqid() . '.' . $exten;
+                $imageIconName = date('Y-m') . '-' . $format_name . '_' . uniqid() . '.' . $exten;
                 $destinationPath = public_path('/facture');
                 $ulpoadImageSuccess = $imageIcon->move($destinationPath, $imageIconName);
                 $facture_name = "/facture/" . $imageIconName;
-
-
             }
 
             if ($resum->debt == null) {
@@ -647,7 +649,6 @@ class OperationController extends Controller
                 'netting' => $operation->resum2->netting + $operation->amount,
 
             ]);
-
         } elseif ($operation->operation_type == 1) {
 
             $resum = Resum::where('id', $operation->resum->id)->first();
@@ -994,76 +995,74 @@ class OperationController extends Controller
 
             if ($request->hasfile('the_file')) {
 
-                $format_name = str_replace("/","_",$request->invoice_number);
+                $format_name = str_replace("/", "_", $request->invoice_number);
                 $imageIcon = $request->file('the_file');
                 $exten = $imageIcon->getClientOriginalExtension();
-                $imageIconName = date('Y-m') . '-' . $format_name .'_'. uniqid() . '.' . $exten;
+                $imageIconName = date('Y-m') . '-' . $format_name . '_' . uniqid() . '.' . $exten;
                 $destinationPath = public_path('/facture');
                 $ulpoadImageSuccess = $imageIcon->move($destinationPath, $imageIconName);
                 $facture_name = "/facture/" . $imageIconName;
 
 
 
-            Invoice::where([
-                'id' => $data['invoice_id'],
-            ])->update([
-                'amount' => $data['amount'],
-                'invoice_number' => $data['invoice_number'],
-                'period' => $data['period'],
-                'periodDate' => periodeDate($data['period']),
+                Invoice::where([
+                    'id' => $data['invoice_id'],
+                ])->update([
+                    'amount' => $data['amount'],
+                    'invoice_number' => $data['invoice_number'],
+                    'period' => $data['period'],
+                    'periodDate' => periodeDate($data['period']),
 
-                'invoice_date' => $data['invoice_date'],
-                'call_volume' => $data['call_volume'],
-                'comment' => $data['comment'],
-                'number_of_call' => $data['number_of_call'],
-                'invoice_type' => $data['invoice_type'],
-                'facture_name' => $facture_name,
-
-
-            ]);
-
-            Operation::where([
-                'id' => $data['operation_id'],
-            ])->update([
-                'comment' => $data['comment'],
-                'amount' => $data['amount'],
-                'facture_name' => $facture_name,
-                'invoice_type' => $data['invoice_type'],
-                'new_debt' => ($op_account->debt - $operation->amount) + $data['amount'],
-                'new_netting' => ($op_account->netting + $operation->amount) - $data['amount'],
-            ]);
-
-            }else{
+                    'invoice_date' => $data['invoice_date'],
+                    'call_volume' => $data['call_volume'],
+                    'comment' => $data['comment'],
+                    'number_of_call' => $data['number_of_call'],
+                    'invoice_type' => $data['invoice_type'],
+                    'facture_name' => $facture_name,
 
 
+                ]);
 
-            Invoice::where([
-                'id' => $data['invoice_id'],
-            ])->update([
-                'amount' => $data['amount'],
-                'invoice_number' => $data['invoice_number'],
-                'period' => $data['period'],
-                'periodDate' => periodeDate($data['period']),
+                Operation::where([
+                    'id' => $data['operation_id'],
+                ])->update([
+                    'comment' => $data['comment'],
+                    'amount' => $data['amount'],
+                    'facture_name' => $facture_name,
+                    'invoice_type' => $data['invoice_type'],
+                    'new_debt' => ($op_account->debt - $operation->amount) + $data['amount'],
+                    'new_netting' => ($op_account->netting + $operation->amount) - $data['amount'],
+                ]);
+            } else {
 
-                'invoice_date' => $data['invoice_date'],
-                'call_volume' => $data['call_volume'],
-                'comment' => $data['comment'],
-                'number_of_call' => $data['number_of_call'],
-                'invoice_type' => $data['invoice_type'],
 
-            ]);
 
-            Operation::where([
-                'id' => $data['operation_id'],
-            ])->update([
-                'comment' => $data['comment'],
-                'amount' => $data['amount'],
+                Invoice::where([
+                    'id' => $data['invoice_id'],
+                ])->update([
+                    'amount' => $data['amount'],
+                    'invoice_number' => $data['invoice_number'],
+                    'period' => $data['period'],
+                    'periodDate' => periodeDate($data['period']),
 
-                'invoice_type' => $data['invoice_type'],
-                'new_debt' => ($op_account->debt - $operation->amount) + $data['amount'],
-                'new_netting' => ($op_account->netting + $operation->amount) - $data['amount'],
-            ]);
+                    'invoice_date' => $data['invoice_date'],
+                    'call_volume' => $data['call_volume'],
+                    'comment' => $data['comment'],
+                    'number_of_call' => $data['number_of_call'],
+                    'invoice_type' => $data['invoice_type'],
 
+                ]);
+
+                Operation::where([
+                    'id' => $data['operation_id'],
+                ])->update([
+                    'comment' => $data['comment'],
+                    'amount' => $data['amount'],
+
+                    'invoice_type' => $data['invoice_type'],
+                    'new_debt' => ($op_account->debt - $operation->amount) + $data['amount'],
+                    'new_netting' => ($op_account->netting + $operation->amount) - $data['amount'],
+                ]);
             }
 
 
@@ -1139,10 +1138,10 @@ class OperationController extends Controller
 
             if ($request->hasfile('the_file')) {
 
-                $format_name = str_replace("/","_",$request->invoice_number);
+                $format_name = str_replace("/", "_", $request->invoice_number);
                 $imageIcon = $request->file('the_file');
                 $exten = $imageIcon->getClientOriginalExtension();
-                $imageIconName = date('Y-m') . '-' . $format_name .'_'. uniqid() . '.' . $exten;
+                $imageIconName = date('Y-m') . '-' . $format_name . '_' . uniqid() . '.' . $exten;
                 $destinationPath = public_path('/facture');
                 $ulpoadImageSuccess = $imageIcon->move($destinationPath, $imageIconName);
                 $facture_name = "/facture/" . $imageIconName;
@@ -1175,8 +1174,7 @@ class OperationController extends Controller
                     'new_receivable' => ($op_account->receivable - $operation->amount) + $data['amount'],
                     'new_netting' => ($op_account->netting - $operation->amount) + $data['amount'],
                 ]);
-
-            }else{
+            } else {
 
                 Invoice::where([
                     'id' => $data['invoice_id'],
@@ -1848,7 +1846,7 @@ class OperationController extends Controller
                     'id_operation_2' => $operation->id,
                     'service' => 'Encaissement - ' . $data['invoice_date'],
                     'periodDate' => $data['invoice_date'],
-                'period' => substr($data['invoice_date'], 0, 7)
+                    'period' => substr($data['invoice_date'], 0, 7)
 
 
                 ]);
@@ -1864,7 +1862,7 @@ class OperationController extends Controller
                     'id_operation_2' => $operation->id,
                     'service' => 'Encaissement - ' . $data['invoice_date'],
                     'periodDate' => $data['invoice_date'],
-                'period' => substr($data['invoice_date'], 0, 7)
+                    'period' => substr($data['invoice_date'], 0, 7)
 
                 ]);
             } elseif ($operator->currency == 'XAF') {
@@ -1879,7 +1877,7 @@ class OperationController extends Controller
                     'id_operation_2' => $operation->id,
                     'service' => 'Encaissement - ' . $data['invoice_date'],
                     'periodDate' => $data['invoice_date'],
-                'period' => substr($data['invoice_date'], 0, 7)
+                    'period' => substr($data['invoice_date'], 0, 7)
 
                 ]);
             } elseif ($operator->currency == 'XOF') {
@@ -1894,7 +1892,7 @@ class OperationController extends Controller
                     'id_operation_2' => $operation->id,
                     'service' => 'Encaissement - ' . $data['invoice_date'],
                     'periodDate' => $data['invoice_date'],
-                'period' => substr($data['invoice_date'], 0, 7)
+                    'period' => substr($data['invoice_date'], 0, 7)
 
                 ]);
             }
@@ -1961,7 +1959,7 @@ class OperationController extends Controller
                     'id_operation_2' => $operation->id,
                     'service' => 'Decaissement - ' . $data['invoice_date'],
                     'periodDate' => $data['invoice_date'],
-                'period' => substr($data['invoice_date'], 0, 7)
+                    'period' => substr($data['invoice_date'], 0, 7)
 
                 ]);
             } elseif ($operator->currency == 'USD') {
@@ -1976,7 +1974,7 @@ class OperationController extends Controller
                     'id_operation_2' => $operation->id,
                     'service' => 'Decaissement - ' . $data['invoice_date'],
                     'periodDate' => $data['invoice_date'],
-                'period' => substr($data['invoice_date'], 0, 7)
+                    'period' => substr($data['invoice_date'], 0, 7)
 
                 ]);
             } elseif ($operator->currency == 'XAF') {
@@ -1991,7 +1989,7 @@ class OperationController extends Controller
                     'id_operation_2' => $operation->id,
                     'service' => 'Decaissement - ' . $data['invoice_date'],
                     'periodDate' => $data['invoice_date'],
-                'period' => substr($data['invoice_date'], 0, 7)
+                    'period' => substr($data['invoice_date'], 0, 7)
 
                 ]);
             } elseif ($operator->currency == 'XOF') {
@@ -2006,7 +2004,7 @@ class OperationController extends Controller
                     'id_operation_2' => $operation->id,
                     'service' => 'Decaissement - ' . $data['invoice_date'],
                     'periodDate' => $data['invoice_date'],
-                'period' => substr($data['invoice_date'], 0, 7)
+                    'period' => substr($data['invoice_date'], 0, 7)
 
                 ]);
             }
@@ -2061,6 +2059,219 @@ class OperationController extends Controller
 
         return view('operator.all_invoice', compact('operations'))->render();
     }
+
+    public function send_invoices()
+    {
+
+        // Charger les opérateurs + emails associés
+
+        $operateurs = Operator::where('is_delete', 0)
+            ->orderBy('created_at', 'DESC')
+            ->get();
+
+        //dd($operateurs);
+        return view('facturation.sendInvoices', compact('operateurs'));
+    }
+
+
+
+    public function selection(Request $request)
+    {
+        $periode = $request->input('invoice_period');
+        $operatorIds = $request->input('operateurs', []);
+
+        // Récupérer les opérateurs
+        if (empty($operatorIds)) {
+            $operators = Operator::all();
+        } else {
+            $operators = Operator::whereIn('id', $operatorIds)->get();
+        }
+
+        // Trier les opérateurs : ceux avec facture en premier
+        $operators = $operators->sortByDesc(function ($operator) use ($periode) {
+            $facturePath = public_path('invoices/depart/'
+                . substr($periode, 0, 4)
+                . '/' . $operator->id
+                . '/' . substr($periode, 5, 2)
+                . '.pdf');
+
+            return file_exists($facturePath);
+        });
+
+        return view('facturation.listeSelection', compact('operators', 'periode'));
+    }
+
+
+
+    public function envoyerFactures(Request $request)
+    {
+        $periode = $request->input('invoice_period'); // ex: 2025-08
+        $operatorIds = $request->input('operators', []);
+
+        $operators = Operator::whereIn('id', $operatorIds)->get();
+
+        set_time_limit(300); // 5 minutes
+
+        foreach ($operators as $operator) {
+            $facturePath = public_path(
+                'invoices/depart/' .
+                    substr($periode, 0, 4) . '/' .
+                    $operator->id . '/' .
+                    substr($periode, 5, 2) . '.pdf'
+            );
+
+
+
+            try {
+                \Mail::send([], [], function ($message) use ($operator, $periode, $facturePath) {
+                    $message->from('interco@yast.tg', 'Service Interco TOGOCOM')
+                        ->to($operator->email, $operator->name);
+
+                    if (!empty($operator->email2)) {
+                        $message->cc($operator->email2);
+                    }
+                    if (!empty($operator->email3)) {
+                        $message->cc($operator->email3);
+                    }
+
+                    $message->subject('Facture ' . $periode . ' - ' . $operator->name)
+                        ->setBody(
+                            "
+                                <p>Bonjour <strong>{$operator->name}</strong>,</p>
+
+                                <p>
+                                    Veuillez trouver ci-joint votre facture pour la période <strong>{$periode}</strong>.
+                                </p>
+
+                                <p>
+                                    Pour toute réclamation, veuillez adresser un mail à
+                                    <a href='ekoue.kouevi@yas.tg'>ekoue.kouevi@yas.tg</a>
+                                    .
+                                </p>
+
+                                <p>
+                                    Cordialement,<br>
+                                    <em>Service Interconnexion YAS TOGO</em>
+                                </p>
+                                ",'text/html');
+
+
+                    // ✅ attacher uniquement si le fichier existe
+                    if (file_exists($facturePath)) {
+                        $message->attach($facturePath, [
+                            'as'   => 'facture_' . $operator->id . '_' . $periode . '.pdf',
+                            'mime' => 'application/pdf',
+                        ]);
+                    } else {
+                        \Log::warning("Facture non trouvée pour {$operator->name} ({$periode}) : $facturePath");
+                    }
+                });
+            } catch (\Exception $e) {
+                \Log::error("Erreur envoi facture à {$operator->name} : " . $e->getMessage());
+            }
+        }
+
+        return redirect()->route('send_invoices')->with('flash_message_success', 'Envoi des factures terminé.');
+    }
+
+
+
+
+    public function envoyerFacturesold(Request $request)
+    {
+        // Récupérer la période choisie
+        $periode = $request->input('invoice_period'); // ex: 2025-08
+
+        // Récupérer les opérateurs sélectionnés
+        $operatorIds = $request->input('operators', []);
+
+        // Si aucun opérateur sélectionné → prendre tous
+        if (empty($operatorIds)) {
+            $operators = Operator::all();
+        } else {
+            $operators = Operator::whereIn('id', $operatorIds)->get();
+        }
+
+        foreach ($operators as $operator) {
+            $facturePath = public_path('invoices/depart/'
+                . substr($periode, 0, 4) . '/'
+                . $operator->id . '/'
+                . substr($periode, 5, 2) . '.pdf');
+
+            // Si le fichier n'existe pas, on ignore cet opérateur
+            if (!file_exists($facturePath)) {
+                continue;
+            }
+
+            $toEmail = $operator->email;
+            $ccEmails = array_filter([$operator->email2, $operator->email3]); // Ignore null
+
+            Mail::html(
+                "<p>Bonjour <strong>{$operator->name}</strong>,</p>
+            <p>Veuillez trouver ci-joint votre facture pour la période <strong>{$periode}</strong>.</p>
+            <p>Cordialement,<br>Interco YAST</p>",
+                function ($message) use ($toEmail, $ccEmails, $facturePath, $periode) {
+                    $message->to($toEmail)
+                        ->cc($ccEmails)
+                        ->from('interco@yast.tg', 'Interco YAST')
+                        ->subject('Votre facture du mois ' . substr($periode, 0, 7))
+                        ->attach($facturePath);
+                }
+            );
+        }
+
+        return back()->with('success', 'Les factures ont été envoyées avec succès.');
+    }
+
+
+
+    public function envoyerFactures2(Request $request)
+    {
+        $periode = $request->input('invoice_period'); // ex: 2025-08
+        $operatorIds = $request->input('operators', []);
+
+        // Récupération des opérateurs
+        $operators = Operator::whereIn('id', $operatorIds)->get();
+
+        foreach ($operators as $operator) {
+            // Construire le chemin de la facture
+            $facturePath = public_path(
+                'invoices/depart/' . substr($periode, 0, 4) . '/' . $operator->id . '/' . substr($periode, 5, 2) . '.pdf'
+            );
+
+            // Vérifier si la facture existe
+            if (!file_exists($facturePath)) {
+                continue; // on ignore cet opérateur
+            }
+
+            // Préparer les adresses email
+            $to = $operator->email;
+            $cc = array_filter([$operator->email2, $operator->email3]); // évite les NULL
+
+            // Préparer les données pour l'email
+            $data = [
+                'name' => $operator->name,
+                'periode' => $periode,
+            ];
+
+            // Envoi du mail
+            Mail::send('emails.facture', $data, function ($message) use ($to, $cc, $operator, $facturePath, $periode) {
+                $message->from('interco@yast.tg', 'Service Interco TogoCom')
+                    ->to($to, $operator->name);
+
+                if (!empty($cc)) {
+                    $message->cc($cc);
+                }
+
+                $message->subject("Facture Interco - " . substr($periode, 5, 2) . '/' . substr($periode, 0, 4))
+                    ->attach($facturePath);
+            });
+        }
+
+        return redirect()->back()->with('flash_message_success', 'Factures envoyées avec succès !');
+    }
+
+
 
     //Operator invoice list
 
@@ -2254,223 +2465,6 @@ class OperationController extends Controller
 
     //function de retrait
 
-    public function retrait(Request $request)
-    {
-
-        $request->validate([
-            'somme' => 'required',
-
-        ]);
-
-        $data = $request->all();
-
-        $compte = Account::where('id', $data['id_compte'])->first();
-
-        $agence = Operator::where('id', session('id_agence'))->first();
-
-        if ($data['somme'] == $compte->solde_actuelle || $data['somme'] < $compte->solde_actuelle) {
-
-            $sortie = ($data['somme']);
-
-            $new_solde_actuel = $compte->solde_actuelle - $sortie;
-
-            $operation = Operation::create([
-                'libelle_operation' => 'Retait sur le compte',
-
-                'type_operation' => 'retrait',
-                'taux_cotisation' => $compte->taux_cotisation,
-                'entre' => 0,
-                'sortie' => $sortie,
-                'benefice' => 0,
-
-                'solde_restant' => $new_solde_actuel,
-                'account_number' => $compte->account_number,
-                'add_by' => session('id'),
-                'id_compte' => $compte->id,
-                'type_compte' => $compte->type_compte,
-                'id_client' => $compte->id_client,
-                'id_agence' => session('id_agence'),
-            ]);
-
-            Account::where(['id' => $data['id_compte']])->update([
-                'solde_actuelle' => $new_solde_actuel,
-
-            ]);
-
-            $solde_total_agence = $agence->solde_total - $sortie;
-
-            Operator::where(['id' => session('id_agence')])->update([
-                'solde_total' => $solde_total_agence,
-
-            ]);
-
-            $user = $compte->client->user;
-
-            Journal::create([
-                'action' => "Retrait de " . $data['somme'] . " sur le compte  " . $compte->account_number . "du client " . $user->first_name . " " . $user->last_name,
-                'user_id' => session('id'),
-            ]);
-
-            return redirect()->back()->with('flash_message_success', 'Retrait effectuer  avec succès!');
-        } else {
-
-            return redirect()->back()->with('flash_message_error', 'Solde insuffisant sur le compte  pour effectuer cette opération!');
-        }
-    }
-
-    public function versement()
-    {
-        $id_agence = session('id_agence');
-
-        $entre = Operation::where(['id_agence' => session('id_agence'), 'is_delete' => 0])->sum('entre');
-        $benefice = Operation::where(['id_agence' => session('id_agence'), 'is_delete' => 0])->sum('benefice');
-        $sortie = Operation::where(['id_agence' => $id_agence, 'is_delete' => 0])->sum('sortie');
-        $versement = Operation::where(['id_agence' => $id_agence, 'is_delete' => 0])->sum('versement');
-        $agence = Operator::where(['id' => $id_agence, 'is_delete' => 0])->first();
-
-        $solde = $entre - ($versement + $sortie);
-
-        return view('comptes.versement', compact('solde', 'versement'));
-    }
-
-    public function versement_save(Request $request)
-    {
-
-        $request->validate([
-            'somme' => 'required',
-
-        ]);
-
-        $data = $request->all();
-
-        $compte = Account::where('account_number', 1)->first();
-
-        $id_agence = session('id_agence');
-
-        $entre = Operation::where(['id_agence' => $id_agence, 'is_delete' => 0])->sum('entre');
-        $benefice = Operation::where(['id_agence' => $id_agence, 'is_delete' => 0])->sum('benefice');
-        $sortie = Operation::where(['id_agence' => $id_agence, 'is_delete' => 0])->sum('sortie');
-        $versement = Operation::where(['id_agence' => $id_agence, 'is_delete' => 0])->sum('versement');
-        $agence = Operator::where(['id' => $id_agence, 'is_delete' => 0])->first();
-
-        $solde = $entre - ($versement + $sortie);
-
-        if ($data['somme'] < $solde) {
-
-            $versement = ($data['somme']);
-
-            $new_solde_actuel = $solde - $data['somme'];
-
-            $operation = Operation::create([
-                'libelle_operation' => "Versement à l'agence principal",
-                'type_compte' => 'principal',
-                'type_operation' => 'versement',
-                'entre' => 0,
-                'sortie' => 0,
-                'benefice' => 0,
-                'versement' => $versement,
-                'solde_restant' => $new_solde_actuel,
-                'add_by' => session('id'),
-                'id_compte' => $compte->id,
-                'type_compte' => $compte->type_compte,
-
-                'id_client' => 1,
-                'id_agence' => session('id_agence'),
-            ]);
-
-            $new_solde_admin_account = $compte->solde_actuell + $data['somme'];
-
-            Account::where(['id' => 1])->update([
-                'solde_actuelle' => $new_solde_admin_account,
-
-            ]);
-
-            $solde_total_agence = $new_solde_actuel;
-
-            Operator::where(['id' => session('id_agence')])->update([
-                'solde_total' => $solde_total_agence,
-
-            ]);
-
-            $user = $compte->client->user;
-
-            Journal::create([
-                'action' => "Versement de " . $data['somme'] . "Fr cfa  sur le compte  " . $compte->account_number . "de l'agence principal par l'agence : " . $agence->nom . ". Le nouveau solde de l'agence est:" . $solde_total_agence . "Fr cfa et le nouveau solde de l'agence principal est:" . $new_solde_admin_account,
-                'user_id' => session('id'),
-            ]);
-
-            return redirect('agence_operations')->with('flash_message_success', 'Versement effectuer  avec succès!');
-        } else {
-
-            return redirect()->back()->with('flash_message_error', 'Solde agence insuffisant   pour effectuer cette opération!');
-        }
-    }
-
-    public function retrait_admin()
-    {
-        $versement = Operation::where(['is_delete' => 0])->sum('versement');
-        $benefice = Operation::where(['is_delete' => 0])->sum('benefice');
-        $retrait_admin = Operation::where(['is_delete' => 0, 'type_operation' => 'retrait_admin'])->sum('sortie');
-
-        $benefice_act = $benefice - $retrait_admin;
-
-        $solde = $versement - $retrait_admin;
-
-        return view('comptes.retrait_admin', compact('solde', 'retrait_admin', 'versement', 'benefice_act'));
-    }
-
-    public function retrait_admin_save(Request $request)
-    {
-
-        $request->validate([
-            'somme' => 'required',
-
-        ]);
-
-        $data = $request->all();
-
-        $compte = Account::where('account_number', 1)->first();
-
-        if ($data['somme'] <= $data['solde']) {
-
-            $sortie = $data['somme'];
-
-            $new_solde_actuel = $data['solde'] - $data['somme'];
-
-            $operation = Operation::create([
-                'libelle_operation' => "Retrait sur le compte  principal de la société",
-
-                'type_operation' => 'retrait_admin',
-                'entre' => 0,
-                'benefice' => 0,
-                'versement' => 0,
-                'sortie' => $sortie,
-                'solde_restant' => $new_solde_actuel,
-                'add_by' => session('id'),
-                'id_compte' => $compte->id,
-                'type_compte' => $compte->type_compte,
-
-                'id_client' => 1,
-                'id_agence' => session('id_agence'),
-            ]);
-
-            Account::where(['id' => 1])->update([
-                'solde_actuelle' => $new_solde_actuel,
-
-            ]);
-
-            Journal::create([
-                'action' => "Retrai de " . $data['somme'] . "Fr cfa sur le compte   de l'agence principal. Le nouveau solde sur le compte de la société est: " . $new_solde_actuel,
-                'user_id' => session('id'),
-            ]);
-
-            return redirect('dashboard')->with('flash_message_success', 'Retrait effectuer  avec succès!');
-        } else {
-
-            return redirect()->back()->with('flash_message_error', 'Solde insuffisant sur le compte de la société  pour effectuer cette opération!');
-        }
-    }
-
     public function liste_operations($id_client, $id_compte)
     {
 
@@ -2483,47 +2477,6 @@ class OperationController extends Controller
         return view('comptes.liste_operations', compact('operations', 'client'))->render();
     }
 
-    public function agence_operations()
-    {
-
-        if (getUserType()->type_user == 2) {
-
-            $operations = Operation::where(['id_agence' => session('id_agence'), 'is_delete' => 0])
-                ->orderBy('updated_at', 'DESC')
-                ->get();
-
-            return view('comptes.agence_liste_operations', compact('operations'))->render();
-        } elseif (getUserType()->type_user == 3) {
-            return redirect('agent_operations');
-        }
-    }
-
-    public function agent_operations()
-    {
-
-        $operations = Operation::where([
-            'id_agence' => session('id_agence'),
-            'add_by' => session('id'),
-            'is_delete' => 0,
-        ])
-            ->orderBy('updated_at', 'DESC')
-            ->get();
-
-        return view('agents.agent_liste_operations', compact('operations'))->render();
-    }
-
-    public function client_operations()
-    {
-
-        $user = User::where(['id' => session('id')])->first();
-        $client = Client::where(['id_user' => session('id')])->first();
-        $id_client = $client->id;
-
-        $operations = Operation::where(['id_client' => $id_client, 'is_delete' => 0])->orderBy('updated_at', 'DESC')
-            ->get();
-
-        return view('client.client_liste_operations', compact('operations'))->render();
-    }
 
     public function admin_operations()
     {

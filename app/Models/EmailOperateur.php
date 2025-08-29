@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class EmailOperateur extends Model
 {
+        protected $table = 'emails_operateurs'; // 👈 correction ici
+
     protected $fillable = [
         'operateur_id',
         'email',

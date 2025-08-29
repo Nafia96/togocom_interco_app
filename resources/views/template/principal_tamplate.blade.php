@@ -229,16 +229,25 @@
                             class="dropdown  {{ Request::is('all_invoice_list') ? 'active' : '' }}
                               {{ Request::is('all_resum_list') ? 'active' : '' }}
                               {{ Request::is('delete_invoice_list') ? 'active' : '' }}
+                              {{ Request::is('send_invoices') ? 'active' : '' }}
+                              {{ Request::is('selection') ? 'active' : '' }}
                              ">
 
                             <a href="#" class="menu-toggle nav-link has-dropdown"><i
                                     data-feather="file-text"></i><span>Gestion des factures</span></a>
                             <ul class="dropdown-menu">
 
+                                <li class="{{ Request::is('send_invoices') ? 'active' : '' }} {{ Request::is('selection') ? 'active' : '' }}"><a
+                                        class="nav-link " href="{{ route('send_invoices') }}">Envoi des
+                                        factures
+                                    </a>
+                                </li>
+
                                 <li class="{{ Request::is('all_invoice_list') ? 'active' : '' }}"><a
                                         class="nav-link " href="{{ route('all_invoice_list') }}">Toutes les
                                         factures
-                                    </a></li>
+                                    </a>
+                                </li>
 
 
                                 <li class="{{ Request::is('all_resum_list') ? 'active' : '' }}"><a class="nav-link "
