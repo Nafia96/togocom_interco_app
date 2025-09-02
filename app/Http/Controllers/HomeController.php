@@ -1083,20 +1083,30 @@ switch ($viewType) {
     }
 
     public function interco_details(Request $request)
-    {
+{
+    if (session('id') != null) {
 
-        if (session('id') != null) {
+        $reports = DB::connection('inter_traffic')
+            ->table('BI_STAT')
+            ->selectRaw("
+                direction,
+                start_date,
+                SUM(minutes) AS total_minutes,
+                SUM(amount_cfa) AS total_amount_XOF,
+                SUM(roaming_minutes) AS roaming_minutes,
+                SUM(roaming_amount_cfa) AS roaming_amount_XOF
+            ")
+            ->where('direction', 'like', 'revenue')
+            ->groupBy('direction', 'start_date')
+            ->orderBy('direction')
+            ->orderBy('start_date')
+            ->get();
 
-            $reports = DB::connection('inter_traffic')
-                ->table('BI_Report')
-                ->selectRaw('*')
-                ->orderBy('start_date', 'DESC')
-                ->get();
-
-            return view('BI.interco_details', compact('reports'))->render();
-        }
-        return view('index');
+        return view('BI.interco_details', compact('reports'))->render();
     }
+    return view('index');
+}
+
 
 
     public function journaux(Request $request)

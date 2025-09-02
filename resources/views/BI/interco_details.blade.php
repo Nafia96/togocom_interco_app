@@ -47,9 +47,9 @@
                                             </td>
                                             <td>{{ $report->start_date }}</td>
                                             <td>{{ number_format($report->total_minutes, 2, ',', ' ') }}</td>
-                                            <td>{{ number_format($report->total_revenue_XOF, 2, ',', ' ') }} </td>
-                                            <td>{{ number_format($report->roaming_part_minutes, 2, ',', ' ')  }}</td>
-                                            <td>{{ number_format($report->roaming_part_revenue_XOF, 2, ',', ' ')  }} </td>
+                                            <td>{{ number_format($report->total_amount_XOF, 2, ',', ' ') }} </td>
+                                            <td>{{ number_format($report->roaming_minutes, 2, ',', ' ')  }}</td>
+                                            <td>{{ number_format($report->roaming_amount_XOF, 2, ',', ' ')  }} </td>
 
                                         </tr>
                                         <?php $n = $n + 1; ?>
