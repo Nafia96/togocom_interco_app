@@ -1,163 +1,347 @@
-@extends('template.billing_tamplate')
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pivot Facturation</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    body {
+        background: #f4f6f9;
+        font-family: "Segoe UI", Roboto, Arial, sans-serif;
+        font-size: 0.85rem; /* ✅ police un peu réduite */
+    }
 
-@section('title', 'Tableau Pivot - Facturation')
+    .card {
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+    }
 
-@section('content')
-<div class="container">
-    <h4 class="text-center mb-4">TABLEAU PIVOT DE FACTURATION</h4>
+    .card-header {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+        font-weight: 600;
+        font-size: 1rem; /* un peu plus petit */
+        padding: 0.6rem 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
 
-    <div class="row">
+    /* --- TABLEAU --- */
+    table {
+        border-collapse: separate;
+        border-spacing: 0;
+        font-size: 0.8rem; /* ✅ chiffres plus petits */
+    }
 
-        <!-- Filtres -->
-        <div class="col-12">
-            <div class="card mb-4">
-                <div class="card-header" style="background-color:#F5F5DC;">
-                    <h6>
-                        <i class="fas fa-search card-icon col-green font-30 p-r-30"></i>
-                        Filtrer le tableau pivot
-                    </h6>
+    th, td {
+        white-space: nowrap;
+        padding: 4px 8px !important; /* ✅ réduit */
+        vertical-align: middle !important;
+    }
+
+    .table-responsive {
+        max-height: 70vh; /* ✅ occupe moins d’espace */
+        overflow-y: auto;
+        overflow-x: auto;
+    }
+
+    thead th {
+        position: sticky;
+        top: 0;
+        background: #e9ecef;
+        z-index: 10;
+        font-size: 0.8rem;
+    }
+
+    tbody td:first-child,
+    thead th:first-child,
+    tfoot td:first-child {
+        position: sticky;
+        left: 0;
+        background: #fff;
+        z-index: 11;
+        font-weight: 600;
+    }
+
+    tfoot {
+        position: sticky;
+        bottom: 0;
+        z-index: 9;
+    }
+
+    tfoot tr {
+        background: #198754 !important;
+        color: white !important;
+        font-weight: bold;
+    }
+
+    /* --- BOUTON TOGGLE --- */
+    .toggle-btn {
+        font-size: 0.8rem;
+        padding: 4px 10px;
+        border-radius: 15px;
+    }
+
+    /* --- GRAPHIQUES --- */
+    .chart-container {
+        height: 260px; /* ✅ réduit */
+        margin-bottom: 1rem;
+    }
+</style>
+
+</head>
+<body>
+<div class="container-fluid py-4">
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span>
+                <i class="fas fa-table me-2"></i>
+                Analyse Pivot – Facturation par opérateur
+            </span>
+            <button id="toggleTableBtn" class="btn btn-sm btn-light text-success toggle-btn">
+                Mode Progression
+            </button>
+        </div>
+        <div class="card-body">
+
+            {{-- Filtres --}}
+            <form method="GET" action="{{ route('billingp') }}" class="row g-3 mb-4">
+                <div class="col-md-3">
+                    <label for="month" class="form-label fw-semibold">Mois :</label>
+                    <input type="month" id="month" name="month" class="form-control"
+                           value="{{ $month }}">
                 </div>
-                <div class="p-3">
-                    <form method="GET" action="{{ route('billingp') }}">
-                        <div class="form-row filtre_form align-items-end">
-                            <div class="form-group col-md-2">
-                                <label>Direction</label>
-                                <select class="form-control" name="direction">
-                                    <option value="">Tous</option>
-                                    <option value="Entrant" {{ request('direction') == 'Entrant' ? 'selected' : '' }}>Entrant</option>
-                                    <option value="Sortant" {{ request('direction') == 'Sortant' ? 'selected' : '' }}>Sortant</option>
-                                </select>
-                            </div>
-
-                            <div class="form-group col-md-3">
-                                <label>Opérateurs</label>
-                                <select class="form-control demo1" name="carrier_name[]" multiple>
-                                    @foreach ($operators as $operator)
-                                        <option value="{{ $operator }}"
-                                            {{ is_array(request('carrier_name')) && in_array($operator, request('carrier_name')) ? 'selected' : '' }}>
-                                            {{ $operator }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-
-                            <div class="form-group col-md-2">
-                                <label>Début</label>
-                                <input type="date" class="form-control" name="start_period" value="{{ request('start_period') }}">
-                            </div>
-
-                            <div class="form-group col-md-2">
-                                <label>Fin</label>
-                                <input type="date" class="form-control" name="end_period" value="{{ request('end_period') }}">
-                            </div>
-
-                            <div class="form-group col-md-3 d-flex align-items-end" style="gap: 12px;">
-                                <button class="btn btn-success" type="submit">
-                                    <i class="material-icons align-middle">sort</i> Filtrer
-                                </button>
-                                <a href="{{ route('billingp') }}" class="btn btn-secondary">Réinitialiser</a>
-                            </div>
-                        </div>
-                    </form>
+                <div class="col-md-3">
+                    <label for="filter" class="form-label fw-semibold">Type :</label>
+                    <select id="filter" name="filter" class="form-select">
+                        <option value="entrant" {{ $filter == 'entrant' ? 'selected' : '' }}>Volume entrant</option>
+                        <option value="sortant" {{ $filter == 'sortant' ? 'selected' : '' }}>Volume sortant</option>
+                        <option value="revenu" {{ $filter == 'revenu' ? 'selected' : '' }}>Revenu</option>
+                        <option value="charge" {{ $filter == 'charge' ? 'selected' : '' }}>Charge</option>
+                    </select>
                 </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-success w-100">Filtrer</button>
+                </div>
+            </form>
+
+            {{-- Tableau Valeurs --}}
+            <div id="tableValeurs" class="table-responsive">
+                <table class="table table-bordered table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>Opérateur</th>
+                            @foreach ($days as $day)
+                                <th class="text-center">{{ str_pad($day, 2, '0', STR_PAD_LEFT) }}</th>
+                            @endforeach
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($operators as $operator => $rows)
+                            <tr>
+                                <td>{{ $operator }}</td>
+                                @php $sum = 0; @endphp
+                                @foreach ($days as $day)
+                                    @php
+                                        $val = $rows->firstWhere('day', $day)->total ?? 0;
+                                        $sum += $val;
+                                    @endphp
+                                    <td class="text-end">{{ $val > 0 ? number_format($val, 0, ',', ' ') : '-' }}</td>
+                                @endforeach
+                                <td class="text-end bg-light fw-bold">{{ number_format($sum, 0, ',', ' ') }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td>Total</td>
+                            @foreach ($days as $day)
+                                <td class="text-end">
+                                    {{ $totals[$day] > 0 ? number_format($totals[$day], 0, ',', ' ') : '-' }}
+                                </td>
+                            @endforeach
+                            <td class="text-end">{{ number_format(array_sum($totals), 0, ',', ' ') }}</td>
+                        </tr>
+                    </tfoot>
+                </table>
             </div>
 
-            <!-- Tableau pivot -->
-            <div class="card">
-                <div class="card-header" style="background-color:#F5F5DC;">
-                    <h4>Résultats du Tableau Pivot</h4>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        @if (getUserType()->type_user == 3 || getUserType()->type_user == 2 || getUserType()->type_user == 1)
-                            @if(count($pivotData) > 0)
-                                <table class="table table-striped table-hover category" id="tableExpor" style="width:100%;">
-                                    <thead>
-                                        <tr>
-                                            <th>Opérateur</th>
-                                            @foreach($dates as $date)
-                                                <th>{{ \Carbon\Carbon::parse($date)->format('d/m') }}</th>
-                                            @endforeach
-                                            <th>Total</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach($pivotData as $carrier => $values)
-                                            <tr>
-                                                <td><b>{{ $carrier }}</b></td>
-                                                @php $rowTotal = 0; @endphp
-                                                @foreach($dates as $date)
-                                                    @php
-                                                        $val = $values[$date] ?? 0;
-                                                        $rowTotal += $val;
-                                                    @endphp
-                                                    <td class="text-end">{{ number_format($val, 0, ',', ' ') }}</td>
-                                                @endforeach
-                                                <td class="fw-bold text-end">{{ number_format($rowTotal, 0, ',', ' ') }}</td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                    <tfoot class="table-secondary">
-                                        <tr>
-                                            <th>Total général</th>
-                                            @php $grandTotal = 0; @endphp
-                                            @foreach($dates as $date)
-                                                @php
-                                                    $colTotal = collect($pivotData)->sum(fn($row) => $row[$date] ?? 0);
-                                                    $grandTotal += $colTotal;
-                                                @endphp
-                                                <th class="text-end">{{ number_format($colTotal, 0, ',', ' ') }}</th>
-                                            @endforeach
-                                            <th class="text-end">{{ number_format($grandTotal, 0, ',', ' ') }}</th>
-                                        </tr>
-                                    </tfoot>
-                                </table>
-                            @else
-                                <div class="alert alert-warning">Aucune donnée trouvée pour la période sélectionnée.</div>
-                            @endif
-                        @else
-                            <div class="alert alert-danger">Vous n’avez pas les droits pour accéder à ce tableau.</div>
-                        @endif
-                    </div>
-                </div>
+            {{-- Tableau Progression --}}
+            <div id="tableProgression" class="table-responsive d-none">
+                <table class="table table-bordered table-hover align-middle">
+                    <thead>
+                        <tr class="table-success">
+                            <th>Opérateur</th>
+                            @foreach ($days as $day)
+                                <th class="text-center">{{ str_pad($day, 2, '0', STR_PAD_LEFT) }}</th>
+                            @endforeach
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($operators as $operator => $rows)
+                            <tr>
+                                <td>{{ $operator }}</td>
+                                @php $prev = null; @endphp
+                                @foreach ($days as $day)
+                                    @php
+                                        $val = $rows->firstWhere('day', $day)->total ?? 0;
+                                        $progression = $prev && $prev > 0 ? round((($val - $prev) / $prev) * 100, 1) : null;
+                                        $prev = $val;
+                                    @endphp
+                                    <td class="text-end">
+                                        @if (!is_null($progression))
+                                            <span class="{{ $progression >= 0 ? 'text-success' : 'text-danger' }}">
+                                                {{ $progression }} %
+                                            </span>
+                                        @else
+                                            -
+                                        @endif
+                                    </td>
+                                @endforeach
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
             </div>
+
+            {{-- Graphes --}}
+            <div style="height: 310px;"  class="mt-5" id="chartsValeurs">
+                <h5 class="mb-3">📊 Évolution journalière par opérateur</h5>
+                <canvas id="chartValeurs"></canvas>
+            </div>
+            <div  class="mt-5 d-none" id="chartsProgression">
+                <h5 class="mb-3">📈 Progression des totaux journaliers (%)</h5>
+                <canvas id="chartProgression"></canvas>
+            </div>
+
         </div>
     </div>
 </div>
-@endsection
 
-
-@section('scripts')
-<script src="https://cdnjs.cloudflare.com/ajax/libs/slim-select/1.27.0/slimselect.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    new SlimSelect({ select: '.demo1' });
-});
+document.addEventListener("DOMContentLoaded", function () {
+    const toggleBtn = document.getElementById("toggleTableBtn");
+    const tableValeurs = document.getElementById("tableValeurs");
+    const tableProgression = document.getElementById("tableProgression");
+    const chartsValeurs = document.getElementById("chartsValeurs");
+    const chartsProgression = document.getElementById("chartsProgression");
 
-$(document).ready(function() {
-    var table = $('#tableExpor').DataTable({
-        dom: 'Bfrtip',
-        buttons: [
-            { extend: 'excelHtml5', filename: 'TABLEAU_PIVOT', title: 'Tableau Pivot de Facturation' },
-            { extend: 'csvHtml5', filename: 'TABLEAU_PIVOT' },
-            { extend: 'pdfHtml5', filename: 'TABLEAU_PIVOT', title: 'Tableau Pivot de Facturation' }
-        ],
-        "language": {
-            "emptyTable": "Aucune donnée disponible",
-            "lengthMenu": "Afficher _MENU_ éléments",
-            "loadingRecords": "Chargement...",
-            "processing": "Traitement...",
-            "zeroRecords": "Aucun élément trouvé",
-            "paginate": {
-                "first": "Premier", "last": "Dernier", "next": "Suivant", "previous": "Précédent"
-            },
-            "search": "Rechercher:",
-            "info": "Affichage de _START_ à _END_ sur _TOTAL_ éléments",
-            "infoEmpty": "Affichage de 0 à 0 sur 0 éléments",
-            "infoFiltered": "(filtrés de _MAX_ éléments au total)"
+    let mode = "valeurs"; // par défaut
+
+    // === Toggle entre Valeurs / Progression ===
+    toggleBtn.addEventListener("click", function () {
+        if (mode === "valeurs") {
+            tableValeurs.classList.add("d-none");
+            tableProgression.classList.remove("d-none");
+            chartsValeurs.classList.add("d-none");
+            chartsProgression.classList.remove("d-none");
+            toggleBtn.innerText = "Mode Valeurs";
+            mode = "progression";
+        } else {
+            tableValeurs.classList.remove("d-none");
+            tableProgression.classList.add("d-none");
+            chartsValeurs.classList.remove("d-none");
+            chartsProgression.classList.add("d-none");
+            toggleBtn.innerText = "Mode Progression";
+            mode = "valeurs";
         }
+    });
+
+    // === Données injectées depuis Laravel ===
+    const days = @json($days);
+    const totals = @json($totals);
+    const operators = @json($operators);
+
+    // === Graphe Évolution journalière par opérateur ===
+    const ctxValeurs = document.getElementById("chartValeurs").getContext("2d");
+    new Chart(ctxValeurs, {
+        type: "line",
+        data: {
+            labels: days,
+            datasets: Object.keys(operators).map(op => ({
+                label: op,
+                data: days.map(d => {
+                    const found = operators[op].find(r => r.day == d);
+                    return found ? found.total : 0;
+                }),
+                fill: false,
+                borderWidth: 2
+            }))
+        },
+        options: {
+            responsive: true,
+             maintainAspectRatio: false,
+            interaction: { mode: "index", intersect: false },
+            plugins: {
+                legend: {
+                    onClick: (e, legendItem, legend) => {
+                        const chart = legend.chart;
+                        const index = legendItem.datasetIndex;
+                        const ci = chart.data.datasets;
+
+                        const isActive = chart.getActiveElements().some(el => el.datasetIndex === index);
+
+                        if (!isActive) {
+                            ci.forEach((ds, i) => {
+                                chart.setDatasetVisibility(i, i === index);
+                            });
+                        } else {
+                            ci.forEach((ds, i) => chart.setDatasetVisibility(i, true));
+                        }
+                        chart.update();
+                    }
+                }
+            }
+        }
+    });
+
+    // === Graphe Progression des totaux journaliers (%) ===
+    const progression = [];
+    for (let i = 1; i < days.length; i++) {
+        const prev = totals[days[i - 1]] || 0;
+        const curr = totals[days[i]] || 0;
+        progression.push(prev > 0 ? ((curr - prev) / prev * 100).toFixed(1) : 0);
+    }
+
+    const ctxProgression = document.getElementById("chartProgression").getContext("2d");
+    new Chart(ctxProgression, {
+        type: "bar",
+        data: {
+            labels: days.slice(1),
+            datasets: [{
+                label: "% Progression",
+                data: progression,
+                backgroundColor: "#28a745"
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                datalabels: {
+                    color: "#000",
+                    anchor: "end",
+                    align: "top",
+                    formatter: (val) => val + "%"
+                }
+            },
+            scales: {
+                y: { ticks: { callback: val => val + "%" } }
+            }
+        },
+        plugins: [ChartDataLabels]
     });
 });
 </script>
-@endsection
+
+<script src="https://kit.fontawesome.com/a2d9d6a62e.js" crossorigin="anonymous"></script>
+</body>
+</html>
+

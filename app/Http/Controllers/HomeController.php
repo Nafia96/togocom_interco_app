@@ -581,156 +581,92 @@ class HomeController extends Controller
         ]);
     }
 
-public function billingPivot(Request $request)
-{
-    ini_set('memory_limit', '512M');
-    if (!session('id')) return view('index');
 
-    // Période par défaut : mois précédent
-    $start = $request->input('start_period')
-        ? $request->input('start_period') . '-01'
-        : now()->subMonth()->startOfMonth()->toDateString();
 
-    $end = $request->input('end_period')
-        ? Carbon::parse($request->input('end_period'))->endOfMonth()->toDateString()
-        : now()->toDateString();
 
-    $direction = $request->input('direction', 'Entrant'); // on peut choisir Entrant / Sortant
-    $carrier = $request->input('carrier_name');
 
-    // Récupération brute
-    $start = "2020-01-01";
-$end = now()->toDateString();
+    public function billing2(Request $request)
+    {
+        ini_set('memory_limit', '512M');
+        if (!session('id')) return view('index');
 
-    $query = DB::connection('inter_traffic')->table('BILLING_STAT')
-        ->selectRaw("DATE(start_date) as period, carrier_name, SUM(CAST(minutes AS DECIMAL(10,2))) as total_minutes")
-        ->whereBetween('start_date', [$start, $end])
-        ->where('direction', $direction)
-        ->groupBy(DB::raw('DATE(start_date)'), 'carrier_name');
+        // Valeur par défaut : daily_carrier si aucun paramètre
+        $viewType = $request->has('view_type') ? $request->input('view_type') : 'daily_carrier';
 
-    if ($carrier) {
-        $query->where('carrier_name', $carrier);
-    }
+        $direction = $request->input('direction', null);
 
-    $data = $query->get();
+        // Période par défaut : mois précédent au complet
+        $start = $request->input('start_period')
+            ? $request->input('start_period') . '-01'
+            : now()->subMonth()->startOfMonth()->toDateString();
 
-    // Transformer en pivot [operateur][jour] = minutes
-    $pivotData = [];
-    foreach ($data as $row) {
-        $carrier = $row->carrier_name;
-        $day = $row->period;
-        $minutes = $row->total_minutes;
+        $end = $request->input('end_period')
+            ? Carbon::parse($request->input('end_period'))->endOfMonth()->toDateString()
+            : now()->toDateString();
 
-        if (!isset($pivotData[$carrier])) {
-            $pivotData[$carrier] = [];
+        $carrier = $request->input('carrier_name');
+
+        // Filtres multi-select
+        $origNet = $request->input('orig_net_name');
+        $destNet = $request->input('dest_net_name');
+        $origCountry = $request->input('orig_country_name');
+        $destCountry = $request->input('dest_country_name');
+
+        $query = DB::connection('inter_traffic')->table('BILLING_STAT')
+            ->whereBetween('start_date', [$start, $end]);
+
+        if ($direction && in_array($direction, ['Revenue', 'Charge'])) {
+            $query->where('direction', $direction);
         }
-        $pivotData[$carrier][$day] = $minutes;
-    }
+        if ($carrier) {
+            is_array($carrier)
+                ? $query->whereIn('carrier_name', $carrier)
+                : $query->where('carrier_name', $carrier);
+        }
+        if ($origNet) {
+            is_array($origNet)
+                ? $query->whereIn('orig_net_name', $origNet)
+                : $query->where('orig_net_name', $origNet);
+        }
+        if ($destNet) {
+            is_array($destNet)
+                ? $query->whereIn('dest_net_name', $destNet)
+                : $query->where('dest_net_name', $destNet);
+        }
+        if ($origCountry) {
+            is_array($origCountry)
+                ? $query->whereIn('orig_country_name', $origCountry)
+                : $query->where('orig_country_name', $origCountry);
+        }
+        if ($destCountry) {
+            is_array($destCountry)
+                ? $query->whereIn('dest_country_name', $destCountry)
+                : $query->where('dest_country_name', $destCountry);
+        }
 
-    // Extraire toutes les dates distinctes (colonnes)
-    $dates = collect($data)->pluck('period')->unique()->sort()->values();
-
-    // Liste opérateurs (pour filtres)
-    $operators = DB::connection('inter_traffic')
-        ->table('BILLING_STAT')
-        ->select('carrier_name')
-        ->distinct()
-        ->orderBy('carrier_name')
-        ->pluck('carrier_name');
-
-    return view('billing.billingPivot', [
-        'pivotData' => $pivotData,
-        'dates' => $dates,
-        'operators' => $operators,
-        'filters' => compact('direction', 'start', 'end', 'carrier')
-    ]);
-}
-
-
-
-
- public function billing2(Request $request)
-{
-    ini_set('memory_limit', '512M');
-    if (!session('id')) return view('index');
-
-    // Valeur par défaut : daily_carrier si aucun paramètre
-    $viewType = $request->has('view_type') ? $request->input('view_type') : 'daily_carrier';
-
-    $direction = $request->input('direction', null);
-
-    // Période par défaut : mois précédent au complet
-    $start = $request->input('start_period')
-        ? $request->input('start_period') . '-01'
-        : now()->subMonth()->startOfMonth()->toDateString();
-
-    $end = $request->input('end_period')
-        ? Carbon::parse($request->input('end_period'))->endOfMonth()->toDateString()
-        : now()->toDateString();
-
-    $carrier = $request->input('carrier_name');
-
-    // Filtres multi-select
-    $origNet = $request->input('orig_net_name');
-    $destNet = $request->input('dest_net_name');
-    $origCountry = $request->input('orig_country_name');
-    $destCountry = $request->input('dest_country_name');
-
-    $query = DB::connection('inter_traffic')->table('BILLING_STAT')
-        ->whereBetween('start_date', [$start, $end]);
-
-    if ($direction && in_array($direction, ['Revenue', 'Charge'])) {
-        $query->where('direction', $direction);
-    }
-    if ($carrier) {
-        is_array($carrier)
-            ? $query->whereIn('carrier_name', $carrier)
-            : $query->where('carrier_name', $carrier);
-    }
-    if ($origNet) {
-        is_array($origNet)
-            ? $query->whereIn('orig_net_name', $origNet)
-            : $query->where('orig_net_name', $origNet);
-    }
-    if ($destNet) {
-        is_array($destNet)
-            ? $query->whereIn('dest_net_name', $destNet)
-            : $query->where('dest_net_name', $destNet);
-    }
-    if ($origCountry) {
-        is_array($origCountry)
-            ? $query->whereIn('orig_country_name', $origCountry)
-            : $query->where('orig_country_name', $origCountry);
-    }
-    if ($destCountry) {
-        is_array($destCountry)
-            ? $query->whereIn('dest_country_name', $destCountry)
-            : $query->where('dest_country_name', $destCountry);
-    }
-
-    // Détection des colonnes optionnelles à inclure
-$selectNetNames = '';
-$groupNetNames = [];
-if (request('show_net_name') == '1' || request('orig_net_name') || request('dest_net_name')) {
-    $selectNetNames = ",
+        // Détection des colonnes optionnelles à inclure
+        $selectNetNames = '';
+        $groupNetNames = [];
+        if (request('show_net_name') == '1' || request('orig_net_name') || request('dest_net_name')) {
+            $selectNetNames = ",
         orig_net_name,
         dest_net_name";
-    $groupNetNames = ['orig_net_name', 'dest_net_name'];
-}
+            $groupNetNames = ['orig_net_name', 'dest_net_name'];
+        }
 
-$selectCountryNames = '';
-$groupCountryNames = [];
-if (request('show_country_name') == '1' || request('orig_country_name') || request('dest_country_name')) {
-    $selectCountryNames = ",
+        $selectCountryNames = '';
+        $groupCountryNames = [];
+        if (request('show_country_name') == '1' || request('orig_country_name') || request('dest_country_name')) {
+            $selectCountryNames = ",
         orig_country_name,
         dest_country_name";
-    $groupCountryNames = ['orig_country_name', 'dest_country_name'];
-}
+            $groupCountryNames = ['orig_country_name', 'dest_country_name'];
+        }
 
-// Sélection et groupement selon le type de vue
-switch ($viewType) {
-    case 'daily_summary':
-        $query->selectRaw("
+        // Sélection et groupement selon le type de vue
+        switch ($viewType) {
+            case 'daily_summary':
+                $query->selectRaw("
             DATE(start_date) as period,
             direction
             $selectNetNames
@@ -738,16 +674,16 @@ switch ($viewType) {
             SUM(CAST(minutes AS DECIMAL(10,2))) as total_minutes,
             SUM(CAST(amount_cfa AS DECIMAL(20,2))) as total_amount
         ")
-        ->groupBy(
-            DB::raw('DATE(start_date)'),
-            'direction',
-            ...$groupNetNames,
-            ...$groupCountryNames
-        );
-        break;
+                    ->groupBy(
+                        DB::raw('DATE(start_date)'),
+                        'direction',
+                        ...$groupNetNames,
+                        ...$groupCountryNames
+                    );
+                break;
 
-    case 'daily_carrier':
-        $query->selectRaw("
+            case 'daily_carrier':
+                $query->selectRaw("
             DATE(start_date) as period,
             carrier_name,
             direction
@@ -756,17 +692,17 @@ switch ($viewType) {
             SUM(CAST(minutes AS DECIMAL(10,2))) as total_minutes,
             SUM(CAST(amount_cfa AS DECIMAL(20,2))) as total_amount
         ")
-        ->groupBy(
-            DB::raw('DATE(start_date)'),
-            'carrier_name',
-            'direction',
-            ...$groupNetNames,
-            ...$groupCountryNames
-        );
-        break;
+                    ->groupBy(
+                        DB::raw('DATE(start_date)'),
+                        'carrier_name',
+                        'direction',
+                        ...$groupNetNames,
+                        ...$groupCountryNames
+                    );
+                break;
 
-    case 'monthly_summary':
-        $query->selectRaw("
+            case 'monthly_summary':
+                $query->selectRaw("
             DATE_FORMAT(start_date, '%Y-%m') as period,
             direction
             $selectNetNames
@@ -774,16 +710,16 @@ switch ($viewType) {
             SUM(CAST(minutes AS DECIMAL(10,2))) as total_minutes,
             SUM(CAST(amount_cfa AS DECIMAL(20,2))) as total_amount
         ")
-        ->groupBy(
-            DB::raw("DATE_FORMAT(start_date, '%Y-%m')"),
-            'direction',
-            ...$groupNetNames,
-            ...$groupCountryNames
-        );
-        break;
+                    ->groupBy(
+                        DB::raw("DATE_FORMAT(start_date, '%Y-%m')"),
+                        'direction',
+                        ...$groupNetNames,
+                        ...$groupCountryNames
+                    );
+                break;
 
-    case 'monthly_carrier':
-        $query->selectRaw("
+            case 'monthly_carrier':
+                $query->selectRaw("
             DATE_FORMAT(start_date, '%Y-%m') as period,
             carrier_name,
             direction
@@ -792,18 +728,18 @@ switch ($viewType) {
             SUM(CAST(minutes AS DECIMAL(10,2))) as total_minutes,
             SUM(CAST(amount_cfa AS DECIMAL(20,2))) as total_amount
         ")
-        ->groupBy(
-            DB::raw("DATE_FORMAT(start_date, '%Y-%m')"),
-            'carrier_name',
-            'direction',
-            ...$groupNetNames,
-            ...$groupCountryNames
-        );
-        break;
+                    ->groupBy(
+                        DB::raw("DATE_FORMAT(start_date, '%Y-%m')"),
+                        'carrier_name',
+                        'direction',
+                        ...$groupNetNames,
+                        ...$groupCountryNames
+                    );
+                break;
 
-    case 'monthly_details':
-    default:
-        $query->selectRaw("
+            case 'monthly_details':
+            default:
+                $query->selectRaw("
             DATE(start_date) as period,
             carrier_name,
             direction
@@ -812,36 +748,87 @@ switch ($viewType) {
             SUM(CAST(minutes AS DECIMAL(10,2))) as total_minutes,
             SUM(CAST(amount_cfa AS DECIMAL(20,2))) as total_amount
         ")
-        ->groupBy(
-            DB::raw('DATE(start_date)'),
-            'carrier_name',
-            'direction',
-            ...$groupNetNames,
-            ...$groupCountryNames
-        );
-        break;
+                    ->groupBy(
+                        DB::raw('DATE(start_date)'),
+                        'carrier_name',
+                        'direction',
+                        ...$groupNetNames,
+                        ...$groupCountryNames
+                    );
+                break;
+        }
+
+
+        $data = $query->orderBy('period', 'desc')->paginate(1000);
+
+        // Pour les filtres dynamiques dans la vue
+        $operators = DB::connection('inter_traffic')->table('BILLING_STAT')->select('carrier_name')->distinct()->orderBy('carrier_name')->pluck('carrier_name');
+        $origNets = DB::connection('inter_traffic')->table('BILLING_STAT')->select('orig_net_name')->distinct()->orderBy('orig_net_name')->pluck('orig_net_name');
+        $destNets = DB::connection('inter_traffic')->table('BILLING_STAT')->select('dest_net_name')->distinct()->orderBy('dest_net_name')->pluck('dest_net_name');
+        $origCountries = DB::connection('inter_traffic')->table('BILLING_STAT')->select('orig_country_name')->distinct()->orderBy('orig_country_name')->pluck('orig_country_name');
+        $destCountries = DB::connection('inter_traffic')->table('BILLING_STAT')->select('dest_country_name')->distinct()->orderBy('dest_country_name')->pluck('dest_country_name');
+
+        return view('billing.billing2', [
+            'data' => $data,
+            'operators' => $operators,
+            'origNets' => $origNets,
+            'destNets' => $destNets,
+            'origCountries' => $origCountries,
+            'destCountries' => $destCountries,
+            'filters' => compact('direction', 'start', 'end', 'carrier', 'viewType', 'origNet', 'destNet', 'origCountry', 'destCountry')
+        ]);
+    }
+
+public function billingPivot(Request $request)
+{
+    $month = $request->input('month', now()->format('Y-m'));
+    $filter = $request->input('filter', 'amount_cfa'); // Valeur par défaut
+    $year = substr($month, 0, 4);
+    $monthNum = substr($month, 5, 2);
+
+    // Mapping des filtres → colonnes de ta table
+    $columns = [
+        'entrant' => 'nb_calls',   // Exemple : volume entrant = nb d’appels
+        'sortant' => 'minutes',    // Exemple : volume sortant = minutes
+        'revenu'  => 'amount_cfa', // Revenu
+        'charge'  => 'rate'        // Charge (à adapter si tu as une autre colonne dédiée)
+    ];
+
+    // Si la valeur choisie n’est pas dans le mapping → fallback sur amount_cfa
+    $column = $columns[$filter] ?? 'amount_cfa';
+
+    // Récupère les données agrégées par opérateur et jour
+    $records = DB::connection('inter_traffic')
+        ->table('BILLING_STAT')
+        ->select(
+            'carrier_name as operator',
+            DB::raw('DAY(start_date) as day'),
+            DB::raw("SUM($column) as total")
+        )
+        ->whereYear('start_date', $year)
+        ->whereMonth('start_date', $monthNum)
+        ->groupBy('carrier_name', DB::raw('DAY(start_date)'))
+        ->orderBy('carrier_name')
+        ->get();
+
+    // Liste des jours du mois sélectionné
+    $days = range(1, cal_days_in_month(CAL_GREGORIAN, $monthNum, $year));
+
+    // Regroupement par opérateur
+    $operators = $records->groupBy('operator');
+
+    // Totaux par jour
+    $totals = [];
+    foreach ($days as $day) {
+        $totals[$day] = $records->where('day', $day)->sum('total');
+    }
+
+    return view('billing.billingPivot', compact('operators', 'days', 'totals', 'month', 'filter'));
 }
 
 
-    $data = $query->orderBy('period', 'desc')->paginate(1000);
 
-    // Pour les filtres dynamiques dans la vue
-    $operators = DB::connection('inter_traffic')->table('BILLING_STAT')->select('carrier_name')->distinct()->orderBy('carrier_name')->pluck('carrier_name');
-    $origNets = DB::connection('inter_traffic')->table('BILLING_STAT')->select('orig_net_name')->distinct()->orderBy('orig_net_name')->pluck('orig_net_name');
-    $destNets = DB::connection('inter_traffic')->table('BILLING_STAT')->select('dest_net_name')->distinct()->orderBy('dest_net_name')->pluck('dest_net_name');
-    $origCountries = DB::connection('inter_traffic')->table('BILLING_STAT')->select('orig_country_name')->distinct()->orderBy('orig_country_name')->pluck('orig_country_name');
-    $destCountries = DB::connection('inter_traffic')->table('BILLING_STAT')->select('dest_country_name')->distinct()->orderBy('dest_country_name')->pluck('dest_country_name');
 
-    return view('billing.billing2', [
-        'data' => $data,
-        'operators' => $operators,
-        'origNets' => $origNets,
-        'destNets' => $destNets,
-        'origCountries' => $origCountries,
-        'destCountries' => $destCountries,
-        'filters' => compact('direction', 'start', 'end', 'carrier', 'viewType', 'origNet', 'destNet', 'origCountry', 'destCountry')
-    ]);
-}
 
 
     public function billing(Request $request)
@@ -1083,12 +1070,12 @@ switch ($viewType) {
     }
 
     public function interco_details(Request $request)
-{
-    if (session('id') != null) {
+    {
+        if (session('id') != null) {
 
-        $reports = DB::connection('inter_traffic')
-            ->table('BI_STAT')
-            ->selectRaw("
+            $reports = DB::connection('inter_traffic')
+                ->table('BI_STAT')
+                ->selectRaw("
                 direction,
                 start_date,
                 SUM(minutes) AS total_minutes,
@@ -1096,16 +1083,16 @@ switch ($viewType) {
                 SUM(roaming_minutes) AS roaming_minutes,
                 SUM(roaming_amount_cfa) AS roaming_amount_XOF
             ")
-            ->where('direction', 'like', 'revenue')
-            ->groupBy('direction', 'start_date')
-            ->orderBy('direction')
-            ->orderBy('start_date')
-            ->get();
+                ->where('direction', 'like', 'revenue')
+                ->groupBy('direction', 'start_date')
+                ->orderBy('direction')
+                ->orderBy('start_date')
+                ->get();
 
-        return view('BI.interco_details', compact('reports'))->render();
+            return view('BI.interco_details', compact('reports'))->render();
+        }
+        return view('index');
     }
-    return view('index');
-}
 
 
 

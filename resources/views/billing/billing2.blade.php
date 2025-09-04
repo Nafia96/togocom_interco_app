@@ -114,13 +114,13 @@
                                 <div class="form-group col-md-2">
                                     <label>Type de vue</label>
                                     <select class="form-control" name="view_type">
-                                         <option value="daily_carrier"
+                                        <option value="daily_carrier"
                                             {{ request('view_type') == 'daily_carrier' ? 'selected' : '' }}>Daily Carrier
                                         </option>
                                         <option value="daily_summary"
                                             {{ request('view_type') == 'daily_summary' ? 'selected' : '' }}>Daily Summary
                                         </option>
-                                       
+
                                         <option value="monthly_summary"
                                             {{ request('view_type') == 'monthly_summary' ? 'selected' : '' }}>Monthly
                                             Summary</option>
@@ -169,60 +169,60 @@
                                     <table class="table table-striped table-hover category" id="save-stage"
                                         style="width:100%;">
                             @endif
-@php
-    // Forcer la même valeur par défaut que dans le contrôleur
-    $viewType = request('view_type') ?: 'daily_carrier';
-@endphp
+                            @php
+                                // Forcer la même valeur par défaut que dans le contrôleur
+                                $viewType = request('view_type') ?: 'daily_carrier';
+                            @endphp
 
-<thead>
-    <tr>
-        <th class="recherche">Direction</th>
+                            <thead>
+                                <tr>
+                                    <th class="recherche">Direction</th>
 
-        @if (in_array($viewType, ['daily_carrier', 'monthly_carrier', 'monthly_details']))
-            <th class="recherche">Opérateur</th>
-        @endif
+                                    @if (in_array($viewType, ['daily_carrier', 'monthly_carrier', 'monthly_details']))
+                                        <th class="recherche">Opérateur</th>
+                                    @endif
 
-        @if (request('show_net_name') == '1' || request('orig_net_name') || request('dest_net_name'))
-            <th class="recherche">Réseau origine</th>
-            <th class="recherche">Réseau destination</th>
-        @endif
+                                    @if (request('show_net_name') == '1' || request('orig_net_name') || request('dest_net_name'))
+                                        <th class="recherche">Réseau origine</th>
+                                        <th class="recherche">Réseau destination</th>
+                                    @endif
 
-        @if (request('show_country_name') == '1' || request('orig_country_name') || request('dest_country_name'))
-            <th class="recherche">Pays origine</th>
-            <th class="recherche">Pays destination</th>
-        @endif
+                                    @if (request('show_country_name') == '1' || request('orig_country_name') || request('dest_country_name'))
+                                        <th class="recherche">Pays origine</th>
+                                        <th class="recherche">Pays destination</th>
+                                    @endif
 
-        <th class="recherche">Période</th>
-        <th class="recherche">Minutes</th>
-        <th class="recherche">Montant CFA</th>
-    </tr>
-</thead>
+                                    <th class="recherche">Période</th>
+                                    <th class="recherche">Minutes</th>
+                                    <th class="recherche">Montant CFA</th>
+                                </tr>
+                            </thead>
 
-<tbody>
-    @foreach ($data as $row)
-        <tr>
-            <td>{{ $row->direction }}</td>
+                            <tbody>
+                                @foreach ($data as $row)
+                                    <tr>
+                                        <td>{{ $row->direction }}</td>
 
-            @if (in_array($viewType, ['daily_carrier', 'monthly_carrier', 'monthly_details']))
-                <td>{{ $row->carrier_name }}</td>
-            @endif
+                                        @if (in_array($viewType, ['daily_carrier', 'monthly_carrier', 'monthly_details']))
+                                            <td>{{ $row->carrier_name }}</td>
+                                        @endif
 
-            @if (request('show_net_name') == '1' || request('orig_net_name') || request('dest_net_name'))
-                <td>{{ $row->orig_net_name }}</td>
-                <td>{{ $row->dest_net_name }}</td>
-            @endif
+                                        @if (request('show_net_name') == '1' || request('orig_net_name') || request('dest_net_name'))
+                                            <td>{{ $row->orig_net_name }}</td>
+                                            <td>{{ $row->dest_net_name }}</td>
+                                        @endif
 
-            @if (request('show_country_name') == '1' || request('orig_country_name') || request('dest_country_name'))
-                <td>{{ $row->orig_country_name }}</td>
-                <td>{{ $row->dest_country_name }}</td>
-            @endif
+                                        @if (request('show_country_name') == '1' || request('orig_country_name') || request('dest_country_name'))
+                                            <td>{{ $row->orig_country_name }}</td>
+                                            <td>{{ $row->dest_country_name }}</td>
+                                        @endif
 
-            <td>{{ $row->period }}</td>
-            <td>{{ number_format($row->total_minutes, 0, ',', ' ') }}</td>
-            <td>{{ number_format($row->total_amount, 0, ',', ' ') }}</td>
-        </tr>
-    @endforeach
-</tbody>
+                                        <td>{{ $row->period }}</td>
+                                        <td>{{ number_format($row->total_minutes, 0, ',', ' ') }}</td>
+                                        <td>{{ number_format($row->total_amount, 0, ',', ' ') }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
 
 
 
