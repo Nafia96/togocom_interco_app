@@ -783,25 +783,26 @@ class HomeController extends Controller
 
 public function billingPivot(Request $request)
 {
-    // Mois sélectionné (AAAA-MM)
+    // Filtres
     $month = $request->input('month', now()->format('Y-m'));
-    $year = (int) substr($month, 0, 4);
-    $monthNum = (int) substr($month, 5, 2);
-
-    // Métrique demandée : entrant | sortant | revenu | charge
-    // Par défaut on prend "revenu"
     $filter = $request->input('filter', 'revenu');
+    $startDate = $request->input('start_date'); // format YYYY-MM-DD
+    $endDate   = $request->input('end_date');   // format YYYY-MM-DD
 
-    /**
-     * Mapping métrique -> colonne numérique à sommer + direction liée
-     * - entrant  : volume entrant en MINUTES (direction = Revenue)
-     * - sortant  : volume sortant en MINUTES (direction = Charge)
-     * - revenu   : montant CFA (direction = Revenue)
-     * - charge   : montant CFA (direction = Charge)
-     *
-     * NB: on n’utilise PAS rate pour "charge" car c’est un prix unitaire,
-     * on veut le montant total => amount_cfa comme dans billing2.
-     */
+    // Définition de la période
+    if ($startDate && $endDate) {
+        // Utilisateur a choisi une période personnalisée
+        $start = Carbon::parse($startDate)->startOfDay();
+        $end   = Carbon::parse($endDate)->endOfDay();
+    } else {
+        // Sinon : on garde le filtre par mois
+        $year = (int) substr($month, 0, 4);
+        $monthNum = (int) substr($month, 5, 2);
+        $start = Carbon::createFromDate($year, $monthNum, 1)->startOfDay();
+        $end   = Carbon::createFromDate($year, $monthNum, 1)->endOfMonth()->endOfDay();
+    }
+
+    // Mapping métriques
     $map = [
         'entrant' => ['col' => 'minutes',    'direction' => 'Revenue', 'label' => 'Volume entrant (minutes)'],
         'sortant' => ['col' => 'minutes',    'direction' => 'Charge',  'label' => 'Volume sortant (minutes)'],
@@ -810,52 +811,52 @@ public function billingPivot(Request $request)
     ];
     $conf = $map[$filter] ?? $map['revenu'];
 
-    // Base query
+    // Query principale
     $q = DB::connection('inter_traffic')
         ->table('BILLING_STAT')
-        ->whereYear('start_date', $year)
-        ->whereMonth('start_date', $monthNum);
+        ->whereBetween('start_date', [$start, $end]);
 
-    // Direction selon la métrique choisie
     if (!empty($conf['direction'])) {
         $q->where('direction', $conf['direction']);
     }
 
-    // Préparer l’expression de somme avec CAST (colonnes sont en VARCHAR dans cette table)
-    // On calque les types utilisés dans billing2
     $sumExpr = $conf['col'] === 'minutes'
         ? "SUM(CAST(minutes AS DECIMAL(20,6)))"
         : "SUM(CAST(amount_cfa AS DECIMAL(20,2)))";
 
-    // Agrégation par opérateur (carrier) et jour du mois
     $records = $q->select([
             DB::raw('carrier_name AS operator'),
-            DB::raw('DAY(start_date) AS day'),
+            DB::raw('DATE(start_date) AS day'),
             DB::raw("$sumExpr AS total"),
         ])
-        ->groupBy('carrier_name', DB::raw('DAY(start_date)'))
+        ->groupBy('carrier_name', DB::raw('DATE(start_date)'))
         ->orderBy('carrier_name')
         ->get();
 
-    // Jours du mois
-    $daysInMonth = Carbon::createFromDate($year, $monthNum, 1)->daysInMonth;
-    $days = range(1, $daysInMonth);
+    // Génération de la liste des jours (en YYYY-MM-DD)
+    $days = [];
+    $cursor = $start->copy();
+    while ($cursor->lte($end)) {
+        $days[] = $cursor->toDateString();
+        $cursor->addDay();
+    }
 
-    // Regrouper par opérateur pour la vue
+    // Groupement par opérateur
     $operators = $records->groupBy('operator');
 
-    // Totaux par jour (tous opérateurs)
+    // Totaux journaliers
     $totals = [];
     foreach ($days as $d) {
-        // ->sum('total') renvoie déjà un float/numérique côté collection
         $totals[$d] = (float) $records->where('day', $d)->sum('total');
     }
 
-    // On passe aussi un libellé lisible selon la métrique
     $metricLabel = $conf['label'];
 
-    return view('billing.billingPivot', compact('operators', 'days', 'totals', 'month', 'filter', 'metricLabel'));
+    return view('billing.billingPivot', compact(
+        'operators', 'days', 'totals', 'month', 'filter', 'metricLabel', 'startDate', 'endDate'
+    ));
 }
+
 
 
 

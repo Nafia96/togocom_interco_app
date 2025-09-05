@@ -116,7 +116,6 @@
                 </button>
             </div>
             <div class="card-body">
-
                 {{-- Filtres --}}
                 <form method="GET" action="{{ route('billingp') }}" class="row g-3 mb-4">
                     <div class="col-md-3">
@@ -124,6 +123,7 @@
                         <input type="month" id="month" name="month" class="form-control"
                             value="{{ $month }}">
                     </div>
+
                     <div class="col-md-3">
                         <label for="filter" class="form-label fw-semibold">Type :</label>
                         <select id="filter" name="filter" class="form-select">
@@ -133,10 +133,25 @@
                             <option value="charge" {{ $filter == 'charge' ? 'selected' : '' }}>Charge</option>
                         </select>
                     </div>
+
+                    {{-- Nouveau : période personnalisée --}}
+                    <div class="col-md-2">
+                        <label for="start_date" class="form-label fw-semibold">Date début :</label>
+                        <input type="date" id="start_date" name="start_date" class="form-control"
+                            value="{{ $startDate ?? '' }}">
+                    </div>
+
+                    <div class="col-md-2">
+                        <label for="end_date" class="form-label fw-semibold">Date fin :</label>
+                        <input type="date" id="end_date" name="end_date" class="form-control"
+                            value="{{ $endDate ?? '' }}">
+                    </div>
+
                     <div class="col-md-2 d-flex align-items-end">
                         <button type="submit" class="btn btn-success w-100">Filtrer</button>
                     </div>
                 </form>
+
 
                 {{-- Tableau Valeurs --}}
                 <div id="tableValeurs" class="table-responsive">
