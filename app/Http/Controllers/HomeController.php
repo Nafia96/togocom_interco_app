@@ -779,52 +779,84 @@ class HomeController extends Controller
         ]);
     }
 
+
+
 public function billingPivot(Request $request)
 {
+    // Mois sélectionné (AAAA-MM)
     $month = $request->input('month', now()->format('Y-m'));
-    $filter = $request->input('filter', 'amount_cfa'); // Valeur par défaut
-    $year = substr($month, 0, 4);
-    $monthNum = substr($month, 5, 2);
+    $year = (int) substr($month, 0, 4);
+    $monthNum = (int) substr($month, 5, 2);
 
-    // Mapping des filtres → colonnes de ta table
-    $columns = [
-        'entrant' => 'nb_calls',   // Exemple : volume entrant = nb d’appels
-        'sortant' => 'minutes',    // Exemple : volume sortant = minutes
-        'revenu'  => 'amount_cfa', // Revenu
-        'charge'  => 'rate'        // Charge (à adapter si tu as une autre colonne dédiée)
+    // Métrique demandée : entrant | sortant | revenu | charge
+    // Par défaut on prend "revenu"
+    $filter = $request->input('filter', 'revenu');
+
+    /**
+     * Mapping métrique -> colonne numérique à sommer + direction liée
+     * - entrant  : volume entrant en MINUTES (direction = Revenue)
+     * - sortant  : volume sortant en MINUTES (direction = Charge)
+     * - revenu   : montant CFA (direction = Revenue)
+     * - charge   : montant CFA (direction = Charge)
+     *
+     * NB: on n’utilise PAS rate pour "charge" car c’est un prix unitaire,
+     * on veut le montant total => amount_cfa comme dans billing2.
+     */
+    $map = [
+        'entrant' => ['col' => 'minutes',    'direction' => 'Revenue', 'label' => 'Volume entrant (minutes)'],
+        'sortant' => ['col' => 'minutes',    'direction' => 'Charge',  'label' => 'Volume sortant (minutes)'],
+        'revenu'  => ['col' => 'amount_cfa', 'direction' => 'Revenue', 'label' => 'Revenu (CFA)'],
+        'charge'  => ['col' => 'amount_cfa', 'direction' => 'Charge',  'label' => 'Charge (CFA)'],
     ];
+    $conf = $map[$filter] ?? $map['revenu'];
 
-    // Si la valeur choisie n’est pas dans le mapping → fallback sur amount_cfa
-    $column = $columns[$filter] ?? 'amount_cfa';
-
-    // Récupère les données agrégées par opérateur et jour
-    $records = DB::connection('inter_traffic')
+    // Base query
+    $q = DB::connection('inter_traffic')
         ->table('BILLING_STAT')
-        ->select(
-            'carrier_name as operator',
-            DB::raw('DAY(start_date) as day'),
-            DB::raw("SUM($column) as total")
-        )
         ->whereYear('start_date', $year)
-        ->whereMonth('start_date', $monthNum)
+        ->whereMonth('start_date', $monthNum);
+
+    // Direction selon la métrique choisie
+    if (!empty($conf['direction'])) {
+        $q->where('direction', $conf['direction']);
+    }
+
+    // Préparer l’expression de somme avec CAST (colonnes sont en VARCHAR dans cette table)
+    // On calque les types utilisés dans billing2
+    $sumExpr = $conf['col'] === 'minutes'
+        ? "SUM(CAST(minutes AS DECIMAL(20,6)))"
+        : "SUM(CAST(amount_cfa AS DECIMAL(20,2)))";
+
+    // Agrégation par opérateur (carrier) et jour du mois
+    $records = $q->select([
+            DB::raw('carrier_name AS operator'),
+            DB::raw('DAY(start_date) AS day'),
+            DB::raw("$sumExpr AS total"),
+        ])
         ->groupBy('carrier_name', DB::raw('DAY(start_date)'))
         ->orderBy('carrier_name')
         ->get();
 
-    // Liste des jours du mois sélectionné
-    $days = range(1, cal_days_in_month(CAL_GREGORIAN, $monthNum, $year));
+    // Jours du mois
+    $daysInMonth = Carbon::createFromDate($year, $monthNum, 1)->daysInMonth;
+    $days = range(1, $daysInMonth);
 
-    // Regroupement par opérateur
+    // Regrouper par opérateur pour la vue
     $operators = $records->groupBy('operator');
 
-    // Totaux par jour
+    // Totaux par jour (tous opérateurs)
     $totals = [];
-    foreach ($days as $day) {
-        $totals[$day] = $records->where('day', $day)->sum('total');
+    foreach ($days as $d) {
+        // ->sum('total') renvoie déjà un float/numérique côté collection
+        $totals[$d] = (float) $records->where('day', $d)->sum('total');
     }
 
-    return view('billing.billingPivot', compact('operators', 'days', 'totals', 'month', 'filter'));
+    // On passe aussi un libellé lisible selon la métrique
+    $metricLabel = $conf['label'];
+
+    return view('billing.billingPivot', compact('operators', 'days', 'totals', 'month', 'filter', 'metricLabel'));
 }
+
 
 
 
