@@ -858,6 +858,110 @@ public function billingPivot(Request $request)
 }
 
 
+public function networkkpi(Request $request)
+{
+    ini_set('memory_limit', '512M');
+    if (!session('id')) return view('index');
+
+    // Période par défaut : semaine précédente
+    $start = $request->input('start_period')
+        ? Carbon::parse($request->input('start_period'))->toDateString()
+        : now()->subWeek()->startOfWeek()->toDateString();
+
+    $end = $request->input('end_period')
+        ? Carbon::parse($request->input('end_period'))->toDateString()
+        : now()->subWeek()->endOfWeek()->toDateString();
+
+    // Requête "incoming"
+    $incoming = DB::connection('inter_traffic')->table('COMPLETION_STAT')
+        ->selectRaw("
+            call_type,
+            CONCAT(MIN(event_date), ' - ', MAX(event_date)) AS dates_range,
+            CONCAT(YEAR(event_date), '-W', LPAD(WEEK(event_date, 3), 2, '0')) AS call_week,
+            orig_net_name as net_name,
+            partner_name,
+            SUM(attempt) as attempt,
+            CONCAT(ROUND((SUM(completed)/SUM(attempt))*100,2), '%') as NER,
+            CONCAT(ROUND((SUM(answered)/SUM(attempt))*100,2), '%') as ASR,
+            IF(SUM(minutes)=0,0,ROUND((SUM(minutes)*60)/SUM(answered))) as ACD_SEC
+        ")
+        ->whereBetween('event_date', [$start, $end])
+        ->where('partner_name', 'not like', 'Not Available')
+        ->where('orig_net_name', 'not like', 'Not Available')
+        ->where('call_type', 'like', 'incoming')
+        ->groupBy('call_type', 'call_week', 'partner_name', 'orig_net_name');
+
+    // Requête "outgoing"
+    $outgoing = DB::connection('inter_traffic')->table('COMPLETION_STAT')
+        ->selectRaw("
+            call_type,
+            CONCAT(MIN(event_date), ' - ', MAX(event_date)) AS dates_range,
+            CONCAT(YEAR(event_date), '-W', LPAD(WEEK(event_date, 3), 2, '0')) AS call_week,
+            dest_net_name as net_name,
+            partner_name,
+            SUM(attempt) as attempt,
+            CONCAT(ROUND((SUM(completed)/SUM(attempt))*100,2), '%') as NER,
+            CONCAT(ROUND((SUM(answered)/SUM(attempt))*100,2), '%') as ASR,
+            IF(SUM(minutes)=0,0,ROUND((SUM(minutes)*60)/SUM(answered))) as ACD_SEC
+        ")
+        ->whereBetween('event_date', [$start, $end])
+        ->where('partner_name', 'not like', 'Not Available')
+        ->where('dest_net_name', 'not like', 'Not Available')
+        ->where('call_type', 'like', 'outgoing')
+        ->groupBy('call_type', 'call_week', 'partner_name', 'dest_net_name');
+
+    // Union incoming + outgoing
+    $query = $incoming->unionAll($outgoing);
+
+    $data = DB::table(DB::raw("({$query->toSql()}) as t"))
+        ->mergeBindings($query)
+        ->orderBy('call_week', 'desc')
+        ->paginate(1000);
+
+    return view('billing.kpi', [
+        'data' => $data,
+        'filters' => compact('start', 'end')
+    ]);
+}
+
+
+public function partnerKpi(Request $request)
+{
+    ini_set('memory_limit', '512M');
+    if (!session('id')) return view('index');
+
+    // Période par défaut : semaine précédente
+    $start = $request->input('start_period')
+        ? Carbon::parse($request->input('start_period'))->toDateString()
+        : now()->subWeek()->startOfWeek()->toDateString();
+
+    $end = $request->input('end_period')
+        ? Carbon::parse($request->input('end_period'))->toDateString()
+        : now()->subWeek()->endOfWeek()->toDateString();
+
+    $data = DB::connection('inter_traffic')->table('COMPLETION_STAT')
+        ->selectRaw("
+            call_type,
+            CONCAT(MIN(event_date), ' - ', MAX(event_date)) AS dates_range,
+            CONCAT(YEAR(event_date), '-W', LPAD(WEEK(event_date, 3), 2, '0')) AS call_week,
+            partner_name,
+            SUM(attempt) as attempt,
+            CONCAT(ROUND((SUM(completed)/SUM(attempt))*100,2), '%') as NER,
+            CONCAT(ROUND((SUM(answered)/SUM(attempt))*100,2), '%') as ACD,
+            IF(SUM(minutes)=0,0,ROUND((SUM(minutes)*60)/SUM(answered))) as ACD_SEC
+        ")
+        ->whereBetween('event_date', [$start, $end])
+        ->where('partner_name', 'not like', 'Not Available')
+        ->groupBy('call_type', 'call_week', 'partner_name')
+        ->orderBy('call_week', 'desc')
+        ->paginate(1000);
+
+    return view('billing.partnerkpi', [
+        'data' => $data,
+        'filters' => compact('start', 'end')
+    ]);
+}
+
 
 
 
