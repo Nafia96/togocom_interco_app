@@ -1,11 +1,9 @@
-@extends('template.billing_tamplate')
+@extends('template.report_template')
 
 @section('title', 'PARTNER KPI')
 
 @section('content')
     <div class="container">
-        <h4 class="text-center mb-4">PARTNER KPI</h4>
-
         <div class="row">
             <!-- Filtres période -->
             <div class="col-12">

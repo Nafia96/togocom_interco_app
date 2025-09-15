@@ -858,7 +858,7 @@ public function billingPivot(Request $request)
 }
 
 
-public function networkkpi(Request $request)
+public function networkKpi(Request $request)
 {
     ini_set('memory_limit', '512M');
     if (!session('id')) return view('index');
@@ -913,7 +913,7 @@ public function networkkpi(Request $request)
     // Union incoming + outgoing
     $query = $incoming->unionAll($outgoing);
 
-    $data = DB::table(DB::raw("({$query->toSql()}) as t"))
+    $data = DB::connection('inter_traffic')->table(DB::raw("({$query->toSql()}) as t"))
         ->mergeBindings($query)
         ->orderBy('call_week', 'desc')
         ->paginate(1000);
@@ -923,6 +923,7 @@ public function networkkpi(Request $request)
         'filters' => compact('start', 'end')
     ]);
 }
+
 
 
 public function partnerKpi(Request $request)
@@ -939,7 +940,8 @@ public function partnerKpi(Request $request)
         ? Carbon::parse($request->input('end_period'))->toDateString()
         : now()->subWeek()->endOfWeek()->toDateString();
 
-    $data = DB::connection('inter_traffic')->table('COMPLETION_STAT')
+    // Requête principale
+    $query = DB::connection('inter_traffic')->table('COMPLETION_STAT')
         ->selectRaw("
             call_type,
             CONCAT(MIN(event_date), ' - ', MAX(event_date)) AS dates_range,
@@ -953,18 +955,15 @@ public function partnerKpi(Request $request)
         ->whereBetween('event_date', [$start, $end])
         ->where('partner_name', 'not like', 'Not Available')
         ->groupBy('call_type', 'call_week', 'partner_name')
-        ->orderBy('call_week', 'desc')
-        ->paginate(1000);
+        ->orderBy('call_week', 'desc');
 
-    return view('billing.partnerkpi', [
+    $data = $query->paginate(1000);
+
+    return view('billing.partnerKpi', [
         'data' => $data,
         'filters' => compact('start', 'end')
     ]);
 }
-
-
-
-
 
 
 

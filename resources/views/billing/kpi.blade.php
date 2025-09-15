@@ -1,10 +1,10 @@
 @extends('template.billing_tamplate')
 
-@section('title', 'Statistiques de complétion')
+@section('title', 'NETWORK KPI')
 
 @section('content')
     <div class="container">
-        <h4 class="text-center mb-4">STATISTIQUES DE COMPLÉTION</h4>
+        <h4 class="text-center mb-4">NETWORK KPI</h4>
 
         <div class="row">
             <!-- Filtres période -->
@@ -17,7 +17,7 @@
                         </h6>
                     </div>
                     <div class="p-3">
-                        <form method="GET" action="{{ route('completion') }}">
+                        <form method="GET" action="{{ route('networkkpi') }}">
                             <div class="form-row filtre_form align-items-end">
                                 <div class="form-group col-md-3">
                                     <label>Début</label>
@@ -33,7 +33,7 @@
                                     <button class="btn btn-success" type="submit">
                                         <i class="material-icons align-middle">sort</i> Filtrer
                                     </button>
-                                    <a href="{{ route('completion') }}" class="btn btn-secondary">Réinitialiser</a>
+                                    <a href="{{ route('networkkpi') }}" class="btn btn-secondary">Réinitialiser</a>
                                 </div>
                             </div>
                         </form>
@@ -79,10 +79,7 @@
                             </table>
                         </div>
 
-                        <!-- Pagination Laravel -->
-                        <div class="mt-3">
-                            {{ $data->appends(request()->query())->links() }}
-                        </div>
+
                     </div>
                 </div>
             </div>
