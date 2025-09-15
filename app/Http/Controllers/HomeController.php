@@ -959,7 +959,7 @@ public function partnerKpi(Request $request)
 
     $data = $query->paginate(1000);
 
-    return view('billing.partnerKpi', [
+    return view('billing.partKpi', [
         'data' => $data,
         'filters' => compact('start', 'end')
     ]);
