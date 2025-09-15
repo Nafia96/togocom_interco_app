@@ -1,4 +1,4 @@
-@extends('template.report_template')
+@extends('template.billing_tamplate')
 
 @section('title', 'PARTNER KPI')
 
