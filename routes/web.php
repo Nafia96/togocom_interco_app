@@ -45,6 +45,7 @@ Route::get('roaming', [HomeController::class, 'roaming2'])->name('roaming');
 Route::get('billingp', [HomeController::class, 'billingpivot'])->name('billingp');
 Route::get('networkkpi', [HomeController::class, 'networkkpi'])->name('networkkpi');
 Route::get('partnerKpi', [HomeController::class, 'partnerKpi'])->name('partnerKpi');
+Route::get('complation', [HomeController::class, 'complation'])->name('complation');
 
 //roaming rout
 Route::get('iot_discount', [RoamingController::class, 'iot_discount'])->name('iot_discount');
