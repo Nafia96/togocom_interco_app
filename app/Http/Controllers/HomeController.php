@@ -1094,8 +1094,18 @@ $data = DB::connection('inter_traffic')->select($sql, [
         'end' => $end,
     ]);
 
+    // Pagination manuelle
+    $page = request('page', 1);
+    $perPage = 100;
+    $total = count($data);
+    $items = array_slice($data, ($page - 1) * $perPage, $perPage);
+    $paginator = new \Illuminate\Pagination\LengthAwarePaginator($items, $total, $perPage, $page, [
+        'path' => request()->url(),
+        'query' => request()->query(),
+    ]);
+
     return view('billing.pkpi', [
-        'data' => $data,
+        'data' => $paginator,
         'filters' => compact('start', 'end')
     ]);
 }
@@ -1196,8 +1206,6 @@ $data = DB::connection('inter_traffic')->select($sql, [
             'filters' => $request->all(), // pour réutiliser dans la vue
         ]);
     }
-
-
 
 
 
