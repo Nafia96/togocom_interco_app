@@ -865,6 +865,87 @@ class HomeController extends Controller
     }
 
 
+
+    public function billingPivotNetCarrier(Request $request)
+    {
+        // Filtres
+        $month = $request->input('month', now()->format('Y-m'));
+        $startDate = $request->input('start_date');
+        $endDate   = $request->input('end_date');
+        $carrier   = $request->input('carrier_name');
+        $filter    = $request->input('filter', 'entrant'); // 'entrant' ou 'revenu'
+
+        // Période
+        if ($startDate && $endDate) {
+            $start = Carbon::parse($startDate)->startOfDay();
+            $end   = Carbon::parse($endDate)->endOfDay();
+        } else {
+            $year = (int) substr($month, 0, 4);
+            $monthNum = (int) substr($month, 5, 2);
+            $start = Carbon::createFromDate($year, $monthNum, 1)->startOfDay();
+            $end   = Carbon::createFromDate($year, $monthNum, 1)->endOfMonth()->endOfDay();
+        }
+
+        // Query principale
+        $q = DB::connection('inter_traffic')
+            ->table('BILLING_STAT')
+            ->whereBetween('start_date', [$start, $end])
+            ->where('direction', 'revenue');
+
+        if ($carrier) {
+            $q->where('carrier_name', $carrier);
+        }
+
+        // Sélection selon le filtre
+        if ($filter == 'revenu') {
+            $selectValue = DB::raw('SUM(CAST(amount_cfa AS DECIMAL(20,2))) as value');
+            $valueLabel = 'Montant CFA';
+        } else {
+            $selectValue = DB::raw('SUM(CAST(minutes AS DECIMAL(20,6))) as value');
+            $valueLabel = 'Minutes';
+        }
+
+        $records = $q->select([
+                'direction',
+                DB::raw('DATE(start_date) as period'),
+                'orig_net_name',
+                'carrier_name',
+                $selectValue,
+            ])
+            ->groupBy('direction', DB::raw('DATE(start_date)'), 'orig_net_name', 'carrier_name')
+            ->orderBy('direction')
+            ->orderBy('period')
+            ->orderBy('orig_net_name')
+            ->orderBy('carrier_name')
+            ->get();
+
+    $allCarriers = DB::connection('inter_traffic')
+        ->table('BILLING_STAT')
+        ->distinct()
+        ->pluck('carrier_name')
+        ->sort()
+        ->values();
+
+    $days = [];
+    $cursor = $start->copy();
+    while ($cursor->lte($end)) {
+        $days[] = $cursor->toDateString();
+        $cursor->addDay();
+    }
+
+    return view('billing.billingPivotNetCarrier', compact(
+        'records',
+        'days',
+        'month',
+        'startDate',
+        'endDate',
+        'allCarriers',
+        'carrier',
+        'filter',
+        'valueLabel'
+    ));
+    }
+
 public function networkKpi(Request $request)
 {
     ini_set('memory_limit', '512M');

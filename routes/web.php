@@ -43,6 +43,10 @@ Route::get('billing', [HomeController::class, 'billing2'])->name('billing2');
 Route::get('billing2', [HomeController::class, 'billing2'])->name('billing2');
 Route::get('roaming', [HomeController::class, 'roaming2'])->name('roaming');
 Route::get('billingp', [HomeController::class, 'billingpivot'])->name('billingp');
+
+
+Route::get('billingn', [HomeController::class, 'billingPivotNetCarrier'])->name('billingPivotNetCarrier');
+
 Route::get('networkkpi', [HomeController::class, 'networkkpi'])->name('networkkpi');
 Route::get('partnerKpi', [HomeController::class, 'partnerKpi'])->name('partnerKpi');
 Route::get('complation', [HomeController::class, 'complation'])->name('complation');
