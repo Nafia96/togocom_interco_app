@@ -1072,30 +1072,33 @@ $data = DB::connection('inter_traffic')->select($sql, [
             ? Carbon::parse($request->input('end_period'))->toDateString()
             : now()->subWeek()->endOfWeek()->toDateString();
 
-        // Requête principale
-        $query = DB::connection('inter_traffic')->table('COMPLETION_STAT')
-            ->selectRaw("
-            call_type,
+        // Requête brute SQL
+        $sql = "
+        SELECT call_type,
             CONCAT(MIN(event_date), ' - ', MAX(event_date)) AS dates_range,
             CONCAT(YEAR(event_date), '-W', LPAD(WEEK(event_date, 3), 2, '0')) AS call_week,
             partner_name,
-            SUM(attempt) as attempt,
-            CONCAT(ROUND((SUM(completed)/SUM(attempt))*100,2), '%') as NER,
-            CONCAT(ROUND((SUM(answered)/SUM(attempt))*100,2), '%') as ACD,
-            IF(SUM(minutes)=0,0,ROUND((SUM(minutes)*60)/SUM(answered))) as ACD_SEC
-        ")
-            ->whereBetween('event_date', [$start, $end])
-            ->where('partner_name', 'not like', 'Not Available')
-            ->groupBy('call_type', 'call_week', 'partner_name')
-            ->orderBy('call_week', 'desc');
+            SUM(attempt) AS attempt,
+            CONCAT(ROUND((SUM(completed)/SUM(attempt))*100,2), '%') AS NER,
+            CONCAT(ROUND((SUM(answered)/SUM(attempt))*100,2), '%') AS ACD,
+            IF(SUM(minutes)=0,0,ROUND((SUM(minutes)*60)/SUM(answered))) AS ACD_SEC
+        FROM COMPLETION_STAT
+        WHERE event_date BETWEEN :start AND :end
+            AND partner_name NOT LIKE 'Not Available'
+        GROUP BY call_type, call_week, partner_name
+        ORDER BY call_week DESC
+    ";
 
-        $data = $query->paginate(1000);
+    $data = DB::connection('inter_traffic')->select($sql, [
+        'start' => $start,
+        'end' => $end,
+    ]);
 
-        return view('billing.pkpi', [
-            'data' => $data,
-            'filters' => compact('start', 'end')
-        ]);
-    }
+    return view('billing.pkpi', [
+        'data' => $data,
+        'filters' => compact('start', 'end')
+    ]);
+}
 
 
 
