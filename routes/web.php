@@ -47,6 +47,9 @@ Route::get('billingp', [HomeController::class, 'billingpivot'])->name('billingp'
 
 Route::get('billingn', [HomeController::class, 'billingPivotNetCarrier'])->name('billingPivotNetCarrier');
 
+
+Route::get('/billingc', [App\Http\Controllers\HomeController::class, 'billingPivotCountryCarrier'])->name('billingPivotCountryCarrier');
+
 Route::get('networkkpi', [HomeController::class, 'networkkpi'])->name('networkkpi');
 Route::get('partnerKpi', [HomeController::class, 'partnerKpi'])->name('partnerKpi');
 Route::get('complation', [HomeController::class, 'complation'])->name('complation');

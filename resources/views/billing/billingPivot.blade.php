@@ -99,6 +99,15 @@
             /* ✅ réduit */
             margin-bottom: 1rem;
         }
+
+        /* Zébrage personnalisé : vert clair et blanc */
+        .table-striped tbody tr:nth-of-type(odd) {
+            background-color: #e3fcec !important;
+        }
+
+        .table-striped tbody tr:nth-of-type(even) {
+            background-color: #ffffff !important;
+        }
     </style>
 
 </head>
@@ -115,6 +124,17 @@
                     Mode Progression
                 </button>
             </div>
+            <!-- Breadcrumb Filtres -->
+            <nav aria-label="breadcrumb" class="px-3 pt-2">
+                <ol class="breadcrumb mb-2">
+                    <li class="breadcrumb-item"><strong>Mois :</strong> {{ $month ?? '-' }}</li>
+                    <li class="breadcrumb-item"><strong>Type :</strong> {{
+                        $filter == 'revenu' ? 'Revenu' : ($filter == 'charge' ? 'Charge' : ($filter == 'sortant' ? 'Volume sortant' : 'Volume entrant'))
+                    }}</li>
+                    <li class="breadcrumb-item"><strong>Date début :</strong> {{ $startDate ?? '-' }}</li>
+                    <li class="breadcrumb-item"><strong>Date fin :</strong> {{ $endDate ?? '-' }}</li>
+                </ol>
+            </nav>
             <div class="card-body">
                 {{-- Filtres --}}
                 <form method="GET" action="{{ route('billingp') }}" class="row g-3 mb-4">
@@ -155,7 +175,7 @@
 
                 {{-- Tableau Valeurs --}}
                 <div id="tableValeurs" class="table-responsive">
-                    <table class="table table-bordered table-hover align-middle">
+                    <table class="table table-bordered table-hover table-striped align-middle">
                         <thead>
                             <tr>
                                 <th>Opérateur</th>
@@ -168,7 +188,11 @@
                         <tbody>
                             @foreach ($operators as $operator => $rows)
                                 <tr>
-                                    <td>{{ $operator }}</td>
+                                    <td>
+                                        <a href="{{ route('billingPivotCountryCarrier', array_merge(request()->except('page'), ['carrier_name' => $operator])) }}" class="text-decoration-underline text-success">
+                                            {{ $operator }}
+                                        </a>
+                                    </td>
                                     @php $sum = 0; @endphp
                                     @foreach ($days as $day)
                                         @php
@@ -198,7 +222,7 @@
 
                 {{-- Tableau Progression --}}
                 <div id="tableProgression" class="table-responsive d-none">
-                    <table class="table table-bordered table-hover align-middle">
+                    <table class="table table-bordered table-hover table-striped align-middle">
                         <thead>
                             <tr class="table-success">
                                 <th>Opérateur</th>

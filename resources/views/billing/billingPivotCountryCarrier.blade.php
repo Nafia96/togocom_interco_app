@@ -1,9 +1,8 @@
-{{-- filepath: c:\Users\ndjire\Desktop\togocom_interco_app\resources\views\billing\billingPivotNetCarrier.blade.php --}}
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Pivot Facturation par Réseau & Opérateur</title>
+    <title>Pivot Facturation par Pays & Opérateur</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
@@ -94,7 +93,7 @@
         <div class="card-header d-flex justify-content-between align-items-center">
             <span>
                 <i class="fas fa-table me-2"></i>
-                Pivot – Facturation par réseau destination et opérateur
+                Pivot – Facturation par pays origine et opérateur
             </span>
             <button id="toggleTableBtn" class="btn btn-sm btn-light text-success toggle-btn">
                 Mode Progression
@@ -106,14 +105,14 @@
                 <li class="breadcrumb-item"><strong>Mois :</strong> {{ $month ?? '-' }}</li>
                 <li class="breadcrumb-item"><strong>Type :</strong> {{ $filter == 'revenu' ? 'Revenu' : 'Volume entrant' }}</li>
                 <li class="breadcrumb-item"><strong>Opérateur :</strong> {{ $carrier ? $carrier : 'Tous' }}</li>
-                <li class="breadcrumb-item"><strong>Réseau origine :</strong> {{ request('orig_net_name') ? request('orig_net_name') : 'Tous' }}</li>
+                <li class="breadcrumb-item"><strong>Pays origine :</strong> {{ request('orig_country_name') ? request('orig_country_name') : 'Tous' }}</li>
                 <li class="breadcrumb-item"><strong>Date début :</strong> {{ $startDate ?? '-' }}</li>
                 <li class="breadcrumb-item"><strong>Date fin :</strong> {{ $endDate ?? '-' }}</li>
             </ol>
         </nav>
         <div class="card-body">
             {{-- Filtres --}}
-            <form method="GET" action="{{ route('billingPivotNetCarrier') }}" class="row g-2 mb-4 align-items-end flex-nowrap">
+            <form method="GET" action="{{ route('billingPivotCountryCarrier') }}" class="row g-2 mb-4 align-items-end flex-nowrap">
                 <div class="col-auto">
                     <label for="month" class="form-label fw-semibold mb-1">Mois :</label>
                     <input type="month" id="month" name="month" class="form-control form-control-sm" value="{{ $month }}">
@@ -145,8 +144,8 @@
                     </select>
                 </div>
                 <div class="col-auto">
-                    <label for="orig_net_name" class="form-label fw-semibold mb-1">Réseau origine :</label>
-                    <input type="text" id="orig_net_name" name="orig_net_name" class="form-control form-control-sm" value="{{ request('orig_net_name') }}" placeholder="Filtrer réseau...">
+                    <label for="orig_country_name" class="form-label fw-semibold mb-1">Pays origine :</label>
+                    <input type="text" id="orig_country_name" name="orig_country_name" class="form-control form-control-sm" value="{{ request('orig_country_name') }}" placeholder="Filtrer pays...">
                 </div>
                 <div class="col-auto">
                     <button type="submit" class="btn btn-success btn-sm w-100">Filtrer</button>
@@ -158,7 +157,7 @@
                 <table class="table table-bordered table-hover table-striped">
                     <thead>
                         <tr>
-                            <th class="table-success text-dark">Réseau origine</th>
+                            <th class="table-success text-dark">Pays origine</th>
                             @foreach ($days as $day)
                                 <th class="text-center table-success text-dark">{{ $day }}</th>
                             @endforeach
@@ -167,20 +166,24 @@
                     </thead>
                     <tbody>
                         @php
-                            // Regroupement des données par réseau origine
+                            // Regroupement des données par pays origine
                             $pivot = [];
                             foreach ($records as $row) {
-                                $net = $row->orig_net_name;
+                                $country = $row->orig_country_name;
                                 $day = $row->period;
-                                $pivot[$net][$day] = $row->value;
+                                $pivot[$country][$day] = $row->value;
                             }
                         @endphp
-                        @foreach ($pivot as $net => $rowDays)
+                        @foreach ($pivot as $country => $rowDays)
                             @php
                                 $rowColor = $loop->odd ? '#e3fcec' : '#ffffff';
                             @endphp
                             <tr style="background-color: {{ $rowColor }};">
-                                <td>{{ $net }}</td>
+                                <td>
+                                    <a href="{{ route('billingPivotNetCarrier', array_merge(request()->except('page'), ['orig_net_name' => $country])) }}" class="text-decoration-underline text-success">
+                                        {{ $country }}
+                                    </a>
+                                </td>
                                 @php $sum = 0; @endphp
                                 @foreach ($days as $day)
                                     @php
@@ -215,7 +218,7 @@
                 <table class="table table-bordered table-hover table-striped align-middle">
                     <thead>
                         <tr class="table-success">
-                            <th class="table-success text-dark">Réseau origine</th>
+                            <th class="table-success text-dark">Pays origine</th>
                             @foreach ($days as $day)
                                 <th class="text-center table-success text-dark">{{ $day }}</th>
                             @endforeach
@@ -225,17 +228,17 @@
                         @php
                             $pivot = [];
                             foreach ($records as $row) {
-                                $net = $row->orig_net_name;
+                                $country = $row->orig_country_name;
                                 $day = $row->period;
-                                $pivot[$net][$day] = $row->value;
+                                $pivot[$country][$day] = $row->value;
                             }
                         @endphp
-                        @foreach ($pivot as $net => $rowDays)
+                        @foreach ($pivot as $country => $rowDays)
                             @php
                                 $rowColor = $loop->odd ? '#e3fcec' : '#ffffff';
                             @endphp
                             <tr style="background-color: {{ $rowColor }};">
-                                <td>{{ $net }}</td>
+                                <td>{{ $country }}</td>
                                 @php $prev = null; @endphp
                                 @foreach ($days as $day)
                                     @php
@@ -300,14 +303,14 @@ document.addEventListener("DOMContentLoaded", function() {
     const records = @json($records);
     // Courbe unique : somme de tous les réseaux origine par jour
     const selectedCarrier = "{{ request('carrier_name') ? request('carrier_name') : 'Tous' }}";
-    const selectedNet = "{{ request('orig_net_name') ? request('orig_net_name') : 'Tous' }}";
+    const selectedCountry = "{{ request('orig_country_name') ? request('orig_country_name') : 'Tous' }}";
     let curveLabel = 'Tous';
-    if (selectedCarrier !== 'Tous' && selectedNet !== 'Tous') {
-        curveLabel = selectedCarrier + '-' + selectedNet;
+    if (selectedCarrier !== 'Tous' && selectedCountry !== 'Tous') {
+        curveLabel = selectedCarrier + '-' + selectedCountry;
     } else if (selectedCarrier !== 'Tous') {
         curveLabel = selectedCarrier;
-    } else if (selectedNet !== 'Tous') {
-        curveLabel = selectedNet;
+    } else if (selectedCountry !== 'Tous') {
+        curveLabel = selectedCountry;
     }
     const periods = [...new Set(records.map(r => r.period))].sort();
     const dailyTotals = periods.map(p => {

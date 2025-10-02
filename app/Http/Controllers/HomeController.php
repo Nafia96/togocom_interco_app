@@ -896,6 +896,11 @@ class HomeController extends Controller
             $q->where('carrier_name', $carrier);
         }
 
+        // Nouveau filtre réseau origine
+        if ($request->filled('orig_net_name')) {
+            $q->where('orig_net_name', 'like', '%' . $request->orig_net_name . '%');
+        }
+
         // Sélection selon le filtre
         if ($filter == 'revenu') {
             $selectValue = DB::raw('SUM(CAST(amount_cfa AS DECIMAL(20,2))) as value');
@@ -946,56 +951,141 @@ class HomeController extends Controller
     ));
     }
 
-public function networkKpi(Request $request)
+public function billingPivotCountryCarrier(Request $request)
 {
-    ini_set('memory_limit', '512M');
-    if (!session('id')) return view('index');
+    // Filtres
+    $month = $request->input('month', now()->format('Y-m'));
+    $startDate = $request->input('start_date');
+    $endDate   = $request->input('end_date');
+    $carrier   = $request->input('carrier_name');
+    $filter    = $request->input('filter', 'entrant'); // 'entrant' ou 'revenu'
 
-    // Période par défaut : semaine précédente
-    $start = $request->input('start_period')
-        ? Carbon::parse($request->input('start_period'))->toDateString()
-        : now()->subWeek()->startOfWeek()->toDateString();
+    // Période
+    if ($startDate && $endDate) {
+        $start = Carbon::parse($startDate)->startOfDay();
+        $end   = Carbon::parse($endDate)->endOfDay();
+    } else {
+        $year = (int) substr($month, 0, 4);
+        $monthNum = (int) substr($month, 5, 2);
+        $start = Carbon::createFromDate($year, $monthNum, 1)->startOfDay();
+        $end   = Carbon::createFromDate($year, $monthNum, 1)->endOfMonth()->endOfDay();
+    }
 
-    $end = $request->input('end_period')
-        ? Carbon::parse($request->input('end_period'))->toDateString()
-        : now()->subWeek()->endOfWeek()->toDateString();
+    // Query principale
+    $q = DB::connection('inter_traffic')
+        ->table('BILLING_STAT')
+        ->whereBetween('start_date', [$start, $end])
+        ->where('direction', 'revenue');
 
-    // Requête brute avec variables
-  $sql = "
-    select call_type,
-           CONCAT(MIN(event_date), ' - ', MAX(event_date)) AS dates_range,
-           CONCAT(YEAR(event_date), '-W', LPAD(WEEK(event_date, 3), 2, '0')) AS call_week,
-           orig_net_name as net_name,
-           partner_name,
-           sum(attempt) attempt,
-           CONCAT(round((sum(completed) / sum(attempt))*100,2),'%') NER,
-           CONCAT(round((sum(answered) / sum(attempt))*100,2),'%') ASR,
-           if(sum(minutes)=0,0,round((sum(minutes)*60) / sum(answered))) ACD_SEC
-    from COMPLETION_STAT
-    where event_date between :start1 and :end1
-      and partner_name not like 'Not Available'
-      and orig_net_name not like 'Not Available'
-      and call_type like 'incoming'
-    group by call_type, call_week, partner_name, orig_net_name
+    if ($carrier) {
+        $q->where('carrier_name', $carrier);
+    }
 
-    union all
+    // Nouveau filtre pays origine
+    if ($request->filled('orig_country_name')) {
+        $q->where('orig_country_name', 'like', '%' . $request->orig_country_name . '%');
+    }
 
-    select call_type,
-           CONCAT(MIN(event_date), ' - ', MAX(event_date)) AS dates_range,
-           CONCAT(YEAR(event_date), '-W', LPAD(WEEK(event_date, 3), 2, '0')) AS call_week,
-           dest_net_name as net_name,
-           partner_name,
-           sum(attempt) attempt,
-           CONCAT(round((sum(completed) / sum(attempt))*100,2),'%') NER,
-           CONCAT(round((sum(answered) / sum(attempt))*100,2),'%') ASR,
-           if(sum(minutes)=0,0,round((sum(minutes)*60) / sum(answered))) ACD_SEC
-    from COMPLETION_STAT
-    where event_date between :start2 and :end2
-      and partner_name not like 'Not Available'
-      and dest_net_name not like 'Not Available'
-      and call_type like 'outgoing'
-    group by call_type, call_week, partner_name, dest_net_name
-    order by call_week desc
+    // Sélection selon le filtre
+    if ($filter == 'revenu') {
+        $selectValue = DB::raw('SUM(CAST(amount_cfa AS DECIMAL(20,2))) as value');
+        $valueLabel = 'Montant CFA';
+    } else {
+        $selectValue = DB::raw('SUM(CAST(minutes AS DECIMAL(20,6))) as value');
+        $valueLabel = 'Minutes';
+    }
+
+    $records = $q->select([
+            'direction',
+            DB::raw('DATE(start_date) as period'),
+            'orig_country_name',
+            'carrier_name',
+            $selectValue,
+        ])
+        ->groupBy('direction', DB::raw('DATE(start_date)'), 'orig_country_name', 'carrier_name')
+        ->orderBy('direction')
+        ->orderBy('period')
+        ->orderBy('orig_country_name')
+        ->orderBy('carrier_name')
+        ->get();
+
+    $allCarriers = DB::connection('inter_traffic')
+        ->table('BILLING_STAT')
+        ->distinct()
+        ->pluck('carrier_name')
+        ->sort()
+        ->values();
+
+    $days = [];
+    $cursor = $start->copy();
+    while ($cursor->lte($end)) {
+        $days[] = $cursor->toDateString();
+        $cursor->addDay();
+    }
+
+    return view('billing.billingPivotCountryCarrier', compact(
+        'records',
+        'days',
+        'month',
+        'startDate',
+        'endDate',
+        'allCarriers',
+        'carrier',
+        'filter',
+        'valueLabel'
+    ));
+}
+
+    public function networkKpi(Request $request)
+    {
+        ini_set('memory_limit', '512M');
+        if (!session('id')) return view('index');
+
+        // Période par défaut : semaine précédente
+        $start = $request->input('start_period')
+            ? Carbon::parse($request->input('start_period'))->toDateString()
+            : now()->subWeek()->startOfWeek()->toDateString();
+
+        $end = $request->input('end_period')
+            ? Carbon::parse($request->input('end_period'))->toDateString()
+            : now()->subWeek()->endOfWeek()->toDateString();
+
+        // Requête brute avec variables
+      $sql = "
+        select call_type,
+               CONCAT(MIN(event_date), ' - ', MAX(event_date)) AS dates_range,
+               CONCAT(YEAR(event_date), '-W', LPAD(WEEK(event_date, 3), 2, '0')) AS call_week,
+               orig_net_name as net_name,
+               partner_name,
+               sum(attempt) attempt,
+               CONCAT(round((sum(completed) / sum(attempt))*100,2),'%') NER,
+               CONCAT(round((sum(answered) / sum(attempt))*100,2),'%') ASR,
+               if(sum(minutes)=0,0,round((sum(minutes)*60) / sum(answered))) ACD_SEC
+        from COMPLETION_STAT
+        where event_date between :start1 and :end1
+          and partner_name not like 'Not Available'
+          and orig_net_name not like 'Not Available'
+          and call_type like 'incoming'
+        group by call_type, call_week, partner_name, orig_net_name
+
+        union all
+
+        select call_type,
+               CONCAT(MIN(event_date), ' - ', MAX(event_date)) AS dates_range,
+               CONCAT(YEAR(event_date), '-W', LPAD(WEEK(event_date, 3), 2, '0')) AS call_week,
+               dest_net_name as net_name,
+               partner_name,
+               sum(attempt) attempt,
+               CONCAT(round((sum(completed) / sum(attempt))*100,2),'%') NER,
+               CONCAT(round((sum(answered) / sum(attempt))*100,2),'%') ASR,
+               if(sum(minutes)=0,0,round((sum(minutes)*60) / sum(answered))) ACD_SEC
+        from COMPLETION_STAT
+        where event_date between :start2 and :end2
+          and partner_name not like 'Not Available'
+          and dest_net_name not like 'Not Available'
+          and call_type like 'outgoing'
+        group by call_type, call_week, partner_name, dest_net_name
+        order by call_week desc
 ";
 
 $data = DB::connection('inter_traffic')->select($sql, [
@@ -1005,11 +1095,11 @@ $data = DB::connection('inter_traffic')->select($sql, [
     'end2'   => $end,
 ]);
 
-    return view('billing.kpi', [
-        'data' => $data,
-        'filters' => compact('start', 'end')
-    ]);
-}
+        return view('billing.kpi', [
+            'data' => $data,
+            'filters' => compact('start', 'end')
+        ]);
+    }
 
 
 
