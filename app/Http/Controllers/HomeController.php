@@ -886,23 +886,20 @@ class HomeController extends Controller
             $end   = Carbon::createFromDate($year, $monthNum, 1)->endOfMonth()->endOfDay();
         }
 
-        // Query principale
-        $q = DB::connection('inter_traffic')
-            ->table('BILLING_STAT')
-            ->whereBetween('start_date', [$start, $end])
-            ->where('direction', 'revenue');
-
-        if ($carrier) {
-            $q->where('carrier_name', $carrier);
+        // Decide which direction and which column to group on based on the filter.
+        // Mapping:
+        // - entrant  -> direction = 'revenue',  metric = minutes,  group by orig_net_name
+        // - revenu   -> direction = 'revenue',  metric = amount_cfa, group by orig_net_name
+        // - sortant  -> direction = 'charge',   metric = minutes,  group by dest_net_name (aliased as orig_net_name for view compatibility)
+        // - charge   -> direction = 'charge',   metric = amount_cfa, group by dest_net_name (aliased as orig_net_name)
+        $filter = strtolower($filter ?? 'entrant');
+        if (in_array($filter, ['revenu', 'entrant'])) {
+            $directionNeeded = 'revenue';
+        } else {
+            $directionNeeded = 'charge';
         }
 
-        // Nouveau filtre réseau origine
-        if ($request->filled('orig_net_name')) {
-            $q->where('orig_net_name', 'like', '%' . $request->orig_net_name . '%');
-        }
-
-        // Sélection selon le filtre
-        if ($filter == 'revenu') {
+        if (in_array($filter, ['revenu', 'charge'])) {
             $selectValue = DB::raw('SUM(CAST(amount_cfa AS DECIMAL(20,2))) as value');
             $valueLabel = 'Montant CFA';
         } else {
@@ -910,17 +907,34 @@ class HomeController extends Controller
             $valueLabel = 'Minutes';
         }
 
+        // choose which column to use as the "orig_net_name" alias in the view
+        $netColumn = $directionNeeded === 'revenue' ? 'orig_net_name' : 'dest_net_name';
+
+        $q = DB::connection('inter_traffic')
+            ->table('BILLING_STAT')
+            ->whereBetween('start_date', [$start, $end])
+            ->where('direction', $directionNeeded);
+
+        if ($carrier) {
+            $q->where('carrier_name', $carrier);
+        }
+
+        // Allow filtering by network substring (apply to both orig/dest depending on direction)
+        if ($request->filled('orig_net_name')) {
+            $q->where($netColumn, 'like', '%' . $request->orig_net_name . '%');
+        }
+
         $records = $q->select([
                 'direction',
                 DB::raw('DATE(start_date) as period'),
-                'orig_net_name',
+                DB::raw("{$netColumn} as orig_net_name"),
                 'carrier_name',
                 $selectValue,
             ])
-            ->groupBy('direction', DB::raw('DATE(start_date)'), 'orig_net_name', 'carrier_name')
+            ->groupBy('direction', DB::raw('DATE(start_date)'), $netColumn, 'carrier_name')
             ->orderBy('direction')
             ->orderBy('period')
-            ->orderBy('orig_net_name')
+            ->orderBy($netColumn)
             ->orderBy('carrier_name')
             ->get();
 
@@ -986,8 +1000,15 @@ public function billingPivotCountryCarrier(Request $request)
         $q->where('orig_country_name', 'like', '%' . $request->orig_country_name . '%');
     }
 
-    // Sélection selon le filtre
-    if ($filter == 'revenu') {
+    // Normalize requested filter and map to direction + which country column to use
+    $filter = strtolower($filter ?? 'entrant');
+    if (in_array($filter, ['revenu', 'entrant'])) {
+        $directionNeeded = 'revenue';
+    } else {
+        $directionNeeded = 'charge';
+    }
+
+    if (in_array($filter, ['revenu', 'charge'])) {
         $selectValue = DB::raw('SUM(CAST(amount_cfa AS DECIMAL(20,2))) as value');
         $valueLabel = 'Montant CFA';
     } else {
@@ -995,17 +1016,33 @@ public function billingPivotCountryCarrier(Request $request)
         $valueLabel = 'Minutes';
     }
 
+    // choose orig_country_name (for view compatibility) or fallback to dest_country_name when charge/sortant
+    $countryColumn = $directionNeeded === 'revenue' ? 'orig_country_name' : 'dest_country_name';
+
+    $q = DB::connection('inter_traffic')
+        ->table('BILLING_STAT')
+        ->whereBetween('start_date', [$start, $end])
+        ->where('direction', $directionNeeded);
+
+    if ($carrier) {
+        $q->where('carrier_name', $carrier);
+    }
+
+    if ($request->filled('orig_country_name')) {
+        $q->where($countryColumn, 'like', '%' . $request->orig_country_name . '%');
+    }
+
     $records = $q->select([
             'direction',
             DB::raw('DATE(start_date) as period'),
-            'orig_country_name',
+            DB::raw("{$countryColumn} as orig_country_name"),
             'carrier_name',
             $selectValue,
         ])
-        ->groupBy('direction', DB::raw('DATE(start_date)'), 'orig_country_name', 'carrier_name')
+        ->groupBy('direction', DB::raw('DATE(start_date)'), $countryColumn, 'carrier_name')
         ->orderBy('direction')
         ->orderBy('period')
-        ->orderBy('orig_country_name')
+        ->orderBy($countryColumn)
         ->orderBy('carrier_name')
         ->get();
 
