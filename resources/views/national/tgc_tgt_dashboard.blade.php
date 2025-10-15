@@ -2,7 +2,7 @@
 
 @section('title')
 
-    TGT-TGC Dashboard
+    TGC-TGT Dashboard
 
 @endsection
 
@@ -15,17 +15,18 @@
 
 
             <li class="breadcrumb-item " aria-current="page"><i class="fas fa-list"></i> Situation de :
-                TOGOTELECOM VERS TOGOCOCEL</li>
+                TOGOCOCEL VERS TOGOTELECOM</li>
 
 
             <div class="d-flex justify-content-end container-fluid mt-n3">
                 @if (getUserType()->type_user == 3 || getUserType()->type_user == 2)
-            <a data-toggle="modal" data-target="#addMesurModal11" data-direction="TGT->TGC"> <button type="button" class=" btn btn-dark mx-1">+ AJOUTER
-                MESURE</button></a>
+                    <a data-toggle="modal" data-target="#addMesurModal11" data-direction="TGC->TGT"> <button type="button" class=" btn btn-dark mx-1">+ AJOUTER
+                            MESURE</button></a>
                 @endif
 
 
             </div>
+
 
         </ol>
 
@@ -39,7 +40,7 @@
 
             <div class="card-wrap">
                 <div class="card-header">
-                    <h4 class="pull-left" style="color:#ec1f28; font-weight: bold; ">MESURES DE TOGOTELECOM
+                    <h4 class="pull-left" style="color:#ec1f28; font-weight: bold; ">MESURES DE TOGOCOCEL
                     </h4>
                 </div>
                 <div style="font-size: 140%" class="card-body pull-center">
@@ -64,7 +65,7 @@
 
             <div class="card-wrap">
                 <div class="card-header">
-                    <h4 class="pull-left" style="color:#ec1f28; font-weight: bold; ">ECART (TGT - TGC)
+                    <h4 class="pull-left" style="color:#ec1f28; font-weight: bold; ">ECART (TGC - TGT)
                     </h4>
                 </div>
 
@@ -78,10 +79,6 @@
                         </span>
 
                     </p>
-
-
-
-
 
                 </div>
 
@@ -105,7 +102,7 @@
 
             <div class="card-wrap">
                 <div class="card-header">
-                    <h4 class="pull-left" style="color:#ec1f28; font-weight: bold; ">MESURE DE TOGOCOCEL
+                    <h4 class="pull-left" style="color:#ec1f28; font-weight: bold; ">MESURE DE TOGOTELECOM
                     </h4>
                 </div>
                 <div style="font-size: 140%" class="  card-body pull-center">
@@ -135,40 +132,66 @@
 <div class="col-12 col-sm-12 col-lg-12" style="margin-left: 0px;">
     <div class="card">
         <div class="card-header">
-            <h4>Togotelecom vers Togocel (Charges de Togotelecom) </h4>
+            <h4>Togocel vers Togotelecom</h4>
 
         </div>
         <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-striped table-hover" id="tableExpor1" style="width:100%;">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover" id="tableExpor1" style="width:100%;">
                     <thead>
                         <tr>
                             <th class="recherche">N°</th>
                             <th class="recherche">PÉRIODES</th>
-                            <th class="recherche">MESURES TGT(1)</th>
-                            <th class="recherche">MESURES TGC(2)</th>
+                            <th class="recherche">DECLARATION TGC(1)</th>
+                            <th class="recherche">MESURES TGT(2)</th>
                             <th class="recherche">ECART(2-1)</th>
                             <th class="recherche">...%...</th>
+                            <th class="recherche">COMMENTAIRE</th>
                             <th class="recherche">TRAFIC VALIDÉ ET FACTURÉ</th>
                             <th class="recherche">VALORISATION</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php $n = 1; ?>
-
-                        <tr>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                        </tr>
-
-
-
+                        @if(isset($measures) && $measures->count() > 0)
+                            @foreach($measures as $m)
+                                <tr>
+                                    <td>{{ $n++ }}</td>
+                                    @php
+                                        try {
+                                            $displayPeriod = \Carbon\Carbon::createFromFormat('Y-m', $m->period)->format('M-Y');
+                                        } catch (\Exception $e) {
+                                            $displayPeriod = $m->period;
+                                        }
+                                    @endphp
+                                    <td>{{ $displayPeriod }}</td>
+                                    <td class="text-end">{{ number_format($m->m_tgc, 2, ',', ' ') }}</td>
+                                    <td class="text-end">{{ number_format($m->m_tgt, 2, ',', ' ') }}</td>
+                                    <td class="text-end">{{ number_format($m->diff, 2, ',', ' ') }}</td>
+                                    <td class="text-end">{{ number_format($m->pct_diff, 2, ',', ' ') }}%</td>
+                                    <td>{{ $m->comment }}</td>
+                                    @php
+                                        $useMeasured = abs(floatval($m->pct_diff)) < 2.0;
+                                    @endphp
+                                    <td class="text-end">
+                                        @if($useMeasured)
+                                            {{ number_format($m->m_tgt, 2, ',', ' ') }}
+                                        @else
+                                            @if($m->traffic_validated !== null)
+                                                {{ number_format($m->traffic_validated, 2, ',', ' ') }}
+                                            @else
+                                                <button class="btn btn-sm btn-outline-primary set-validated-btn" data-id="{{ $m->id }}" data-period="{{ $m->period }}">Saisir</button>
+                                            @endif
+                                        @endif
+                                    </td>
+                                    <td>{{ number_format($m->valuation ?? 0, 2, ',', ' ') }}</td>
+                                </tr>
+                            @endforeach
+                        @else
+                            <tr>
+                                <td colspan="9" class="text-center">Aucune mesure disponible.</td>
+                            </tr>
+                        @endif
                     </tbody>
                 </table>
             </div>
@@ -185,6 +208,66 @@
 @section('script')
 <script>
     $(document).ready(function() {
+    // Modal for entering traffic validated
+    $(function(){
+        // append modal to body
+    const modalHtml = `
+    <div class="modal fade" id="setValidatedModal_TGC_TGT" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog modal-sm">
+                <div class="modal-content">
+                    <div class="modal-header"><h5 class="modal-title">Saisir Trafic validé</h5>
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    </div>
+                    <form id="setValidatedForm_TGC_TGT" method="POST" action="">
+                        @csrf
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label>Valeur trafic validé</label>
+                                <input type="number" step="0.01" min="0" name="traffic_validated" id="traffic_validated_input_TGC_TGT" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Commentaire (optionnel)</label>
+                                <textarea name="validation_comment" id="validation_comment_input_TGC_TGT" class="form-control" rows="2"></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-primary">Enregistrer</button>
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>`;
+        $('body').append(modalHtml);
+
+        $(document).on('click', '.set-validated-btn', function(){
+            const id = $(this).data('id');
+            const action = "{{ url('measures') }}" + "/" + id + "/set_validated";
+            $('#setValidatedForm_TGC_TGT').attr('action', action);
+            $('#traffic_validated_input_TGC_TGT').val('');
+            $('#validation_comment_input_TGC_TGT').val('');
+            $('#setValidatedModal_TGC_TGT').modal('show');
+        });
+
+        $(document).on('submit', '#setValidatedForm_TGC_TGT', function(e){
+            e.preventDefault();
+            const form = this;
+            const value = $('#traffic_validated_input_TGC_TGT').val();
+            const comment = $('#validation_comment_input_TGC_TGT').val();
+
+            swal({
+                title: 'Confirmer la validation',
+                text: `Valider trafic = ${value}` + (comment ? `\nCommentaire: ${comment}` : ''),
+                icon: 'warning',
+                buttons: true,
+                dangerMode: false,
+            }).then((willConfirm) => {
+                if (willConfirm) {
+                    form.submit();
+                }
+            });
+        });
+    });
         // Setup - add a text input to each footer cell
         $('#tableExpor1 thead tr .recherche').clone(true).appendTo('#tableExpor1 thead').addClass("rech");
         $('#tableExpor1 thead .rech ').each(function(i) {
@@ -232,7 +315,7 @@
                         "1": "1 ligne sélectionnée"
                     },
                     "1": "1 ligne selectionnée",
-                    "_": "%d lignes selectionnées",
+                    "_": "%d lignes sélectionnées",
                     "cells": {
                         "1": "1 cellule sélectionnée",
                         "_": "%d cellules sélectionnées"
@@ -339,28 +422,14 @@
                     "copySuccess": {
                         "1": "1 ligne copiée dans le presse-papier",
                         "_": "%ds lignes copiées dans le presse-papier"
-                    },
-                    "copyTitle": "Copier dans le presse-papier",
-                    "csv": "CSV",
-                    "excel": "Excel",
-                    "pageLength": {
-                        "-1": "Afficher toutes les lignes",
-                        "1": "Afficher 1 ligne",
-                        "_": "Afficher %d lignes"
-                    },
-                    "pdf": "PDF",
+                        }
+                    }
+                }); // end DataTable init
+            }); // end document ready
+        </script>
 
-                },
-                "decimal": ",",
-                "info": "Affichage de _START_ à _END_ sur _TOTAL_ éléments",
-                "infoEmpty": "Affichage de 0 à 0 sur 0 éléments",
-                "infoFiltered": "(filtrés de _MAX_ éléments au total)",
-                "infoThousands": ".",
-                "search": "Rechercher:",
-                "searchPlaceholder": "...",
-                "thousands": "."
-            }
-        });
-    });
-</script>
-@stop
+    @endsection
+
+    @section('script')
+    @parent
+    @endsection

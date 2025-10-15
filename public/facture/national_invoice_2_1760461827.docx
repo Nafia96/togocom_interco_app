@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: DejaVu Sans, sans-serif; font-size: 12px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #000; padding: 6px; text-align: center; }
+        th { background-color: #eee; }
+        h2, h3 { text-align: center; }
+    </style>
+</head>
+<body>
+    <h2>FACTURATION TRAFIC VALIDE D'INTERCONNEXION TOGO CELLULAIRE</h2>
+    <h3>TGT-&gt;TGC</h3>
+    <p>Période : 2025-02</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Période</th>
+                <th>Volume (min)</th>
+                <th>PU</th>
+                <th>Montant HT</th>
+                <th>Montant TTC</th>
+            </tr>
+        </thead>
+        <tbody>
+                        <tr>
+                <td>2025-02</td>
+                <td>8 955 555,00</td>
+                <td>1.5</td>
+                <td>13 433 332,50</td>
+                <td>15 851 332,35</td>
+            </tr>
+                        <tr>
+                <td>2025-07</td>
+                <td>565 444,00</td>
+                <td>1.5</td>
+                <td>848 166,00</td>
+                <td>1 000 835,88</td>
+            </tr>
+                        <tr>
+                <td>2025-12</td>
+                <td>889 956,00</td>
+                <td>1.5</td>
+                <td>1 334 934,00</td>
+                <td>1 575 222,12</td>
+            </tr>
+                        <tr>
+                <th colspan="3">TOTAL</th>
+                <th>15 616 432,50</th>
+                <th>18 427 390,35</th>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>

@@ -113,9 +113,41 @@ Route::middleware([NotConnected::class])->group(function () {
          Route::get('liste_operator_netting', [OperatorController::class, 'liste_operator_netting'])->name('liste_operator_netting');
 
 
-        //Rout  pour le national
-        Route::get('show_tgt_tgc', [NationalController::class, 'show_tgt_tgc'])->name('show_tgt_tgc');
-        Route::post('mesure_tgt_tgc', [NationalController::class, 'mesure_tgt_tgc'])->name('mesure_tgt_tgc');
+    // Routes for national measurements
+    // Existing specific route (kept for compatibility)
+    // Specific routes for each direction (used by the sidebar menu)
+    Route::get('show_tgt_tgc', [NationalController::class, 'show_tgt_tgc'])->name('show_tgt_tgc');
+    // Simple hyphenated routes for nicer URLs (no URL-encoding required in blade)
+    Route::get('tgt-tgc', [NationalController::class, 'show_tgt_tgc'])->name('tgt-tgc');
+    Route::get('tgc-tgt', [NationalController::class, 'show_tgc_tgt'])->name('tgc-tgt');
+    Route::get('tgt-mat', [NationalController::class, 'show_tgt_mat'])->name('tgt-mat');
+    Route::get('mat-tgt', [NationalController::class, 'show_mat_tgt'])->name('mat-tgt');
+    Route::post('mesure_tgt_tgc', [NationalController::class, 'mesure_tgt_tgc'])->name('mesure_tgt_tgc');
+
+    // Generic routes that work with any direction value. Use URL-encoded direction names when needed.
+    Route::get('show_measure/{direction}', [NationalController::class, 'show_by_direction'])->name('show_measure');
+    Route::post('mesure', [NationalController::class, 'mesure_store'])->name('mesure.store');
+    // Dedicated dashboards per sens (unique pages for each direction)
+    Route::get('tgc_tgt_dashboard', [NationalController::class, 'show_tgc_tgt'])->name('tgc_tgt_dashboard');
+    Route::get('tgt_mat_dashboard', [NationalController::class, 'show_tgt_mat'])->name('tgt_mat_dashboard');
+    Route::get('mat_tgt_dashboard', [NationalController::class, 'show_mat_tgt'])->name('mat_tgt_dashboard');
+    Route::get('mat_tgc_dashboard', [NationalController::class, 'show_mat_tgc'])->name('mat_tgc_dashboard');
+    // Set traffic validated for a measure (manual input)
+    Route::post('measures/{id}/set_validated', [NationalController::class, 'set_validated_traffic'])->name('measures.set_validated');
+    // Update a measure (edit line)
+    Route::post('measures/{id}/update', [NationalController::class, 'update_measure'])->name('measures.update');
+    // Get validation audits for a measure (used by comment popup)
+    Route::get('measures/{id}/audits', [NationalController::class, 'get_measure_audits'])->name('measures.audits');
+    // Generate invoice from selected measures
+    Route::post('measures/generate_invoice', [NationalController::class, 'generate_invoice_from_measures'])->name('measures.generate_invoice');
+    // National invoices list and download
+    Route::get('national_invoices', [NationalController::class, 'national_invoices_index'])->name('national_invoices.index');
+    Route::get('national_invoices/download/{filename}', [NationalController::class, 'national_invoice_download'])->name('national_invoices.download');
+    // Generate export (pdf/docx) for national invoice
+    Route::get('national_invoice/{id}/generate/{format?}', [App\Http\Controllers\InvoiceExportController::class, 'generate'])->name('national_invoice.generate');
+    // Unit price management page
+    Route::get('unit_prices', [NationalController::class, 'unit_prices_index'])->name('unit_prices.index');
+    Route::post('unit_prices', [NationalController::class, 'unit_prices_store'])->name('unit_prices.store');
 
         //Route des operations
 

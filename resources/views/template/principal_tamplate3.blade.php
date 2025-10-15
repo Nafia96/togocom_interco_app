@@ -70,6 +70,14 @@
             background: #03a04f;
             color: #fcca29;
         }
+        /* Ensure Bootstrap modals and backdrops appear above complex table/layout z-indexes */
+        .modal {
+            z-index: 200000 !important;
+        }
+
+        .modal-backdrop {
+            z-index: 199999 !important;
+        }
     </style>
 
 </head>
@@ -88,6 +96,13 @@
         <script type="text/javascript">
             ;
             swal("{{ session('flash_message_success') }}", "Merci", "success");
+        </script>
+    @endif
+    @if (Session::has('success'))
+        <script type="text/javascript" src="{{ asset('assets/js/sweetalert.min.js') }}"></script>
+        <script type="text/javascript">
+            ;
+            swal("{{ session('success') }}", "", "success");
         </script>
     @endif
     <div class="loader"></div>
@@ -111,6 +126,16 @@
                                     {{ session()->get('register_success') }}
                                 </div>
                             @endif
+                        </li>
+
+                        <li
+                            class="dropdown  {{ Request::is('mat_tgt_dashboard') ? 'active' : '' }} {{ Request::is('mat_tgc_dashboard') ? 'active' : '' }}">
+
+                            <a href="#" class="menu-toggle nav-link has-dropdown"><i data-feather="radio"></i><span>MAT</span></a>
+                            <ul class="dropdown-menu">
+                                <li class="{{ Request::is('mat_tgt_dashboard') ? 'active' : '' }}"><a class="nav-link" href="{{ route('mat_tgt_dashboard') }}">MAT -> TGT</a></li>
+                                <li class="{{ Request::is('mat_tgc_dashboard') ? 'active' : '' }}"><a class="nav-link" href="{{ route('mat_tgc_dashboard') }}">MAT -> TGC</a></li>
+                            </ul>
                         </li>
                     </ul>
                 </div>
@@ -192,25 +217,12 @@
                             <a href="#" class="menu-toggle nav-link has-dropdown"><i
                                     data-feather="radio"></i><span>TOGOTELECOM </span></a>
                             <ul class="dropdown-menu">
-
                                 @if (getUserType()->type_user == 3 || getUserType()->type_user == 2)
-                                    <li class="{{ Request::is('show_tgt_tgc') ? 'active' : '' }}"><a
-                                            class="nav-link " href="{{ route('show_tgt_tgc') }}">TGT - TGC National
-                                        </a></li>
+                                    <li class="{{ Request::is('tgt-tgc') ? 'active' : '' }}"><a class="nav-link" href="{{ route('tgt-tgc') }}">TGT -> TGC (National)</a></li>
                                 @endif
-                                <li class="{{ Request::is('show_tgt_tgc') ? 'active' : '' }}"><a class="nav-link "
-                                        href="{{ route('show_tgt_tgc') }}">TGT - TGC International
-                                    </a>
-                                </li>
-
-                                @if (getUserType()->type_user == 3 || getUserType()->type_user == 2)
-                                    <li class="{{ Request::is('delete_operator_liste') ? 'active' : '' }}"><a
-                                            class="nav-link " href="{{ route('delete_operator_liste') }}">MOOV - TGC via TGT
-                                    </a>
-                                    </li>
-                                @endif
-
-
+                                <li class="{{ Request::is('tgc-tgt') ? 'active' : '' }}"><a class="nav-link" href="{{ route('tgc-tgt') }}">TGC -> TGT</a></li>
+                                <li class="{{ Request::is('tgt-mat') ? 'active' : '' }}"><a class="nav-link" href="{{ route('tgt-mat') }}">TGT -> MAT</a></li>
+                                <li class="{{ Request::is('mat-tgt') ? 'active' : '' }}"><a class="nav-link" href="{{ route('mat-tgt') }}">MAT -> TGT</a></li>
                             </ul>
                         </li>
 
@@ -224,22 +236,8 @@
                             <a href="#" class="menu-toggle nav-link has-dropdown"><i
                                     data-feather="radio"></i><span>TOGOCOCEL </span></a>
                             <ul class="dropdown-menu">
-
-                                <li class="{{ Request::is('all_invoice_list') ? 'active' : '' }}"><a
-                                        class="nav-link " href="{{ route('all_invoice_list') }}">TGC - TGT National
-                                    </a></li>
-
-
-                                <li class="{{ Request::is('all_resum_list') ? 'active' : '' }}"><a class="nav-link "
-                                        href="{{ route('all_resum_list') }}">TGC - TGT International</a>
-                                </li>
-
-                                <li class="{{ Request::is('delete_invoice_list') ? 'active' : '' }}"><a
-                                        class="nav-link " href="{{ route('delete_invoice_list') }}">TGC - Moov</a>
-                                </li>
-
-
-
+                                <li class="{{ Request::is('tgc-tgt') ? 'active' : '' }}"><a class="nav-link" href="{{ route('tgc-tgt') }}">TGC -> TGT (National)</a></li>
+                                <li class="{{ Request::is('tgc_tgt_dashboard') ? 'active' : '' }}"><a class="nav-link" href="{{ route('tgc_tgt_dashboard') }}">TGC -> TGT (Dashboard)</a></li>
                             </ul>
                         </li>
 
@@ -284,6 +282,12 @@
                         @endif
 
                         @if (getUserType()->type_user == 3)
+
+                            <!-- New menu entry: National invoices -->
+                            <li class="{{ Request::is('national_invoices') ? 'active' : '' }}"><a class="nav-link " href="{{ route('national_invoices.index') }}">Factures nationales</a></li>
+
+                         <li class="{{ Request::is('unit_prices') ? 'active' : '' }}"><a class="nav-link " href="{{ route('unit_prices.index') }}">Configuration Prix Unitaire</a></li>
+
                             <li style="position: fixed; bottom: 0;"
                                 class="dropdown  {{ Request::is('setting') ? 'active' : '' }}">
                                 <a href="{{ route('setting') }}" class="nav-link"><i
@@ -323,10 +327,7 @@
                     </div>
 
 
-                </section>
-
-                @include('national.addMesureModal')
-
+            </section>
                 @if (isset($operators))
                     @foreach ($operators as $operator)
                         @include('operator.voirOperatorModal')
@@ -407,6 +408,9 @@
     </div>
 
 
+
+    <!-- Include add measure modal here so its markup is placed after the main content (avoids z-index/display under tables) -->
+    @include('national.addMesureModal')
 
     <script src={{ asset('assets/js/app.min.js') }}></script>
     <!-- JS Libraies -->
