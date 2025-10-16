@@ -47,6 +47,7 @@ class OperationController extends Controller
             'id_operator' => $operator->id,
             'is_delete' => 0,
             'period' => $data['period'],
+            'service' => 'Facture de service voix',
         ])->first();
 
         if ($resum == null) {

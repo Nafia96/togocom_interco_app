@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class CleanMeasuresDuplicates extends Migration
 {
@@ -15,6 +16,11 @@ class CleanMeasuresDuplicates extends Migration
      */
     public function up()
     {
+        // If the measures table doesn't exist yet (migrations ordering), skip this migration.
+        if (!Schema::hasTable('measures')) {
+            return;
+        }
+
         // Find duplicate groups
         $duplicates = DB::table('measures')
             ->select('direction', 'period', DB::raw('COUNT(*) as cnt'))
