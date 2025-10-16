@@ -342,6 +342,8 @@ class OperationController extends Controller
             'id_operator' => $operator->id,
             'period' => $data['period'],
             'is_delete' => 0,
+            'service' => 'Facture de service voix',
+
         ])->first();
 
         $tgc_account = Account::where('account_number', 000)->first();
@@ -418,6 +420,7 @@ class OperationController extends Controller
                             'id_operator' => $operator->id,
                             'period' => $data['period'],
                             'is_delete' => 0,
+                            'service' => 'Facture de service voix',
 
                         ])->update([
 
@@ -435,6 +438,7 @@ class OperationController extends Controller
                             'id_operator' => $operator->id,
                             'period' => $data['period'],
                             'is_delete' => 0,
+                            'service' => 'Facture de service voix',
 
                         ])->update([
                             'debt' => $data['amount'],
@@ -450,6 +454,8 @@ class OperationController extends Controller
                             'id_operator' => $operator->id,
                             'period' => $data['period'],
                             'is_delete' => 0,
+                            'service' => 'Facture de service voix',
+
                         ])->update([
 
                             'debt' => $data['amount'],
@@ -465,6 +471,8 @@ class OperationController extends Controller
                             'id_operator' => $operator->id,
                             'period' => $data['period'],
                             'is_delete' => 0,
+                            'service' => 'Facture de service voix',
+
                         ])->update([
 
                             'debt' => $data['amount'],
@@ -518,6 +526,8 @@ class OperationController extends Controller
                             'id_operator' => $operator->id,
                             'period' => $data['period'],
                             'is_delete' => 0,
+                            'service' => 'Facture de service voix',
+
                         ])->update([
 
                             'debt' => $data['amount'],
@@ -533,6 +543,7 @@ class OperationController extends Controller
                             'id_operator' => $operator->id,
                             'period' => $data['period'],
                             'is_delete' => 0,
+                            'service' => 'Facture de service voix',
 
                         ])->update([
 
@@ -549,6 +560,7 @@ class OperationController extends Controller
                             'id_operator' => $operator->id,
                             'period' => $data['period'],
                             'is_delete' => 0,
+                            'service' => 'Facture de service voix',
 
                         ])->update([
                             'debt' => $data['amount'],
@@ -565,6 +577,7 @@ class OperationController extends Controller
                             'id_operator' => $operator->id,
                             'period' => $data['period'],
                             'is_delete' => 0,
+                            'service' => 'Facture de service voix',
                         ])->update([
 
                             'debt' => $data['amount'],
@@ -2154,7 +2167,9 @@ class OperationController extends Controller
                                     Cordialement,<br>
                                     <em>Service Interconnexion YAS TOGO</em>
                                 </p>
-                                ",'text/html');
+                                ",
+                            'text/html'
+                        );
 
 
                     // ✅ attacher uniquement si le fichier existe
