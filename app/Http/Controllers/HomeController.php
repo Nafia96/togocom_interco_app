@@ -866,104 +866,96 @@ class HomeController extends Controller
 
 
 
-    public function billingPivotNetCarrier(Request $request)
-    {
-        // Filtres
-        $month = $request->input('month', now()->format('Y-m'));
-        $startDate = $request->input('start_date');
-        $endDate   = $request->input('end_date');
-        $carrier   = $request->input('carrier_name');
-        $filter    = $request->input('filter', 'entrant'); // 'entrant' ou 'revenu'
+   public function billingPivotNetCarrier(Request $request)
+{
+    // 1️⃣ Paramètres d’entrée
+    $month     = $request->input('month', now()->format('Y-m'));
+    $startDate = $request->input('start_date');
+    $endDate   = $request->input('end_date');
+    $carrier   = $request->input('carrier_name');
+    $filter    = strtolower($request->input('filter', 'entrant')); // entrant | revenu | sortant | charge
 
-        // Période
-        if ($startDate && $endDate) {
-            $start = Carbon::parse($startDate)->startOfDay();
-            $end   = Carbon::parse($endDate)->endOfDay();
-        } else {
-            $year = (int) substr($month, 0, 4);
-            $monthNum = (int) substr($month, 5, 2);
-            $start = Carbon::createFromDate($year, $monthNum, 1)->startOfDay();
-            $end   = Carbon::createFromDate($year, $monthNum, 1)->endOfMonth()->endOfDay();
-        }
+    // 2️⃣ Détermination de la période
+    if ($startDate && $endDate) {
+        $start = Carbon::parse($startDate)->startOfDay();
+        $end   = Carbon::parse($endDate)->endOfDay();
+    } else {
+        [$year, $monthNum] = explode('-', $month);
+        $start = Carbon::createFromDate($year, $monthNum, 1)->startOfDay();
+        $end   = (clone $start)->endOfMonth()->endOfDay();
+    }
 
-        // Decide which direction and which column to group on based on the filter.
-        // Mapping:
-        // - entrant  -> direction = 'revenue',  metric = minutes,  group by orig_net_name
-        // - revenu   -> direction = 'revenue',  metric = amount_cfa, group by orig_net_name
-        // - sortant  -> direction = 'charge',   metric = minutes,  group by dest_net_name (aliased as orig_net_name for view compatibility)
-        // - charge   -> direction = 'charge',   metric = amount_cfa, group by dest_net_name (aliased as orig_net_name)
-        $filter = strtolower($filter ?? 'entrant');
-        if (in_array($filter, ['revenu', 'entrant'])) {
-            $directionNeeded = 'revenue';
-        } else {
-            $directionNeeded = 'charge';
-        }
+    // 3️⃣ Logique du filtre (direction / métrique)
+    $isRevenue = in_array($filter, ['revenu', 'entrant']);
+    $direction = $isRevenue ? 'revenue' : 'charge';
+    $netColumn = $isRevenue ? 'orig_net_name' : 'dest_net_name';
 
-        if (in_array($filter, ['revenu', 'charge'])) {
-            $selectValue = DB::raw('SUM(CAST(amount_cfa AS DECIMAL(20,2))) as value');
-            $valueLabel = 'Montant CFA';
-        } else {
-            $selectValue = DB::raw('SUM(CAST(minutes AS DECIMAL(20,6))) as value');
-            $valueLabel = 'Minutes';
-        }
+    // 4️⃣ Type de valeur à agréger
+    $selectValue = match ($filter) {
+        'revenu', 'charge' => DB::raw('SUM(CAST(amount_cfa AS DECIMAL(20,2))) as value'),
+        default => DB::raw('SUM(CAST(minutes AS DECIMAL(20,6))) as value'),
+    };
+    $valueLabel = in_array($filter, ['revenu', 'charge']) ? 'Montant CFA' : 'Minutes';
 
-        // choose which column to use as the "orig_net_name" alias in the view
-        $netColumn = $directionNeeded === 'revenue' ? 'orig_net_name' : 'dest_net_name';
+    // 5️⃣ Construction de la requête principale
+    $query = DB::connection('inter_traffic')
+        ->table('BILLING_STAT')
+        ->select([
+            'direction',
+            DB::raw('DATE(start_date) as period'),
+            DB::raw("$netColumn as orig_net_name"),
+            'carrier_name',
+            $selectValue,
+        ])
+        ->where('direction', $direction)
+        ->whereBetween('start_date', [$start, $end])
+        ->groupBy('direction', DB::raw('DATE(start_date)'), $netColumn, 'carrier_name');
 
-        $q = DB::connection('inter_traffic')
-            ->table('BILLING_STAT')
-            ->whereBetween('start_date', [$start, $end])
-            ->where('direction', $directionNeeded);
+    // 6️⃣ Filtres additionnels
+    if ($carrier) {
+        $query->where('carrier_name', $carrier);
+    }
+    if ($request->filled('orig_net_name')) {
+        $query->where($netColumn, 'like', '%' . $request->orig_net_name . '%');
+    }
 
-        if ($carrier) {
-            $q->where('carrier_name', $carrier);
-        }
+    // 7️⃣ Exécution
+    $records = $query
+        ->orderBy('direction')
+        ->orderBy('period')
+        ->orderBy($netColumn)
+        ->orderBy('carrier_name')
+        ->get();
 
-        // Allow filtering by network substring (apply to both orig/dest depending on direction)
-        if ($request->filled('orig_net_name')) {
-            $q->where($netColumn, 'like', '%' . $request->orig_net_name . '%');
-        }
-
-        $records = $q->select([
-                'direction',
-                DB::raw('DATE(start_date) as period'),
-                DB::raw("{$netColumn} as orig_net_name"),
-                'carrier_name',
-                $selectValue,
-            ])
-            ->groupBy('direction', DB::raw('DATE(start_date)'), $netColumn, 'carrier_name')
-            ->orderBy('direction')
-            ->orderBy('period')
-            ->orderBy($netColumn)
-            ->orderBy('carrier_name')
-            ->get();
-
+    // 8️⃣ Récupération des transporteurs distincts (cache possible)
     $allCarriers = DB::connection('inter_traffic')
         ->table('BILLING_STAT')
         ->distinct()
-        ->pluck('carrier_name')
-        ->sort()
-        ->values();
+        ->orderBy('carrier_name')
+        ->pluck('carrier_name');
 
-    $days = [];
+    // 9️⃣ Génération des jours (pour affichage pivot)
+    $days = collect();
     $cursor = $start->copy();
     while ($cursor->lte($end)) {
-        $days[] = $cursor->toDateString();
+        $days->push($cursor->toDateString());
         $cursor->addDay();
     }
 
-    return view('billing.billingPivotNetCarrier', compact(
-        'records',
-        'days',
-        'month',
-        'startDate',
-        'endDate',
-        'allCarriers',
-        'carrier',
-        'filter',
-        'valueLabel'
-    ));
-    }
+    // 🔟 Retour de la vue
+    return view('billing.billingPivotNetCarrier', [
+        'records'     => $records,
+        'days'        => $days,
+        'month'       => $month,
+        'startDate'   => $startDate,
+        'endDate'     => $endDate,
+        'allCarriers' => $allCarriers,
+        'carrier'     => $carrier,
+        'filter'      => $filter,
+        'valueLabel'  => $valueLabel,
+    ]);
+}
+
 
 public function billingPivotCountryCarrier(Request $request)
 {
