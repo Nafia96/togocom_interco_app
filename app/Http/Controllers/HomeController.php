@@ -959,75 +959,54 @@ class HomeController extends Controller
 
 public function billingPivotCountryCarrier(Request $request)
 {
-    // Filtres
-    $month = $request->input('month', now()->format('Y-m'));
+    // 1️⃣ Filtres d’entrée
+    $month     = $request->input('month', now()->format('Y-m'));
     $startDate = $request->input('start_date');
     $endDate   = $request->input('end_date');
     $carrier   = $request->input('carrier_name');
-    $filter    = $request->input('filter', 'entrant'); // 'entrant' ou 'revenu'
+    $filter    = strtolower($request->input('filter', 'entrant')); // entrant | revenu | sortant | charge
 
-    // Période
+    // 2️⃣ Détermination de la période
     if ($startDate && $endDate) {
         $start = Carbon::parse($startDate)->startOfDay();
         $end   = Carbon::parse($endDate)->endOfDay();
     } else {
-        $year = (int) substr($month, 0, 4);
-        $monthNum = (int) substr($month, 5, 2);
+        [$year, $monthNum] = explode('-', $month);
         $start = Carbon::createFromDate($year, $monthNum, 1)->startOfDay();
-        $end   = Carbon::createFromDate($year, $monthNum, 1)->endOfMonth()->endOfDay();
+        $end   = (clone $start)->endOfMonth()->endOfDay();
     }
 
-    // Query principale
+    // 3️⃣ Logique du filtre (direction / métrique)
+    $isRevenue = in_array($filter, ['revenu', 'entrant']);
+    $direction = $isRevenue ? 'revenue' : 'charge';
+    $countryColumn = $isRevenue ? 'orig_country_name' : 'dest_country_name';
+
+    // 4️⃣ Type de valeur à agréger
+    $selectValue = match ($filter) {
+        'revenu', 'charge' => DB::raw('SUM(CAST(amount_cfa AS DECIMAL(20,2))) as value'),
+        default => DB::raw('SUM(CAST(minutes AS DECIMAL(20,6))) as value'),
+    };
+    $valueLabel = in_array($filter, ['revenu', 'charge']) ? 'Montant CFA' : 'Minutes';
+
+    // 5️⃣ Construction de la requête principale
     $q = DB::connection('inter_traffic')
         ->table('BILLING_STAT')
-        ->whereBetween('start_date', [$start, $end])
-        ->where('direction', 'revenue');
+        ->where('direction', $direction)
+        ->whereBetween('start_date', [$start, $end]);
 
+    // 6️⃣ Filtres additionnels
     if ($carrier) {
         $q->where('carrier_name', $carrier);
     }
-
-    // Nouveau filtre pays origine
-    if ($request->filled('orig_country_name')) {
-        $q->where('orig_country_name', 'like', '%' . $request->orig_country_name . '%');
-    }
-
-    // Normalize requested filter and map to direction + which country column to use
-    $filter = strtolower($filter ?? 'entrant');
-    if (in_array($filter, ['revenu', 'entrant'])) {
-        $directionNeeded = 'revenue';
-    } else {
-        $directionNeeded = 'charge';
-    }
-
-    if (in_array($filter, ['revenu', 'charge'])) {
-        $selectValue = DB::raw('SUM(CAST(amount_cfa AS DECIMAL(20,2))) as value');
-        $valueLabel = 'Montant CFA';
-    } else {
-        $selectValue = DB::raw('SUM(CAST(minutes AS DECIMAL(20,6))) as value');
-        $valueLabel = 'Minutes';
-    }
-
-    // choose orig_country_name (for view compatibility) or fallback to dest_country_name when charge/sortant
-    $countryColumn = $directionNeeded === 'revenue' ? 'orig_country_name' : 'dest_country_name';
-
-    $q = DB::connection('inter_traffic')
-        ->table('BILLING_STAT')
-        ->whereBetween('start_date', [$start, $end])
-        ->where('direction', $directionNeeded);
-
-    if ($carrier) {
-        $q->where('carrier_name', $carrier);
-    }
-
     if ($request->filled('orig_country_name')) {
         $q->where($countryColumn, 'like', '%' . $request->orig_country_name . '%');
     }
 
+    // 7️⃣ Sélection, groupement et tri
     $records = $q->select([
             'direction',
             DB::raw('DATE(start_date) as period'),
-            DB::raw("{$countryColumn} as orig_country_name"),
+            DB::raw("$countryColumn as orig_country_name"),
             'carrier_name',
             $selectValue,
         ])
@@ -1038,31 +1017,33 @@ public function billingPivotCountryCarrier(Request $request)
         ->orderBy('carrier_name')
         ->get();
 
+    // 8️⃣ Liste des transporteurs distincts
     $allCarriers = DB::connection('inter_traffic')
         ->table('BILLING_STAT')
         ->distinct()
-        ->pluck('carrier_name')
-        ->sort()
-        ->values();
+        ->orderBy('carrier_name')
+        ->pluck('carrier_name');
 
-    $days = [];
+    // 9️⃣ Génération des jours
+    $days = collect();
     $cursor = $start->copy();
     while ($cursor->lte($end)) {
-        $days[] = $cursor->toDateString();
+        $days->push($cursor->toDateString());
         $cursor->addDay();
     }
 
-    return view('billing.billingPivotCountryCarrier', compact(
-        'records',
-        'days',
-        'month',
-        'startDate',
-        'endDate',
-        'allCarriers',
-        'carrier',
-        'filter',
-        'valueLabel'
-    ));
+    // 🔟 Retour de la vue
+    return view('billing.billingPivotCountryCarrier', [
+        'records'     => $records,
+        'days'        => $days,
+        'month'       => $month,
+        'startDate'   => $startDate,
+        'endDate'     => $endDate,
+        'allCarriers' => $allCarriers,
+        'carrier'     => $carrier,
+        'filter'      => $filter,
+        'valueLabel'  => $valueLabel,
+    ]);
 }
 
     public function networkKpi(Request $request)
