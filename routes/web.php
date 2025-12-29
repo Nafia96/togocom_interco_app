@@ -50,7 +50,18 @@ Route::get('billingn', [HomeController::class, 'billingPivotNetCarrier'])->name(
 
 Route::get('/billingc', [App\Http\Controllers\HomeController::class, 'billingPivotCountryCarrier'])->name('billingPivotCountryCarrier');
 
-Route::get('networkkpi', [HomeController::class, 'networkkpi'])->name('networkkpi');
+Route::get('/billingKp', [HomeController::class, 'billingKp'])->name('billingKp');
+
+Route::get('/billingKpiNetwork', [HomeController::class, 'billingKpiNetwork'])->name('billingKpiNetwork');
+
+// KPI pivot
+Route::get('kpi/pivot', [HomeController::class, 'kpip'])->name('kpi.pivot');
+Route::get('/kpi/network', [HomeController::class, 'Kpin'])->name('kpi.network');
+
+Route::get('/kpi/KpinCarrier', [HomeController::class, 'KpinCarrier'])->name('kpi.KpinCarrier');
+
+Route::get('kpi', [HomeController::class, 'kpip'])->name('kpi.index');
+
 Route::get('partnerKpi', [HomeController::class, 'partnerKpi'])->name('partnerKpi');
 Route::get('complation', [HomeController::class, 'complation'])->name('complation');
 

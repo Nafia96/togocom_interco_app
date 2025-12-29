@@ -866,185 +866,303 @@ class HomeController extends Controller
 
 
 
-   public function billingPivotNetCarrier(Request $request)
-{
-    // 1️⃣ Paramètres d’entrée
-    $month     = $request->input('month', now()->format('Y-m'));
-    $startDate = $request->input('start_date');
-    $endDate   = $request->input('end_date');
-    $carrier   = $request->input('carrier_name');
-    $filter    = strtolower($request->input('filter', 'entrant')); // entrant | revenu | sortant | charge
+    public function billingPivotNetCarrier(Request $request)
+    {
+        // 1️⃣ Paramètres d’entrée
+        $month     = $request->input('month', now()->format('Y-m'));
+        $startDate = $request->input('start_date');
+        $endDate   = $request->input('end_date');
+        $carrier   = $request->input('carrier_name');
+        $filter    = strtolower($request->input('filter', 'entrant')); // entrant | revenu | sortant | charge
 
-    // 2️⃣ Détermination de la période
-    if ($startDate && $endDate) {
-        $start = Carbon::parse($startDate)->startOfDay();
-        $end   = Carbon::parse($endDate)->endOfDay();
-    } else {
-        [$year, $monthNum] = explode('-', $month);
-        $start = Carbon::createFromDate($year, $monthNum, 1)->startOfDay();
-        $end   = (clone $start)->endOfMonth()->endOfDay();
+        // 2️⃣ Détermination de la période
+        if ($startDate && $endDate) {
+            $start = Carbon::parse($startDate)->startOfDay();
+            $end   = Carbon::parse($endDate)->endOfDay();
+        } else {
+            [$year, $monthNum] = explode('-', $month);
+            $start = Carbon::createFromDate($year, $monthNum, 1)->startOfDay();
+            $end   = (clone $start)->endOfMonth()->endOfDay();
+        }
+
+        // 3️⃣ Logique du filtre (direction / métrique)
+        $isRevenue = in_array($filter, ['revenu', 'entrant']);
+        $direction = $isRevenue ? 'revenue' : 'charge';
+        $netColumn = $isRevenue ? 'orig_net_name' : 'dest_net_name';
+
+        // 4️⃣ Type de valeur à agréger
+        $selectValue = match ($filter) {
+            'revenu', 'charge' => DB::raw('SUM(CAST(amount_cfa AS DECIMAL(20,2))) as value'),
+            default => DB::raw('SUM(CAST(minutes AS DECIMAL(20,6))) as value'),
+        };
+        $valueLabel = in_array($filter, ['revenu', 'charge']) ? 'Montant CFA' : 'Minutes';
+
+        // 5️⃣ Construction de la requête principale
+        $query = DB::connection('inter_traffic')
+            ->table('BILLING_STAT')
+            ->select([
+                'direction',
+                DB::raw('DATE(start_date) as period'),
+                DB::raw("$netColumn as orig_net_name"),
+                'carrier_name',
+                $selectValue,
+            ])
+            ->where('direction', $direction)
+            ->whereBetween('start_date', [$start, $end])
+            ->groupBy('direction', DB::raw('DATE(start_date)'), $netColumn, 'carrier_name');
+
+        // 6️⃣ Filtres additionnels
+        if ($carrier) {
+            $query->where('carrier_name', $carrier);
+        }
+        if ($request->filled('orig_net_name')) {
+            $query->where($netColumn, 'like', '%' . $request->orig_net_name . '%');
+        }
+
+        // 7️⃣ Exécution
+        $records = $query
+            ->orderBy('direction')
+            ->orderBy('period')
+            ->orderBy($netColumn)
+            ->orderBy('carrier_name')
+            ->get();
+
+        // 8️⃣ Récupération des transporteurs distincts (cache possible)
+        $allCarriers = DB::connection('inter_traffic')
+            ->table('BILLING_STAT')
+            ->distinct()
+            ->orderBy('carrier_name')
+            ->pluck('carrier_name');
+
+        // 9️⃣ Génération des jours (pour affichage pivot)
+        $days = collect();
+        $cursor = $start->copy();
+        while ($cursor->lte($end)) {
+            $days->push($cursor->toDateString());
+            $cursor->addDay();
+        }
+
+        // 🔟 Retour de la vue
+        return view('billing.billingPivotNetCarrier', [
+            'records'     => $records,
+            'days'        => $days,
+            'month'       => $month,
+            'startDate'   => $startDate,
+            'endDate'     => $endDate,
+            'allCarriers' => $allCarriers,
+            'carrier'     => $carrier,
+            'filter'      => $filter,
+            'valueLabel'  => $valueLabel,
+        ]);
     }
 
-    // 3️⃣ Logique du filtre (direction / métrique)
-    $isRevenue = in_array($filter, ['revenu', 'entrant']);
-    $direction = $isRevenue ? 'revenue' : 'charge';
-    $netColumn = $isRevenue ? 'orig_net_name' : 'dest_net_name';
+    public function billingPivotCountryCarrier(Request $req)
+    {
+        // ----------- 1️⃣ Filtres ------------- //
+        $month        = $req->month ?? now()->format('Y-m');
+        $filter       = $req->filter ?? 'entrant';
+        $carrierName  = $req->carrier_name;
+        $countryName  = $req->orig_country_name;
+        $startDate    = $req->start_date;
+        $endDate      = $req->end_date;
 
-    // 4️⃣ Type de valeur à agréger
-    $selectValue = match ($filter) {
-        'revenu', 'charge' => DB::raw('SUM(CAST(amount_cfa AS DECIMAL(20,2))) as value'),
-        default => DB::raw('SUM(CAST(minutes AS DECIMAL(20,6))) as value'),
-    };
-    $valueLabel = in_array($filter, ['revenu', 'charge']) ? 'Montant CFA' : 'Minutes';
+        // ----------- 2️⃣ Direction selon filtre ------------ //
+        // mapping correct avec BILLING_STAT
+        $direction = match ($filter) {
+            'entrant', 'revenu' => 'revenue',
+            'sortant', 'charge' => 'charge',
+            default => 'revenue'
+        };
 
-    // 5️⃣ Construction de la requête principale
-    $query = DB::connection('inter_traffic')
-        ->table('BILLING_STAT')
-        ->select([
-            'direction',
-            DB::raw('DATE(start_date) as period'),
-            DB::raw("$netColumn as orig_net_name"),
-            'carrier_name',
-            $selectValue,
-        ])
-        ->where('direction', $direction)
-        ->whereBetween('start_date', [$start, $end])
-        ->groupBy('direction', DB::raw('DATE(start_date)'), $netColumn, 'carrier_name');
+        // ----------- 3️⃣ Période (jours) ----------- //
+        if ($month) {
+            $startPeriod = Carbon::parse("$month-01");
+            $endPeriod   = $startPeriod->copy()->endOfMonth();
+        }
 
-    // 6️⃣ Filtres additionnels
-    if ($carrier) {
-        $query->where('carrier_name', $carrier);
-    }
-    if ($request->filled('orig_net_name')) {
-        $query->where($netColumn, 'like', '%' . $request->orig_net_name . '%');
-    }
+        if ($startDate) $startPeriod = Carbon::parse($startDate);
+        if ($endDate)   $endPeriod   = Carbon::parse($endDate);
 
-    // 7️⃣ Exécution
-    $records = $query
-        ->orderBy('direction')
-        ->orderBy('period')
-        ->orderBy($netColumn)
-        ->orderBy('carrier_name')
-        ->get();
+        $days = collect();
+        for ($d = $startPeriod->copy(); $d <= $endPeriod; $d->addDay()) {
+            $days->push($d->format('Y-m-d'));
+        }
 
-    // 8️⃣ Récupération des transporteurs distincts (cache possible)
-    $allCarriers = DB::connection('inter_traffic')
-        ->table('BILLING_STAT')
-        ->distinct()
-        ->orderBy('carrier_name')
-        ->pluck('carrier_name');
+        // ----------- 4️⃣ Choice pays colonne ------------ //
+        $countryColumn = ($direction === 'revenue')
+            ? 'orig_country_name'
+            : 'dest_country_name';
 
-    // 9️⃣ Génération des jours (pour affichage pivot)
-    $days = collect();
-    $cursor = $start->copy();
-    while ($cursor->lte($end)) {
-        $days->push($cursor->toDateString());
-        $cursor->addDay();
-    }
+        // ----------- 5️⃣ Requête principale ------------ //
+        $query = DB::connection('inter_traffic')
+            ->table('BILLING_STAT')
+            ->select([
+                DB::raw("$countryColumn as orig_country_name"),
+                DB::raw("DATE(start_date) as period"),
+                DB::raw($this->selectValueExpression($filter) . " as value"),
+                'carrier_name'
+            ])
+            ->where('direction', $direction)
+            ->whereBetween('start_date', [$startPeriod, $endPeriod]);
 
-    // 🔟 Retour de la vue
-    return view('billing.billingPivotNetCarrier', [
-        'records'     => $records,
-        'days'        => $days,
-        'month'       => $month,
-        'startDate'   => $startDate,
-        'endDate'     => $endDate,
-        'allCarriers' => $allCarriers,
-        'carrier'     => $carrier,
-        'filter'      => $filter,
-        'valueLabel'  => $valueLabel,
-    ]);
-}
+        // Filtres dynamiques
+        if ($carrierName) {
+            $query->where('carrier_name', $carrierName);
+        }
 
+        if ($countryName) {
+            $query->where($countryColumn, 'LIKE', "%$countryName%");
+        }
 
-public function billingPivotCountryCarrier(Request $request)
-{
-    // 1️⃣ Filtres d’entrée
-    $month     = $request->input('month', now()->format('Y-m'));
-    $startDate = $request->input('start_date');
-    $endDate   = $request->input('end_date');
-    $carrier   = $request->input('carrier_name');
-    $filter    = strtolower($request->input('filter', 'entrant')); // entrant | revenu | sortant | charge
+        // Group by
+        $records = $query
+            ->groupBy('orig_country_name', 'period', 'carrier_name')
+            ->orderBy('orig_country_name')
+            ->get();
 
-    // 2️⃣ Détermination de la période
-    if ($startDate && $endDate) {
-        $start = Carbon::parse($startDate)->startOfDay();
-        $end   = Carbon::parse($endDate)->endOfDay();
-    } else {
-        [$year, $monthNum] = explode('-', $month);
-        $start = Carbon::createFromDate($year, $monthNum, 1)->startOfDay();
-        $end   = (clone $start)->endOfMonth()->endOfDay();
+        // Liste opérateurs
+        $allCarriers = DB::connection('inter_traffic')
+            ->table('BILLING_STAT')
+            ->distinct()
+            ->pluck('carrier_name');
+
+        return view('billing.billingPivotCountryCarrier', [
+            'records'       => $records,
+            'days'          => $days,
+            'allCarriers'   => $allCarriers,
+            'month'         => $month,
+            'filter'        => $filter,
+            'carrier'       => $carrierName,
+            'startDate'     => $startPeriod->format('Y-m-d'),
+            'endDate'       => $endPeriod->format('Y-m-d'),
+        ]);
     }
 
-    // 3️⃣ Logique du filtre (direction / métrique)
-    $isRevenue = in_array($filter, ['revenu', 'entrant']);
-    $direction = $isRevenue ? 'revenue' : 'charge';
-    $countryColumn = $isRevenue ? 'orig_country_name' : 'dest_country_name';
-
-    // 4️⃣ Type de valeur à agréger
-    $selectValue = match ($filter) {
-        'revenu', 'charge' => DB::raw('SUM(CAST(amount_cfa AS DECIMAL(20,2))) as value'),
-        default => DB::raw('SUM(CAST(minutes AS DECIMAL(20,6))) as value'),
-    };
-    $valueLabel = in_array($filter, ['revenu', 'charge']) ? 'Montant CFA' : 'Minutes';
-
-    // 5️⃣ Construction de la requête principale
-    $q = DB::connection('inter_traffic')
-        ->table('BILLING_STAT')
-        ->where('direction', $direction)
-        ->whereBetween('start_date', [$start, $end]);
-
-    // 6️⃣ Filtres additionnels
-    if ($carrier) {
-        $q->where('carrier_name', $carrier);
-    }
-    if ($request->filled('orig_country_name')) {
-        $q->where($countryColumn, 'like', '%' . $request->orig_country_name . '%');
+    private function selectValueExpression($filter)
+    {
+        return match ($filter) {
+            'entrant', 'sortant' => "SUM(minutes)",       // minutes
+            'revenu', 'charge'   => "SUM(amount_cfa)",    // montant total
+            default              => "SUM(minutes)"
+        };
     }
 
-    // 7️⃣ Sélection, groupement et tri
-    $records = $q->select([
-            'direction',
-            DB::raw('DATE(start_date) as period'),
-            DB::raw("$countryColumn as orig_country_name"),
-            'carrier_name',
-            $selectValue,
-        ])
-        ->groupBy('direction', DB::raw('DATE(start_date)'), $countryColumn, 'carrier_name')
-        ->orderBy('direction')
-        ->orderBy('period')
-        ->orderBy($countryColumn)
-        ->orderBy('carrier_name')
-        ->get();
 
-    // 8️⃣ Liste des transporteurs distincts
-    $allCarriers = DB::connection('inter_traffic')
-        ->table('BILLING_STAT')
-        ->distinct()
-        ->orderBy('carrier_name')
-        ->pluck('carrier_name');
 
-    // 9️⃣ Génération des jours
-    $days = collect();
-    $cursor = $start->copy();
-    while ($cursor->lte($end)) {
-        $days->push($cursor->toDateString());
-        $cursor->addDay();
+
+
+    public function billingKp(Request $request)
+    {
+        ini_set('memory_limit', '512M');
+        if (!session('id')) return view('index');
+
+        // Période par défaut : mois courant
+        $start = $request->input('start_date')
+            ? Carbon::parse($request->input('start_date'))->toDateString()
+            : now()->startOfMonth()->toDateString();
+
+        $end = $request->input('end_date')
+            ? Carbon::parse($request->input('end_date'))->toDateString()
+            : now()->toDateString();
+
+        // Filtres optionnels
+        $direction = $request->input('direction'); // Revenue ou Charge
+        $carrier = $request->input('carrier_name');
+
+        // Requête principale : récupérer données de facturation
+        $query = DB::connection('inter_traffic')
+            ->table('BILLING_STAT')
+            ->whereBetween('start_date', [$start, $end]);
+
+        if ($direction && in_array($direction, ['revenue', 'charge'])) {
+            $query->where('direction', $direction);
+        }
+
+        if ($carrier) {
+            $query->where('carrier_name', $carrier);
+        }
+
+        // Récupérer tous les enregistrements pour calculs agrégés
+        $allData = $query->get();
+
+        // Calcul des KPIs par jour et direction
+        $dailyKpis = DB::connection('inter_traffic')
+            ->table('BILLING_STAT')
+            ->select([
+                DB::raw('DATE(start_date) as day'),
+                'direction',
+                DB::raw('SUM(CAST(minutes AS DECIMAL(20,6))) as total_minutes'),
+                DB::raw('SUM(CAST(amount_cfa AS DECIMAL(20,2))) as total_amount'),
+                DB::raw('COUNT(DISTINCT carrier_name) as carrier_count'),
+            ])
+            ->whereBetween('start_date', [$start, $end]);
+
+        if ($direction && in_array($direction, ['revenue', 'charge'])) {
+            $dailyKpis->where('direction', $direction);
+        }
+
+        if ($carrier) {
+            $dailyKpis->where('carrier_name', $carrier);
+        }
+
+        $dailyKpis = $dailyKpis
+            ->groupBy(DB::raw('DATE(start_date)'), 'direction')
+            ->orderBy('day', 'desc')
+            ->get();
+
+        // Calcul des KPIs globaux
+        $globalKpis = [
+            'total_minutes' => (float) ($allData->sum('minutes') ?? 0),
+            'total_amount' => (float) ($allData->sum('amount_cfa') ?? 0),
+            'avg_minutes' => $allData->count() > 0 ? (float) ($allData->sum('minutes') / $allData->count()) : 0,
+            'avg_amount' => $allData->count() > 0 ? (float) ($allData->sum('amount_cfa') / $allData->count()) : 0,
+            'record_count' => $allData->count(),
+            'unique_carriers' => $allData->unique('carrier_name')->count(),
+        ];
+
+        // KPIs par opérateur
+        $carrierKpis = DB::connection('inter_traffic')
+            ->table('BILLING_STAT')
+            ->select([
+                'carrier_name',
+                'direction',
+                DB::raw('SUM(CAST(minutes AS DECIMAL(20,6))) as total_minutes'),
+                DB::raw('SUM(CAST(amount_cfa AS DECIMAL(20,2))) as total_amount'),
+                DB::raw('COUNT(*) as record_count'),
+            ])
+            ->whereBetween('start_date', [$start, $end]);
+
+        if ($direction && in_array($direction, ['revenue', 'charge'])) {
+            $carrierKpis->where('direction', $direction);
+        }
+
+        if ($carrier) {
+            $carrierKpis->where('carrier_name', $carrier);
+        }
+
+        $carrierKpis = $carrierKpis
+            ->groupBy('carrier_name', 'direction')
+            ->orderBy('total_amount', 'desc')
+            ->get();
+
+        // Liste des opérateurs disponibles
+        $allCarriers = DB::connection('inter_traffic')
+            ->table('BILLING_STAT')
+            ->distinct()
+            ->orderBy('carrier_name')
+            ->pluck('carrier_name');
+
+        return view('billing.billingKp', [
+            'dailyKpis'   => $dailyKpis,
+            'globalKpis'  => $globalKpis,
+            'carrierKpis' => $carrierKpis,
+            'allCarriers' => $allCarriers,
+            'start'       => $start,
+            'end'         => $end,
+            'direction'   => $direction,
+            'carrier'     => $carrier,
+        ]);
     }
-
-    // 🔟 Retour de la vue
-    return view('billing.billingPivotCountryCarrier', [
-        'records'     => $records,
-        'days'        => $days,
-        'month'       => $month,
-        'startDate'   => $startDate,
-        'endDate'     => $endDate,
-        'allCarriers' => $allCarriers,
-        'carrier'     => $carrier,
-        'filter'      => $filter,
-        'valueLabel'  => $valueLabel,
-    ]);
-}
 
     public function networkKpi(Request $request)
     {
@@ -1061,7 +1179,7 @@ public function billingPivotCountryCarrier(Request $request)
             : now()->subWeek()->endOfWeek()->toDateString();
 
         // Requête brute avec variables
-      $sql = "
+        $sql = "
         select call_type,
                CONCAT(MIN(event_date), ' - ', MAX(event_date)) AS dates_range,
                CONCAT(YEAR(event_date), '-W', LPAD(WEEK(event_date, 3), 2, '0')) AS call_week,
@@ -1098,12 +1216,12 @@ public function billingPivotCountryCarrier(Request $request)
         order by call_week desc
 ";
 
-$data = DB::connection('inter_traffic')->select($sql, [
-    'start1' => $start,
-    'end1'   => $end,
-    'start2' => $start,
-    'end2'   => $end,
-]);
+        $data = DB::connection('inter_traffic')->select($sql, [
+            'start1' => $start,
+            'end1'   => $end,
+            'start2' => $start,
+            'end2'   => $end,
+        ]);
 
         return view('billing.kpi', [
             'data' => $data,
@@ -1155,7 +1273,650 @@ $data = DB::connection('inter_traffic')->select($sql, [
         ]);
     }
 
+    // KPI Partner (improved: follow index() pattern)
 
+public function kpip_old(Request $request)
+{
+    /* ===============================
+       PARAMÈTRES
+    =============================== */
+    $view      = $request->get('view', 'day');      // day | month
+    $direction = $request->get('direction', 'IN');  // IN | OUT
+
+    /* ===============================
+       GESTION DES DATES (SAFE)
+    =============================== */
+    try {
+        $start = $request->filled('start_date')
+            ? Carbon::parse($request->get('start_date'))->startOfDay()
+            : now()->startOfMonth()->startOfDay();
+
+        $end = $request->filled('end_date')
+            ? Carbon::parse($request->get('end_date'))->endOfDay()
+            : now()->endOfMonth()->endOfDay();
+    } catch (\Exception $e) {
+        $start = now()->startOfMonth()->startOfDay();
+        $end   = now()->endOfMonth()->endOfDay();
+    }
+
+    // Sécurité si dates inversées
+    if ($start->gt($end)) {
+        [$start, $end] = [$end, $start];
+    }
+
+    // Strings pour SQL
+    $startStr = $start->toDateString();
+    $endStr   = $end->toDateString();
+
+    /* ===============================
+       SQL PERIOD (FIX CRITIQUE)
+    =============================== */
+    if ($view === 'month') {
+        $periodSql = "SUBSTR(event_date,1,7)";
+    } else {
+        // 🔴 FIX PRINCIPAL : PAS event_date !
+        $periodSql = "DATE(event_date)";
+    }
+
+    /* ===============================
+       REQUÊTE KPI
+    =============================== */
+    $sql = "
+        SELECT
+            call_type AS CALL_DIRECTION,
+            {$periodSql} AS PERIOD,
+            partner_name AS PARTNER_NAME,
+            SUM(attempt) AS ATTEMPTS,
+            ROUND((SUM(completed) / NULLIF(SUM(attempt),0)) * 100, 2) AS NER,
+            ROUND((SUM(answered) / NULLIF(SUM(attempt),0)) * 100, 2) AS ASR,
+            IF(
+                SUM(minutes)=0,
+                0,
+                ROUND((SUM(minutes)*60) / NULLIF(SUM(answered),0), 0)
+            ) AS ACD_SEC
+        FROM COMPLETION_STAT
+        WHERE event_date >= :start
+          AND event_date < DATE_ADD(:end, INTERVAL 1 DAY)
+          AND partner_name <> 'Not Available'
+          AND call_type = :direction
+        GROUP BY CALL_DIRECTION, PERIOD, PARTNER_NAME
+        ORDER BY CALL_DIRECTION, PERIOD, PARTNER_NAME
+    ";
+
+    $data = collect(DB::connection('inter_traffic')->select($sql, [
+        'start'     => $startStr,
+        'end'       => $endStr,
+        'direction' => $direction,
+    ]));
+
+   // dd($data);
+    /* ===============================
+       STRUCTURE POUR LE PIVOT
+    =============================== */
+    $periods = $data->pluck('PERIOD')->unique()->sort()->values();
+    $partners = $data->groupBy('PARTNER_NAME');
+
+    /* ===============================
+       RENDER
+    =============================== */
+    return view('kpi', [
+        'partners'  => $partners,
+        'periods'   => $periods,
+        'view'      => $view,
+        'direction' => $direction,
+        'start'     => $startStr,
+        'end'       => $endStr,
+    ]);
+}
+
+
+
+public function kpip_old2(Request $request)
+{
+    /* ===============================
+       PARAMÈTRES
+    =============================== */
+    $view = $request->get('view', 'day');          // day | month
+    $directionUi = $request->get('direction', 'IN'); // IN | OUT
+
+    // Mapping UI -> DB
+    $directionMap = [
+        'IN'  => 'Incoming',
+        'OUT' => 'Outgoing',
+    ];
+
+    $directionDb = $directionMap[$directionUi] ?? 'Incoming';
+
+    /* ===============================
+       DATES
+    =============================== */
+    try {
+        $start = $request->filled('start_date')
+            ? Carbon::parse($request->get('start_date'))->toDateString()
+            : now()->startOfMonth()->toDateString();
+
+        $end = $request->filled('end_date')
+            ? Carbon::parse($request->get('end_date'))->toDateString()
+            : now()->endOfMonth()->toDateString();
+    } catch (\Exception $e) {
+        $start = now()->startOfMonth()->toDateString();
+        $end   = now()->endOfMonth()->toDateString();
+    }
+
+    /* ===============================
+       SQL SELON LA VUE
+    =============================== */
+    if ($view === 'month') {
+
+        // MONTHLY
+        $sql = "
+            SELECT
+                call_type AS CALL_DIRECTION,
+                SUBSTR(event_date,1,7) AS PERIOD,
+                partner_name AS PARTNER_NAME,
+                SUM(attempt) AS ATTEMPTS,
+                ROUND((SUM(completed) / NULLIF(SUM(attempt),0)) * 100, 2) AS NER,
+                ROUND((SUM(answered) / NULLIF(SUM(attempt),0)) * 100, 2) AS ASR,
+                IF(
+                    SUM(minutes)=0,
+                    0,
+                    ROUND((SUM(minutes)*60) / NULLIF(SUM(answered),0))
+                ) AS ACD_SEC
+            FROM COMPLETION_STAT
+            WHERE event_date BETWEEN :start AND :end
+              AND partner_name NOT LIKE 'Not Available'
+              AND call_type = :direction
+            GROUP BY CALL_DIRECTION, PERIOD, PARTNER_NAME
+            ORDER BY PERIOD, PARTNER_NAME
+        ";
+
+    } else {
+
+        // DAILY
+        $sql = "
+            SELECT
+                call_type AS CALL_DIRECTION,
+                event_date AS PERIOD,
+                partner_name AS PARTNER_NAME,
+                SUM(attempt) AS ATTEMPTS,
+                ROUND((SUM(completed) / NULLIF(SUM(attempt),0)) * 100, 2) AS NER,
+                ROUND((SUM(answered) / NULLIF(SUM(attempt),0)) * 100, 2) AS ASR,
+                IF(
+                    SUM(minutes)=0,
+                    0,
+                    ROUND((SUM(minutes)*60) / NULLIF(SUM(answered),0))
+                ) AS ACD_SEC
+            FROM COMPLETION_STAT
+            WHERE event_date BETWEEN :start AND :end
+              AND partner_name NOT LIKE 'Not Available'
+              AND call_type = :direction
+            GROUP BY CALL_DIRECTION, PERIOD, PARTNER_NAME
+            ORDER BY PERIOD, PARTNER_NAME
+        ";
+    }
+
+    /* ===============================
+       EXÉCUTION
+    =============================== */
+    $data = collect(DB::connection('inter_traffic')->select($sql, [
+        'start'     => $start,
+        'end'       => $end,
+        'direction' => $directionDb,
+    ]));
+
+    /* ===============================
+       STRUCTURATION POUR LA VUE
+    =============================== */
+    $periods  = $data->pluck('PERIOD')->unique()->sort()->values();
+    $partners = $data->groupBy('PARTNER_NAME');
+
+    /* ===============================
+       RENDER
+    =============================== */
+    return view('kpi', [
+        'partners'  => $partners,
+        'periods'   => $periods,
+        'view'      => $view,
+        'start'     => $start,
+        'end'       => $end,
+        'direction' => $directionUi, // IMPORTANT pour le Blade
+    ]);
+}
+
+
+
+public function kpip(Request $request)
+{
+    /* ===============================
+       PARAMÈTRES
+    =============================== */
+    $view = $request->get('view', 'day'); // day | week | month | year
+    $directionUi = $request->get('direction', 'IN'); // IN | OUT
+
+    // Mapping UI -> DB
+    $directionMap = [
+        'IN'  => 'Incoming',
+        'OUT' => 'Outgoing',
+    ];
+    $directionDb = $directionMap[$directionUi] ?? 'Incoming';
+
+    /* ===============================
+       DATES
+    =============================== */
+    try {
+        $start = $request->filled('start_date')
+            ? Carbon::parse($request->get('start_date'))->toDateString()
+            : now()->startOfMonth()->toDateString();
+
+        $end = $request->filled('end_date')
+            ? Carbon::parse($request->get('end_date'))->toDateString()
+            : now()->endOfMonth()->toDateString();
+    } catch (\Exception $e) {
+        $start = now()->startOfMonth()->toDateString();
+        $end   = now()->endOfMonth()->toDateString();
+    }
+
+    /* ===============================
+       PERIOD SQL
+    =============================== */
+    switch ($view) {
+        case 'year':
+            $periodSql = "YEAR(event_date)";
+            break;
+
+        case 'month':
+            $periodSql = "SUBSTR(event_date,1,7)";
+            break;
+
+        case 'week':
+            // Ex: 2025-W31
+            $periodSql = "CONCAT(YEAR(event_date), '-W', LPAD(WEEK(event_date,1),2,'0'))";
+            break;
+
+        default: // day
+            $periodSql = "event_date";
+    }
+
+    /* ===============================
+       KPI SQL
+    =============================== */
+    $sql = "
+        SELECT
+            call_type AS CALL_DIRECTION,
+            {$periodSql} AS PERIOD,
+            partner_name AS PARTNER_NAME,
+            SUM(attempt) AS ATTEMPTS,
+            ROUND((SUM(completed) / NULLIF(SUM(attempt),0)) * 100, 2) AS NER,
+            ROUND((SUM(answered) / NULLIF(SUM(attempt),0)) * 100, 2) AS ASR,
+            IF(
+                SUM(minutes)=0,
+                0,
+                ROUND((SUM(minutes)*60) / NULLIF(SUM(answered),0))
+            ) AS ACD_SEC
+        FROM COMPLETION_STAT
+        WHERE event_date BETWEEN :start AND :end
+          AND partner_name NOT LIKE 'Not Available'
+          AND call_type = :direction
+        GROUP BY CALL_DIRECTION, PERIOD, PARTNER_NAME
+        ORDER BY PERIOD, PARTNER_NAME
+    ";
+
+    $data = collect(DB::connection('inter_traffic')->select($sql, [
+        'start'     => $start,
+        'end'       => $end,
+        'direction' => $directionDb,
+    ]));
+
+    /* ===============================
+       STRUCTURE POUR LE PIVOT
+    =============================== */
+    $periods  = $data->pluck('PERIOD')->unique()->sort()->values();
+    //$partners = $data->groupBy('PARTNER_NAME');
+
+      $partners = $data
+    ->groupBy('PARTNER_NAME')
+    ->sortByDesc(function ($rows) {
+        return $rows->sum('ATTEMPTS');
+    });
+
+    return view('kpi.pivot', [
+        'partners'  => $partners,
+        'periods'   => $periods,
+        'view'      => $view,
+        'start'     => $start,
+        'end'       => $end,
+        'direction' => $directionUi,
+    ]);
+}
+
+
+public function Kpin(Request $request)
+{
+    /* ===============================
+       PARAMÈTRES
+    =============================== */
+    $view = $request->get('view', 'day'); // day | week | month | year
+    $direction = $request->get('direction', 'ORIGINATED'); // ORIGINATED | DESTINATED
+
+    try {
+        $start = $request->filled('start_date')
+            ? Carbon::parse($request->get('start_date'))->toDateString()
+            : now()->startOfMonth()->toDateString();
+
+        $end = $request->filled('end_date')
+            ? Carbon::parse($request->get('end_date'))->toDateString()
+            : now()->endOfMonth()->toDateString();
+    } catch (\Exception $e) {
+        $start = now()->startOfMonth()->toDateString();
+        $end   = now()->endOfMonth()->toDateString();
+    }
+
+    /* ===============================
+       PERIOD SQL
+    =============================== */
+    switch ($view) {
+        case 'week':
+            $periodSql = "YEARWEEK(event_date,1)";
+            break;
+        case 'month':
+            $periodSql = "SUBSTR(event_date,1,7)";
+            break;
+        case 'year':
+            $periodSql = "YEAR(event_date)";
+            break;
+        default:
+            $periodSql = "event_date";
+            break;
+    }
+
+    /* ===============================
+       SQL SELON DIRECTION
+    =============================== */
+    if ($direction === 'ORIGINATED') {
+
+        $sql = "
+            SELECT
+                call_type AS CALL_DIRECTION,
+                {$periodSql} AS PERIOD,
+                orig_net_name AS NETWORK_NAME,
+                SUM(attempt) AS ATTEMPTS,
+                SUM(minutes) AS MINUTES,
+                ROUND((SUM(completed) / NULLIF(SUM(attempt),0)) * 100, 2) AS NER,
+                ROUND((SUM(answered) / NULLIF(SUM(attempt),0)) * 100, 2) AS ASR,
+                IF(
+                    SUM(minutes)=0,
+                    0,
+                    ROUND((SUM(minutes)*60) / NULLIF(SUM(answered),0))
+                ) AS ACD_SEC
+            FROM COMPLETION_STAT
+            WHERE event_date BETWEEN :start AND :end
+              AND orig_net_name NOT LIKE 'Not Available'
+              AND call_type LIKE 'Incoming'
+            GROUP BY CALL_DIRECTION, PERIOD, NETWORK_NAME
+            ORDER BY PERIOD, NETWORK_NAME
+        ";
+
+    } else {
+
+        $sql = "
+            SELECT
+                call_type AS CALL_DIRECTION,
+                {$periodSql} AS PERIOD,
+                dest_net_name AS NETWORK_NAME,
+                SUM(attempt) AS ATTEMPTS,
+                SUM(minutes) AS MINUTES,
+                ROUND((SUM(completed) / NULLIF(SUM(attempt),0)) * 100, 2) AS NER,
+                ROUND((SUM(answered) / NULLIF(SUM(attempt),0)) * 100, 2) AS ASR,
+                IF(
+                    SUM(minutes)=0,
+                    0,
+                    ROUND((SUM(minutes)*60) / NULLIF(SUM(answered),0))
+                ) AS ACD_SEC
+            FROM COMPLETION_STAT
+            WHERE event_date BETWEEN :start AND :end
+              AND dest_net_name NOT LIKE 'Not Available'
+              AND call_type LIKE 'Outgoing'
+            GROUP BY CALL_DIRECTION, PERIOD, NETWORK_NAME
+            ORDER BY PERIOD, NETWORK_NAME
+        ";
+    }
+
+    /* ===============================
+       EXÉCUTION
+    =============================== */
+    $data = collect(DB::connection('inter_traffic')->select($sql, [
+        'start' => $start,
+        'end'   => $end,
+    ]));
+
+    /* ===============================
+       STRUCTURATION
+    =============================== */
+    $periods  = $data->pluck('PERIOD')->unique()->sort()->values();
+  $networks = $data
+    ->groupBy('NETWORK_NAME')
+    ->sortByDesc(function ($rows) {
+        return $rows->sum('ATTEMPTS');
+    });
+
+    /* ===============================
+       RENDER
+    =============================== */
+    return view('kpi.network', [
+        'networks'  => $networks,
+        'periods'   => $periods,
+        'view'      => $view,
+        'direction' => $direction,
+        'start'     => $start,
+        'end'       => $end,
+    ]);
+}
+
+public function KpinCarrier(Request $request)
+{
+    /* ===============================
+       PARAMÈTRES
+    =============================== */
+    $view      = $request->get('view', 'day'); // day | week | month | year
+    $direction = $request->get('direction', 'ORIGINATED'); // ORIGINATED | DESTINATED
+    $network   = $request->get('network', 'ALL');
+    $partner   = $request->get('partner', 'ALL');
+
+    try {
+        $start = $request->filled('start_date')
+            ? Carbon::parse($request->get('start_date'))->toDateString()
+            : now()->startOfMonth()->toDateString();
+
+        $end = $request->filled('end_date')
+            ? Carbon::parse($request->get('end_date'))->toDateString()
+            : now()->endOfMonth()->toDateString();
+    } catch (\Exception $e) {
+        $start = now()->startOfMonth()->toDateString();
+        $end   = now()->endOfMonth()->toDateString();
+    }
+
+    /* ===============================
+       PERIOD SQL (CLÉ TECHNIQUE)
+    =============================== */
+    switch ($view) {
+        case 'week':
+            $periodSql = "YEARWEEK(event_date, 1)"; // ex: 202527
+            break;
+        case 'month':
+            $periodSql = "DATE_FORMAT(event_date,'%Y-%m')";
+            break;
+        case 'year':
+            $periodSql = "YEAR(event_date)";
+            break;
+        default:
+            $periodSql = "event_date";
+    }
+
+    /* ===============================
+       DIRECTION LOGIQUE
+    =============================== */
+    if ($direction === 'ORIGINATED') {
+        $networkField = 'orig_net_name';
+        $callType     = 'Incoming';
+    } else {
+        $networkField = 'dest_net_name';
+        $callType     = 'Outgoing';
+    }
+
+    /* ===============================
+       FILTRES
+    =============================== */
+    $filters = "
+        event_date BETWEEN :start AND :end
+        AND call_type = :callType
+        AND {$networkField} NOT LIKE 'Not Available'
+        AND partner_name NOT LIKE 'Not Available'
+    ";
+
+    if ($network !== 'ALL') {
+        $filters .= " AND {$networkField} = :network";
+    }
+
+    if ($partner !== 'ALL') {
+        $filters .= " AND partner_name = :partner";
+    }
+
+    /* ===============================
+       SQL
+    =============================== */
+    $sql = "
+        SELECT
+            call_type AS CALL_DIRECTION,
+            {$periodSql} AS PERIOD,
+            {$networkField} AS NETWORK_NAME,
+            partner_name AS PARTNER_NAME,
+            SUM(attempt) AS ATTEMPTS,
+            SUM(minutes) AS MINUTES,
+            ROUND((SUM(completed)/NULLIF(SUM(attempt),0))*100,2) AS NER,
+            ROUND((SUM(answered)/NULLIF(SUM(attempt),0))*100,2) AS ASR,
+            IF(
+                SUM(minutes)=0,
+                0,
+                ROUND((SUM(minutes)*60)/NULLIF(SUM(answered),0))
+            ) AS ACD_SEC
+        FROM COMPLETION_STAT
+        WHERE {$filters}
+        GROUP BY CALL_DIRECTION, PERIOD, NETWORK_NAME, PARTNER_NAME
+    ";
+
+    $bindings = [
+        'start'    => $start,
+        'end'      => $end,
+        'callType' => $callType,
+    ];
+
+    if ($network !== 'ALL')  $bindings['network'] = $network;
+    if ($partner !== 'ALL')  $bindings['partner'] = $partner;
+
+    /* ===============================
+       EXÉCUTION
+    =============================== */
+    $data = collect(DB::connection('inter_traffic')->select($sql, $bindings));
+
+    /* ===============================
+       LABEL SEMAINE (AFFICHAGE)
+    =============================== */
+    if ($view === 'week') {
+        $data = $data->map(function ($row) {
+            $year = substr($row->PERIOD, 0, 4);
+            $week = substr($row->PERIOD, 4, 2);
+            $row->PERIOD_LABEL = "{$year}-W{$week}";
+            return $row;
+        });
+    }
+
+    /* ===============================
+       LISTES FILTRES
+    =============================== */
+    $networksList = $data->pluck('NETWORK_NAME')->unique()->sort()->values();
+    $partnersList = $data->pluck('PARTNER_NAME')->unique()->sort()->values();
+
+    /* ===============================
+       PERIODS (AFFICHAGE)
+    =============================== */
+    $periods = $view === 'week'
+        ? $data->pluck('PERIOD_LABEL')->unique()->sort()->values()
+        : $data->pluck('PERIOD')->unique()->sort()->values();
+
+    /* ===============================
+       TRI PAR ATTEMPTS (IMPORTANT)
+    =============================== */
+    $networks = $data
+        ->groupBy('NETWORK_NAME')
+        ->sortByDesc(fn ($rows) => $rows->sum('ATTEMPTS')) // 🔥 TRI KPI
+        ->map(fn ($rows) => $rows->groupBy('PARTNER_NAME'));
+
+    /* ===============================
+       RENDER
+    =============================== */
+    return view('kpi.network_carrier', compact(
+        'networks',
+        'networksList',
+        'partnersList',
+        'periods',
+        'direction',
+        'view',
+        'start',
+        'end',
+        'network',
+        'partner'
+    ));
+}
+
+
+
+
+
+
+
+
+    private function dailySql()
+    {
+        return "
+            SELECT
+                call_type AS CALL_DIRECTION,
+                DATE(event_date) AS PERIOD,
+                DAY(event_date) AS DAY_NUM,
+                partner_name AS PARTNER_NAME,
+                SUM(attempt) AS ATTEMPTS,
+                ROUND((SUM(completed) / NULLIF(SUM(attempt),0)) * 100, 2) AS NER,
+                ROUND((SUM(answered) / NULLIF(SUM(attempt),0)) * 100, 2) AS ASR,
+                IF(SUM(minutes)=0,0,
+                    ROUND((SUM(minutes)*60) / NULLIF(SUM(answered),0),2)
+                ) AS ACD_SEC
+            FROM COMPLETION_STAT
+            WHERE event_date BETWEEN :start AND :end
+              AND partner_name <> 'Not Available'
+            GROUP BY CALL_DIRECTION, PERIOD, DAY_NUM, PARTNER_NAME
+            ORDER BY CALL_DIRECTION, PERIOD, PARTNER_NAME
+        ";
+    }
+
+    private function monthlySql()
+    {
+        return "
+            SELECT
+                call_type AS CALL_DIRECTION,
+                SUBSTR(event_date,1,7) AS PERIOD,
+                partner_name AS PARTNER_NAME,
+                SUM(attempt) AS ATTEMPTS,
+                ROUND((SUM(completed) / NULLIF(SUM(attempt),0)) * 100, 2) AS NER,
+                ROUND((SUM(answered) / NULLIF(SUM(attempt),0)) * 100, 2) AS ASR,
+                IF(SUM(minutes)=0,0,
+                    ROUND((SUM(minutes)*60) / NULLIF(SUM(answered),0),2)
+                ) AS ACD_SEC
+            FROM COMPLETION_STAT
+            WHERE event_date BETWEEN :start AND :end
+              AND partner_name <> 'Not Available'
+            GROUP BY CALL_DIRECTION, PERIOD, PARTNER_NAME
+            ORDER BY CALL_DIRECTION, PERIOD, PARTNER_NAME
+        ";
+    }
 
 
     public function partnerKpi(Request $request)
@@ -1189,26 +1950,26 @@ $data = DB::connection('inter_traffic')->select($sql, [
         ORDER BY call_week DESC
     ";
 
-    $data = DB::connection('inter_traffic')->select($sql, [
-        'start' => $start,
-        'end' => $end,
-    ]);
+        $data = DB::connection('inter_traffic')->select($sql, [
+            'start' => $start,
+            'end' => $end,
+        ]);
 
-    // Pagination manuelle
-    $page = request('page', 1);
-    $perPage = 100;
-    $total = count($data);
-    $items = array_slice($data, ($page - 1) * $perPage, $perPage);
-    $paginator = new \Illuminate\Pagination\LengthAwarePaginator($items, $total, $perPage, $page, [
-        'path' => request()->url(),
-        'query' => request()->query(),
-    ]);
+        // Pagination manuelle
+        $page = request('page', 1);
+        $perPage = 100;
+        $total = count($data);
+        $items = array_slice($data, ($page - 1) * $perPage, $perPage);
+        $paginator = new \Illuminate\Pagination\LengthAwarePaginator($items, $total, $perPage, $page, [
+            'path' => request()->url(),
+            'query' => request()->query(),
+        ]);
 
-    return view('billing.pkpi', [
-        'data' => $paginator,
-        'filters' => compact('start', 'end')
-    ]);
-}
+        return view('billing.pkpi', [
+            'data' => $paginator,
+            'filters' => compact('start', 'end')
+        ]);
+    }
 
 
 

@@ -345,10 +345,11 @@
                         </thead>
                         <tbody>
                             @php
-                                // Regroupement des données par pays origine
+                                // Regroupement des données par pays
                                 $pivot = [];
                                 foreach ($records as $row) {
-                                    $country = $row->orig_country_name;
+                                    // controller now provides 'country'
+                                    $country = $row->country;
                                     $day = $row->period;
                                     $pivot[$country][$day] = $row->value;
                                 }
@@ -359,7 +360,7 @@
                                 @endphp
                                 <tr style="background-color: {{ $rowColor }};">
                                     <td>
-                                        <a href="{{ route('billingPivotNetCarrier', array_merge(request()->except('page'), ['orig_net_name' => $country])) }}"
+                                        <a href="{{ route('billingPivotNetCarrier', array_merge(request()->except('page'), ['orig_country_name' => $country])) }}"
                                             class="text-decoration-underline text-success">
                                             {{ $country }}
                                         </a>
@@ -411,7 +412,7 @@
                             @php
                                 $pivot = [];
                                 foreach ($records as $row) {
-                                    $country = $row->orig_country_name;
+                                    $country = $row->country;
                                     $day = $row->period;
                                     $pivot[$country][$day] = $row->value;
                                 }
@@ -434,7 +435,7 @@
                                                 if (is_null($prevCandidate)) {
                                                     // Fallback: search records collection for that country & prevDay
                                                     $prevCandidate = $records
-                                                        ->where('orig_country_name', $country)
+                                                        ->where('country', $country)
                                                         ->where('period', $prevDay)
                                                         ->sum('value');
                                                 }
@@ -615,13 +616,13 @@
 
             if (selectedCountry !== 'Tous') {
                 const filteredCountries = [...new Set(records
-                    .filter(r => r.orig_country_name && r.orig_country_name.toLowerCase().includes(
+                    .filter(r => r.country && r.country.toLowerCase().includes(
                         selectedCountry.toLowerCase()))
-                    .map(r => r.orig_country_name))];
+                    .map(r => r.country))];
 
                 filteredCountries.forEach((country, idx) => {
                     const countryData = periods.map(p => {
-                        let filtered = records.filter(r => r.period === p && r.orig_country_name ===
+                        let filtered = records.filter(r => r.period === p && r.country ===
                             country);
                         if (selectedCarrier !== 'Tous') filtered = filtered.filter(r => r
                             .carrier_name === selectedCarrier);
