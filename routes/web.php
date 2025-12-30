@@ -63,6 +63,9 @@ Route::get('/kpi/KpinCarrier', [HomeController::class, 'KpinCarrier'])->name('kp
 Route::get('kpi', [HomeController::class, 'kpip'])->name('kpi.index');
 
 Route::get('partnerKpi', [HomeController::class, 'partnerKpi'])->name('partnerKpi');
+
+Route::get('networkkpi', [HomeController::class, 'networkKpi'])->name('networkkpi');
+
 Route::get('complation', [HomeController::class, 'complation'])->name('complation');
 
 //roaming rout

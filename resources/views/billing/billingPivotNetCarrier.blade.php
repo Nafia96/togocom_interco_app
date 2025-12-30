@@ -231,6 +231,10 @@
                     <button id="toggleTableBtn" class="btn btn-sm btn-light text-success toggle-btn">
                         Mode Progression
                     </button>
+                    <a href="{{ route('kpi.pivot', $qs) }}" class="btn btn-sm btn-warning ms-3 px-3" style="font-weight:700;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-graph-up-arrow me-1" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M0 0h1v15h15v1H0V0zm10.293 3.293a1 1 0 0 1 1.414 0L15 6.586V4a1 1 0 0 1 2 0v5a1 1 0 0 1-1 1h-5a1 1 0 0 1 0-2h2.586L11.707 6.707a1 1 0 0 1 0-1.414l-1.414-1.414zM5 9l2-2 3 3 4-4 1 1-5 5-3-3-2 2-1-1z"/></svg>
+                        KPI
+                    </a>
                 </div>
                 @php
                     $isOutbound = in_array(strtolower($filter ?? 'entrant'), ['charge', 'sortant']);

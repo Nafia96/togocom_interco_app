@@ -1165,7 +1165,7 @@ class HomeController extends Controller
     }
 
     public function networkKpi(Request $request)
-    {
+    { 
         ini_set('memory_limit', '512M');
         if (!session('id')) return view('index');
 
