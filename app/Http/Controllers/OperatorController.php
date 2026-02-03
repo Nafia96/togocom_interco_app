@@ -209,6 +209,77 @@ class OperatorController extends Controller
     ));
 }
 
+ public function liste_operator_reporting(Request $request)
+{
+    $debut = $request->input('start_period');  // name="start_period"
+    $fin = $request->input('end_period');
+
+    // Requête de recouvrements par mois (reporting détaillé)
+    $recouvrement_query = Resum::selectRaw('YEAR(periodDate) as year,
+        MONTH(periodDate) as month,
+        id_operator,
+        SUM(incoming_payement_cfa) as total_incoming_payement')
+        ->where('is_delete', 0);
+
+    if ($debut && $fin) {
+        $recouvrement_query->whereBetween('periodDate', [$debut, $fin]);
+    } elseif ($debut) {
+        $recouvrement_query->where('periodDate', '>=', $debut);
+    } elseif ($fin) {
+        $recouvrement_query->where('periodDate', '<=', $fin);
+    }
+
+    $recouvrement_monthly = $recouvrement_query
+        ->groupBy('year', 'month', 'id_operator')
+        ->orderBy('year', 'desc')
+        ->orderBy('month', 'asc')
+        ->get();
+
+    // Totaux des recouvrements globaux
+    $total_recouvrement_query = Resum::selectRaw('SUM(incoming_payement_cfa) as total_global_recouvrement')
+        ->where('is_delete', 0);
+
+    if ($debut && $fin) {
+        $total_recouvrement_query->whereBetween('periodDate', [$debut, $fin]);
+    } elseif ($debut) {
+        $total_recouvrement_query->where('periodDate', '>=', $debut);
+    } elseif ($fin) {
+        $total_recouvrement_query->where('periodDate', '<=', $fin);
+    }
+
+    $total_recouvrement = $total_recouvrement_query->first();
+
+    $operators = Operator::where('is_delete', 0)
+        ->orderBy('created_at', 'DESC')
+        ->get();
+
+    $total_global_recouvrement_by_operator = 0;
+
+    foreach ($operators as $operator) {
+        // Calcul recouvrement total par opérateur
+        $operator->recouvrement_total = $recouvrement_monthly
+            ->where('id_operator', $operator->id)
+            ->sum('total_incoming_payement');
+
+        $total_global_recouvrement_by_operator += $operator->recouvrement_total;
+
+        // Recouvrements mensuels détaillés par opérateur
+        $operator->recouvrement_monthly = $recouvrement_monthly
+            ->where('id_operator', $operator->id)
+            ->toArray();
+    }
+
+    return view('operator.liste_operator_reporting', compact(
+        'operators',
+        'recouvrement_monthly',
+        'total_recouvrement',
+        'total_global_recouvrement_by_operator',
+        'debut',
+        'fin'
+    ));
+}
+
+
 
 
 

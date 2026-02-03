@@ -22,16 +22,17 @@
                     <a class="col-xl-6 col-lg-12 col-md-12 col-sm-12 col-xs-12" href="{{ url('/interco_details') }}">
 
                         <div>
-                            <div class="card">
+                            <div class="card" style="background-color: #133272;">
                                 <div class="card-statistic-4">
                                     <div class="align-items-center justify-content-between">
                                         <div class="row ">
                                             <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pr-0 pt-3">
                                                 <div class="card-content">
-                                                    <h5 class="font-15" style="color:#16346d;"> INTERNATIONALES</h5>
 
                                                     <p class="mb-0"><span class="col-orange"></span> Interconnexions
                                                     </p>
+                                                    <h5 class="font-15" style="color:#16346d;"> INTERNATIONALES</h5>
+
                                                 </div>
                                             </div>
                                             <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pl-0">

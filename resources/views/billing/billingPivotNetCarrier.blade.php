@@ -217,20 +217,18 @@
                 <div class="d-flex gap-2 align-items-center">
                     @php
                         $qs = [];
-                        foreach (['month', 'filter', 'start_date', 'end_date', 'carrier_name', 'orig_net_name'] as $k) {
+                        foreach (['view_type', 'filter', 'start_date', 'end_date', 'carrier_name'] as $k) {
                             if (request($k) !== null && request($k) !== '') {
                                 $qs[$k] = request($k);
                             }
                         }
                     @endphp
-                    <a href="{{ route('billingp', $qs) }}" class="btn btn-sm btn-light text-primary">Partenaire</a>
+                    <a href="{{ route('billingp', $qs) }}" class="btn btn-sm btn-light text-primary">Opérateurs</a>
+                    <a href="{{ route('billingPivotNetCarrier', $qs) }}"
+                        class="btn btn-sm btn-warning text-dark" style="font-weight: 700;">Network</a>
                     <a href="{{ route('billingPivotCountryCarrier', $qs) }}"
                         class="btn btn-sm btn-light text-primary">Pays</a>
-                    <a href="{{ route('billingPivotNetCarrier', $qs) }}"
-                        class="btn btn-sm btn-light text-primary">Network</a>
-                    <button id="toggleTableBtn" class="btn btn-sm btn-light text-success toggle-btn">
-                        Mode Progression
-                    </button>
+                    <button id="toggleTableBtn" class="btn btn-sm btn-light text-success toggle-btn">Mode Progression</button>
                     <a href="{{ route('kpi.pivot', $qs) }}" class="btn btn-sm btn-warning ms-3 px-3" style="font-weight:700;">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-graph-up-arrow me-1" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M0 0h1v15h15v1H0V0zm10.293 3.293a1 1 0 0 1 1.414 0L15 6.586V4a1 1 0 0 1 2 0v5a1 1 0 0 1-1 1h-5a1 1 0 0 1 0-2h2.586L11.707 6.707a1 1 0 0 1 0-1.414l-1.414-1.414zM5 9l2-2 3 3 4-4 1 1-5 5-3-3-2 2-1-1z"/></svg>
                         KPI
@@ -243,6 +241,10 @@
             <!-- Breadcrumb Filtres -->
             <nav aria-label="breadcrumb" class="px-3 pt-2">
                 <ol class="breadcrumb mb-2">
+                    <li class="breadcrumb-item"><strong>Vue :</strong>
+                        @php $vt = request('view_type', 'day'); @endphp
+                        {{ $vt == 'day' ? 'Journalière' : ($vt == 'month' ? 'Mensuelle' : 'Annuelle') }}
+                    </li>
                     <li class="breadcrumb-item"><strong>Mois :</strong> {{ $month ?? '-' }}</li>
                     <li class="breadcrumb-item"><strong>Type :</strong>
                         @switch($filter)
@@ -262,8 +264,9 @@
                                 Volume entrant
                         @endswitch
                     </li>
-                    <li class="breadcrumb-item"><strong>Opérateur :</strong> {{ $carrier ? $carrier : 'Tous' }}</li>
-                    <li class="breadcrumb-item"><strong>{{ $isOutbound ? 'Réseau destination' : 'Réseau origine' }}
+                    {{-- <li class="breadcrumb-item"><strong>Opérateur :</strong> {{ $carrier ? $carrier : 'Tous' }}</li> --}}
+                        <li class="breadcrumb-item"><strong>Pays :</strong> {{ request('orig_country_name') ? request('orig_country_name') : 'Tous' }}</li>
+                        <li class="breadcrumb-item"><strong>{{ $isOutbound ? 'Réseau destination' : 'Réseau origine' }}
                             :</strong> {{ request('orig_net_name') ? request('orig_net_name') : 'Tous' }}</li>
                     <li class="breadcrumb-item"><strong>Date début :</strong> {{ $startDate ?? '-' }}</li>
                     <li class="breadcrumb-item"><strong>Date fin :</strong> {{ $endDate ?? '-' }}</li>
@@ -273,6 +276,14 @@
                 {{-- Filtres --}}
                 <form method="GET" action="{{ route('billingPivotNetCarrier') }}"
                     class="row g-2 mb-4 align-items-end flex-nowrap">
+                    <div class="col-auto">
+                        <label for="view_type" class="form-label fw-semibold mb-1">Vue :</label>
+                        <select id="view_type" name="view_type" class="form-select form-control-sm">
+                            <option value="day" {{ request('view_type', 'day') == 'day' ? 'selected' : '' }}>Journalière</option>
+                            <option value="month" {{ request('view_type', 'day') == 'month' ? 'selected' : '' }}>Mensuelle</option>
+                            <option value="year" {{ request('view_type', 'day') == 'year' ? 'selected' : '' }}>Annuelle</option>
+                        </select>
+                    </div>
                     <div class="col-auto">
                         <label for="month" class="form-label fw-semibold mb-1">Mois :</label>
                         <input type="month" id="month" name="month" class="form-control form-control-sm"
@@ -312,13 +323,7 @@
                         </select>
                     </div>
                     <div class="col-auto">
-                        <label for="orig_net_name" class="form-label fw-semibold mb-1">Réseau origine :</label>
-                        <input type="text" id="orig_net_name" name="orig_net_name"
-                            class="form-control form-control-sm" value="{{ request('orig_net_name') }}"
-                            placeholder="Filtrer réseau...">
-                    </div>
-                    <div class="col-auto">
-                        <button type="submit" class="btn btn-success btn-sm w-100">Filtrer</button>
+                        <button type="submit" class="btn btn-success btn-sm">Filtrer</button>
                     </div>
                 </form>
 

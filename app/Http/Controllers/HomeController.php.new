@@ -828,16 +828,6 @@ class HomeController extends Controller
             ->whereBetween('start_date', [$start, $end])
             ->where('direction', $conf['direction']);
 
-        // Filtrer par pays si fourni (peut être string ou array)
-        $origCountryFilter = $request->input('orig_country_name');
-        if ($origCountryFilter) {
-            if (is_array($origCountryFilter)) {
-                $q->whereIn('orig_country_name', $origCountryFilter);
-            } else {
-                $q->where('orig_country_name', $origCountryFilter);
-            }
-        }
-
         if ($viewType === 'day') {
             $records = $q->select([
                 DB::raw('carrier_name AS operator'),
@@ -974,21 +964,11 @@ class HomeController extends Controller
             ->whereBetween('start_date', [$start, $end])
             ->where('direction', $conf['direction']);
 
-        // Filtrer par pays si fourni (peut être string ou array)
-        $origCountryFilter = $request->input('orig_country_name');
-        if ($origCountryFilter) {
-            if (is_array($origCountryFilter)) {
-                $q->whereIn('orig_country_name', $origCountryFilter);
-            } else {
-                $q->where('orig_country_name', $origCountryFilter);
-            }
-        }
-
         if ($viewType === 'day') {
             $records = $q->select([
-                DB::raw('orig_net_name'),
-                DB::raw('DATE(start_date) AS period'),
-                DB::raw("$sumExpr AS value"),
+                DB::raw('orig_net_name AS network'),
+                DB::raw('DATE(start_date) AS day'),
+                DB::raw("$sumExpr AS total"),
             ])
                 ->groupBy('orig_net_name', DB::raw('DATE(start_date)'))
                 ->orderBy('orig_net_name')
@@ -1006,16 +986,15 @@ class HomeController extends Controller
                 $totals[$d] = (float) $records->where('day', $d)->sum('total');
             }
 
-            $allCarriers = DB::connection('inter_traffic')->table('BILLING_STAT')->select('carrier_name')->distinct()->orderBy('carrier_name')->pluck('carrier_name');
             $metricLabel = $conf['label'];
-            return view('billing.billingPivotNetCarrier', compact('records', 'networks', 'days', 'totals', 'month', 'filter', 'metricLabel', 'startDate', 'endDate', 'viewType', 'allCarriers'));
+            return view('billing.billingPivotNetCarrier', compact('networks', 'days', 'totals', 'month', 'filter', 'metricLabel', 'startDate', 'endDate', 'viewType'));
 
         } elseif ($viewType === 'month') {
             $records = $q->select([
-                DB::raw('orig_net_name'),
+                DB::raw('orig_net_name AS network'),
                 DB::raw('YEAR(start_date) AS year'),
                 DB::raw('MONTH(start_date) AS month'),
-                DB::raw("$sumExpr AS value"),
+                DB::raw("$sumExpr AS total"),
             ])
                 ->groupBy('orig_net_name', DB::raw('YEAR(start_date)'), DB::raw('MONTH(start_date)'))
                 ->orderBy('orig_net_name')
@@ -1038,15 +1017,14 @@ class HomeController extends Controller
                 $totals[$m] = (float) $records->where('year', $year)->where('month', $month_num)->sum('total');
             }
 
-            $allCarriers = DB::connection('inter_traffic')->table('BILLING_STAT')->select('carrier_name')->distinct()->orderBy('carrier_name')->pluck('carrier_name');
             $metricLabel = $conf['label'];
-            return view('billing.billingPivotNetCarrierMonthly', compact('records', 'networks', 'months', 'totals', 'filter', 'metricLabel', 'startDate', 'endDate', 'viewType', 'allCarriers'));
+            return view('billing.billingPivotNetCarrierMonthly', compact('networks', 'months', 'totals', 'filter', 'metricLabel', 'startDate', 'endDate', 'viewType'));
 
         } else { // year
             $records = $q->select([
-                DB::raw('orig_net_name'),
+                DB::raw('orig_net_name AS network'),
                 DB::raw('YEAR(start_date) AS year'),
-                DB::raw("$sumExpr AS value"),
+                DB::raw("$sumExpr AS total"),
             ])
                 ->groupBy('orig_net_name', DB::raw('YEAR(start_date)'))
                 ->orderBy('orig_net_name')
@@ -1070,9 +1048,8 @@ class HomeController extends Controller
                 $totals[$y] = (float) $records->where('year', $y)->sum('total');
             }
 
-            $allCarriers = DB::connection('inter_traffic')->table('BILLING_STAT')->select('carrier_name')->distinct()->orderBy('carrier_name')->pluck('carrier_name');
             $metricLabel = $conf['label'];
-            return view('billing.billingPivotNetCarrierAnnual', compact('records', 'networks', 'years', 'totals', 'filter', 'metricLabel', 'startDate', 'endDate', 'viewType', 'allCarriers'));
+            return view('billing.billingPivotNetCarrierAnnual', compact('networks', 'years', 'totals', 'filter', 'metricLabel', 'startDate', 'endDate', 'viewType'));
         }
     }
 
@@ -1126,8 +1103,8 @@ class HomeController extends Controller
         if ($viewType === 'day') {
             $records = $q->select([
                 DB::raw('orig_country_name AS country'),
-                DB::raw('DATE(start_date) AS period'),
-                DB::raw("$sumExpr AS value"),
+                DB::raw('DATE(start_date) AS day'),
+                DB::raw("$sumExpr AS total"),
             ])
                 ->groupBy('orig_country_name', DB::raw('DATE(start_date)'))
                 ->orderBy('orig_country_name')
@@ -1142,19 +1119,18 @@ class HomeController extends Controller
             $countries = $records->groupBy('country');
             $totals = [];
             foreach ($days as $d) {
-                $totals[$d] = (float) $records->where('period', $d)->sum('value');
+                $totals[$d] = (float) $records->where('day', $d)->sum('total');
             }
 
-            $allCarriers = DB::connection('inter_traffic')->table('BILLING_STAT')->select('carrier_name')->distinct()->orderBy('carrier_name')->pluck('carrier_name');
             $metricLabel = $conf['label'];
-            return view('billing.billingPivotCountryCarrier', compact('records', 'countries', 'days', 'totals', 'month', 'filter', 'metricLabel', 'startDate', 'endDate', 'viewType', 'allCarriers'));
+            return view('billing.billingPivotCountryCarrier', compact('countries', 'days', 'totals', 'month', 'filter', 'metricLabel', 'startDate', 'endDate', 'viewType'));
 
         } elseif ($viewType === 'month') {
             $records = $q->select([
                 DB::raw('orig_country_name AS country'),
                 DB::raw('YEAR(start_date) AS year'),
                 DB::raw('MONTH(start_date) AS month'),
-                DB::raw("$sumExpr AS value"),
+                DB::raw("$sumExpr AS total"),
             ])
                 ->groupBy('orig_country_name', DB::raw('YEAR(start_date)'), DB::raw('MONTH(start_date)'))
                 ->orderBy('orig_country_name')
@@ -1174,18 +1150,17 @@ class HomeController extends Controller
             foreach ($months as $m) {
                 $year = (int) substr($m, 0, 4);
                 $month_num = (int) substr($m, 5, 2);
-                $totals[$m] = (float) $records->where('year', $year)->where('month', $month_num)->sum('value');
+                $totals[$m] = (float) $records->where('year', $year)->where('month', $month_num)->sum('total');
             }
 
-            $allCarriers = DB::connection('inter_traffic')->table('BILLING_STAT')->select('carrier_name')->distinct()->orderBy('carrier_name')->pluck('carrier_name');
             $metricLabel = $conf['label'];
-            return view('billing.billingPivotCountryCarrierMonthly', compact('records', 'countries', 'months', 'totals', 'filter', 'metricLabel', 'startDate', 'endDate', 'viewType', 'allCarriers'));
+            return view('billing.billingPivotCountryCarrierMonthly', compact('countries', 'months', 'totals', 'filter', 'metricLabel', 'startDate', 'endDate', 'viewType'));
 
         } else { // year
             $records = $q->select([
                 DB::raw('orig_country_name AS country'),
                 DB::raw('YEAR(start_date) AS year'),
-                DB::raw("$sumExpr AS value"),
+                DB::raw("$sumExpr AS total"),
             ])
                 ->groupBy('orig_country_name', DB::raw('YEAR(start_date)'))
                 ->orderBy('orig_country_name')
@@ -1206,12 +1181,11 @@ class HomeController extends Controller
             }
             $totals = [];
             foreach ($years as $y) {
-                $totals[$y] = (float) $records->where('year', $y)->sum('value');
+                $totals[$y] = (float) $records->where('year', $y)->sum('total');
             }
 
-            $allCarriers = DB::connection('inter_traffic')->table('BILLING_STAT')->select('carrier_name')->distinct()->orderBy('carrier_name')->pluck('carrier_name');
             $metricLabel = $conf['label'];
-            return view('billing.billingPivotCountryCarrierAnnual', compact('records', 'countries', 'years', 'totals', 'filter', 'metricLabel', 'startDate', 'endDate', 'viewType', 'allCarriers'));
+            return view('billing.billingPivotCountryCarrierAnnual', compact('countries', 'years', 'totals', 'filter', 'metricLabel', 'startDate', 'endDate', 'viewType'));
         }
     }
 

@@ -94,7 +94,7 @@
     <div id="app">
         <div class="main-wrapper main-wrapper-1">
             <div class="navbar-bg"></div>
-            <nav class="navbar navbar-expand-lg main-navbar sticky">
+            <nav  class="navbar navbar-expand-lg main-navbar sticky ">
                 <div class="form-inline mr-auto">
                     <ul class="navbar-nav mr-3">
                         <li><a href="#" data-toggle="sidebar"
@@ -193,18 +193,23 @@
                                   {{ Request::is('delete_operator_liste') ? 'active' : '' }}
                                   {{ Request::is('ope_dashboard') ? 'active' : '' }}
                                   {{ Request::is('liste_operator_netting') ? 'active' : '' }}
+                                  {{ Request::is('liste_operator_reporting') ? 'active' : '' }}
                                  ">
 
                             <a href="#" class="menu-toggle nav-link has-dropdown"><i
                                     data-feather="cpu"></i><span>Gestion des opérateurs</span></a>
                             <ul class="dropdown-menu">
-
+                                 <li class="{{ Request::is('liste_operator') ? 'active' : '' }}"><a class="nav-link "
+                                        href="{{ route('liste_operator') }}">Liste des
+                                        opérateurs</a>
+                                </li>
                                 <li class="{{ Request::is('liste_operator_netting') ? 'active' : '' }}"><a class="nav-link "
                                         href="{{ route('liste_operator_netting') }}">Netting des
                                         opérateurs</a>
                                 </li>
-                                  <li class="{{ Request::is('liste_operator') ? 'active' : '' }}"><a class="nav-link "
-                                        href="{{ route('liste_operator') }}">Liste des
+
+                                 <li class="{{ Request::is('liste_operator_reporting') ? 'active' : '' }}"><a class="nav-link "
+                                        href="{{ route('liste_operator_reporting') }}">Reporting des
                                         opérateurs</a>
                                 </li>
                                 @if (getUserType()->type_user == 3 || getUserType()->type_user == 2)

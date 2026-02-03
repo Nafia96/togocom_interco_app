@@ -100,110 +100,7 @@
             </div>
         </div>
 
-         <div class="col-12 col-sm-12 col-lg-12">
-            <div class="card">
-                 <div class="card-header" style="background-color:#F5F5DC ">
-                <h4>  Liste des opérateurs d'interconnexion </h4>
-            </div>
 
-
-
-
-                      <div class="card-body">
-                        <div class="table-responsive">
-                            @if (getUserType()->type_user == 3 || getUserType()->type_user == 2 || getUserType()->type_user == 1)
-                                <table class="table table-striped table-hover category" id="tableExpor0" style="width:100%;">
-                                @else
-                                    <table class="table table-striped table-hover category" id="save-stage"
-                                        style="width:100%;">
-                            @endif
-                            <thead>
-                                <tr>
-                                    <th class="recherche">N°</th>
-                                    <th class="recherche">Nom de l'opérateur</th>
-                                    <th class="recherche">Email</th>
-                                    <th class="recherche">Tel</th>
-                                    <th class="recherche">Pays</th>
-                                    <th class="recherche">Devise</th>
-                                    <th class="recherche">Date d'ajout</th>
-                                    <th>Action--</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php $n = 1; ?>
-
-                                @foreach ($operators as $operator)
-                                    <tr>
-                                        <td style="width:1%">{{ $n }} </td>
-
-                                         <td style="width:18%">
-                                        <a class="btn btn-sm btn-success text-white" href="{{ url('ope_dashboard/'.$operator->id) }}">
-                                            {{ $operator->name }}
-                                        </a>
-                                    </td>
-
-                                        <td style="width:10%">{{ $operator->email }}</td>
-                                        <td>{{ $operator->tel }}</td>
-                                        <td>{{ $operator->country }}</td>
-                                        <td style="width:4%">{{ $operator->currency }}</td>
-                                        <td>{{ $operator->created_at }}</td>
-
-                                        <td style="width:13%">
-                                            <span data-toggle="tooltip" data-placement="top"
-                                                title="Voir les informations de l'opérateur en détail">
-
-                                                <a class=" mb-2 btn btn-sm btn-dark"
-                                                    href="{{ url('ope_dashboard/'.$operator->id) }}">
-
-                                                    <i class="fas fa-eye text-white "> </i>
-                                                </a>
-                                            </span>
-
-
-
-
-
-
-                                            @if (getUserType()->type_user == 3 || getUserType()->type_user == 2)
-
-
-                                            <span data-toggle="tooltip" data-placement="top"
-                                                title="Modifier les informations de l'opérateur">
-                                                <a class=" mb-2 btn btn-sm btn-info"
-                                                    href="{{ url('update_operator/'.$operator->id) }}">
-                                                    <i class="fas fas fa-user-cog text-white "> </i>
-                                                </a>
-                                            </span>
-
-
-
-                                            <span data-toggle="tooltip" data-placement="top"
-                                                title="Supprimer cet opérateur">
-                                                <a class=" delete-confirm mb-2 btn btn-sm btn-danger"
-                                                    href="/delete_operator/{{ $operator->id }}">
-                                                    <i class="fas far fa-times-circle text-white"> </i>
-                                                </a>
-                                            </span>
-
-
-
-
-                                       @endif
-                                        </td>
-                                    </tr>
-                                    <?php $n = $n + 1; ?>
-                                @endforeach
-
-
-
-                            </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-
-            </div>
-        </div>
 
 
         <div class="col-12 col-sm-12 col-lg-12">
@@ -216,8 +113,6 @@
                     </div>
                 </div>
                 <div class="collapse hide" id="mycard-collapse">
-
-
                     <div class="card-body">
                         <div class="row clearfix">
                             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 col-6">
@@ -226,7 +121,7 @@
                                         style="width:100%;">
                                         <thead>
                                             <tr>
-                                                <th style="color: aliceblue">MOIS</th>
+                                                <th style="color: aliceblue">MOIS<th>
                                                 <th style="color: aliceblue">CHARGES (FCFA)</th>
                                                 <th style="color: aliceblue">REVENUS (FCFA)</th>
                                                 <th style="color: aliceblue">NETTING (FCFA)</th>

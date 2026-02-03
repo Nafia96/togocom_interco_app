@@ -225,9 +225,9 @@
                             }
                         }
                     @endphp
-                    <a href="{{ route('billingp', $qs) }}" class="btn btn-sm btn-light text-primary">Partenaire</a>
-                    <a href="{{ route('billingPivotCountryCarrier', $qs) }}" class="btn btn-sm btn-light text-primary">Pays</a>
+                    <a href="{{ route('billingp', $qs) }}" class="btn btn-sm btn-light text-primary">Opérateurs</a>
                     <a href="{{ route('billingPivotNetCarrier', $qs) }}" class="btn btn-sm btn-light text-primary">Network</a>
+                    <a href="{{ route('billingPivotCountryCarrier', $qs) }}" class="btn btn-sm btn-warning text-dark" style="font-weight: 700;">Pays</a>
                     {{-- KPI button styled like Billing, separated to the end --}}
                     <a href="{{ route('kpi.pivot', $qs) }}" class="btn btn-sm btn-warning ms-3 px-3" style="font-weight:700;">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-graph-up-arrow me-1" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M0 0h1v15h15v1H0V0zm10.293 3.293a1 1 0 0 1 1.414 0L15 6.586V4a1 1 0 0 1 2 0v5a1 1 0 0 1-1 1h-5a1 1 0 0 1 0-2h2.586L11.707 6.707a1 1 0 0 1 0-1.414l-1.414-1.414zM5 9l2-2 3 3 4-4 1 1-5 5-3-3-2 2-1-1z"/></svg>
@@ -262,7 +262,7 @@
                                 Volume entrant
                         @endswitch
                     </li>
-                    <li class="breadcrumb-item"><strong>Opérateur :</strong> {{ $carrier ? $carrier : 'Tous' }}</li>
+                    {{-- <li class="breadcrumb-item"><strong>Opérateur :</strong> {{ $carrier ? $carrier : 'Tous' }}</li> --}}
                     <li class="breadcrumb-item"><strong>{{ $isOutbound ? 'Pays destination' : 'Pays origine' }}
                             :</strong> {{ request('orig_country_name') ? request('orig_country_name') : 'Tous' }}</li>
                     <li class="breadcrumb-item"><strong>Date début :</strong> {{ $startDate ?? '-' }}</li>
@@ -273,6 +273,14 @@
                 {{-- Filtres --}}
                 <form method="GET" action="{{ route('billingPivotCountryCarrier') }}"
                     class="row g-2 mb-4 align-items-end flex-nowrap">
+                    <div class="col-auto">
+                        <label for="view_type" class="form-label fw-semibold mb-1">Vue :</label>
+                        <select id="view_type" name="view_type" class="form-select form-control-sm">
+                            <option value="day" {{ ($viewType ?? 'day') == 'day' ? 'selected' : '' }}>Journalière</option>
+                            <option value="month" {{ ($viewType ?? 'day') == 'month' ? 'selected' : '' }}>Mensuelle</option>
+                            <option value="year" {{ ($viewType ?? 'day') == 'year' ? 'selected' : '' }}>Annuelle</option>
+                        </select>
+                    </div>
                     <div class="col-auto">
                         <label for="month" class="form-label fw-semibold mb-1">Mois :</label>
                         <input type="month" id="month" name="month" class="form-control form-control-sm"

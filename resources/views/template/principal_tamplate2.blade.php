@@ -86,7 +86,7 @@
     @if (Session::has('flash_message_success'))
         <script type="text/javascript" src="{{ asset('assets/js/sweetalert.min.js') }}"></script>
         <script type="text/javascript">
-            ;
+            
             swal("{{ session('flash_message_success') }}", "Merci", "success");
         </script>
     @endif
@@ -94,9 +94,9 @@
     <div id="app">
         <div class="main-wrapper main-wrapper-1">
 
-            <nav  style="margin-left:-250px; padding-left:-150px" class="navbar navbar-expand-lg main-navbar sticky">
+            <nav style="margin-left:-250px; padding-left:-150px; background-color: #133272;"  class="navbar navbar-expand-lg main-navbar sticky">
                 <div class="form-inline mr-auto">
-                    
+
                 </div>
                 <ul class="navbar-nav navbar-right">
 
@@ -140,20 +140,19 @@
             </nav>
 
             <!-- Main Content -->
-            <div class="main-content" style="background-color: rgb(214, 214, 214)">
+            <div class="main-content" style="background-color: rgb(255, 251, 251)">
 
                         @yield('content')
 
 
             </div>
-            <footer class="main-footer">
-                <div class="simple-footer" style="width: 100%; margin: auto  !important;">
+            <footer class="main-footer" style="background-color: #133272;">
+                <div class="simple-footer" style="width: 100%; margin: auto !important;">
                     <a href="#"
-                        style="color: #16346d;font-weight: bold; text-align: center !important; margin: auto !important; ">
+                        style="color: #ffffff; font-weight: bold; text-align: center !important; margin: auto !important;">
                         Copyright &copy; YAS {{ date('Y') }}
                     </a>
                 </div>
-
             </footer>
         </div>
     </div>

@@ -44,9 +44,7 @@ Route::get('billing2', [HomeController::class, 'billing2'])->name('billing2');
 Route::get('roaming', [HomeController::class, 'roaming2'])->name('roaming');
 Route::get('billingp', [HomeController::class, 'billingpivot'])->name('billingp');
 
-
 Route::get('billingn', [HomeController::class, 'billingPivotNetCarrier'])->name('billingPivotNetCarrier');
-
 
 Route::get('/billingc', [App\Http\Controllers\HomeController::class, 'billingPivotCountryCarrier'])->name('billingPivotCountryCarrier');
 
@@ -125,6 +123,7 @@ Route::middleware([NotConnected::class])->group(function () {
         Route::get('liste_operator', [OperatorController::class, 'liste_operator'])->name('liste_operator');
 
          Route::get('liste_operator_netting', [OperatorController::class, 'liste_operator_netting'])->name('liste_operator_netting');
+         Route::get('liste_operator_reporting', [OperatorController::class, 'liste_operator_reporting'])->name('liste_operator_reporting');
 
 
     // Routes for national measurements
