@@ -46,6 +46,20 @@ class RoamingController extends Controller
         return view('index');
     }
 
+      public function ouverture_roaming()
+    {
+        if (session('id') != null) {
+
+
+
+            return view('roaming.ouverture');
+
+
+        }
+
+        return view('index');
+    }
+
     public function iot_sms_voice()
     {
         if (session('id') != null) {

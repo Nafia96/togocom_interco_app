@@ -69,6 +69,7 @@ Route::get('complation', [HomeController::class, 'complation'])->name('complatio
 //roaming rout
 Route::get('iot_discount', [RoamingController::class, 'iot_discount'])->name('iot_discount');
 Route::get('iot_sms_data', [RoamingController::class, 'iot_sms_data'])->name('iot_sms_data');
+Route::get('ouverture_roaming', [RoamingController::class, 'ouverture_roaming'])->name('ouverture_roaming');
 Route::get('iot_sms_voice', [RoamingController::class, 'iot_sms_voice'])->name('iot_sms_voice');
 Route::post('iot_discount_register', [RoamingController::class, 'iot_discount_register'])->name('iot_discount_register');
 

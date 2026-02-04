@@ -182,6 +182,14 @@
 
                         </li>
 
+                                                <li class="dropdown">
+
+                            <a href="{{ url('/ouverture_roaming') }}" class="nav-link"><i
+                                    data-feather="monitor"></i><span>Ouvertures Roaming </span></a>
+
+
+                        </li>
+
                         <li class="dropdown">
 
                             <a href="{{ url('/iot_discount') }}" class="nav-link"><i

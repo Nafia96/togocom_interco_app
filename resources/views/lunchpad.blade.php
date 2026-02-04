@@ -75,7 +75,7 @@
                         </div>
                     </a>
 
-                    <a class="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-xs-12" href="{{ url('/billing') }}">
+                    <a class="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-xs-12" href="{{ url('/billingp') }}">
                         <div class="card" style="background-color: #133272;">
                             <div class="card-statistic-4">
                                 <div class="align-items-center justify-content-between">
