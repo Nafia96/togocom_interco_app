@@ -117,5 +117,6 @@ tbody td:first-child, thead th:first-child {
 </div>
 </div>
 </div>
+@include('partials.date_sync')
 </body>
 </html>

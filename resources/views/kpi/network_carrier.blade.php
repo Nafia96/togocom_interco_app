@@ -190,5 +190,6 @@ $r = $view === 'week'
 </div>
 </div>
 
+@include('partials.date_sync')
 </body>
 </html>

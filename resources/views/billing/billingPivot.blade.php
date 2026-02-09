@@ -16,14 +16,14 @@
         }
 
         .table-heading-country {
-            background: linear-gradient(90deg, #4caf50 0%, #81c784 100%) !important;
-            color: white !important;
+            background: linear-gradient(90deg, #133272 0%, #1e4a98 100%) !important;
+            color: #ffd100 !important;
             font-weight: bold !important;
             text-transform: uppercase;
             text-align: center;
             font-size: 1.1em !important;
             letter-spacing: 0.5px !important;
-            border: 2px solid #388e3c !important;
+            border: 2px solid rgba(19,50,114,0.9) !important;
         }
 
         .card {
@@ -33,9 +33,8 @@
         }
 
         .card-header {
-            background: linear-gradient(to bottom, #ffe066 0%, #ffcf33 70%, #ffcc00 100%);
-            color: #004aad;
-            /* Bleu profond et pur */
+            background: linear-gradient(90deg, #133272 0%, #1e4a98 100%);
+            color: #ffd100;
             font-weight: 700;
             font-size: 1.05rem;
             padding: 0.75rem 1.25rem;
@@ -201,6 +200,82 @@
             background-color: #ffffff !important;
         }
 
+        /* --- Colonne Budget --- */
+        .budget-percentage {
+            font-weight: bold;
+            min-width: 80px;
+            border-radius: 4px;
+            padding: 6px 8px !important;
+            text-align: center;
+        }
+
+        .budget-percentage.alert-success {
+            background-color: #d4edda !important;
+            color: #155724 !important;
+            border: 1px solid #c3e6cb;
+        }
+
+        .budget-percentage.alert-warning {
+            background-color: #fff3cd !important;
+            color: #856404 !important;
+            border: 1px solid #ffeeba;
+        }
+
+        .budget-percentage-tooltip {
+            display: inline-block;
+        }
+
+        .budget-percentage-tooltip:hover::after {
+            content: attr(data-details);
+            position: absolute;
+            background-color: #333;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            white-space: pre-wrap;
+            z-index: 1000;
+            max-width: 300px;
+            word-wrap: break-word;
+        }
+
+        #topNSelect_ops {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #004aad;
+            border: 1.5px solid #004aad;
+            border-radius: 10px;
+            background-color: #fff8cc;
+            padding: 4px 10px;
+            transition: all 0.25s ease;
+        }
+
+        #topNSelect_ops:focus,
+        #topNSelect_ops:hover {
+            background-color: #004aad;
+            color: #fff;
+            border-color: #004aad;
+            font-weight: 600;
+            box-shadow: 0 0 6px rgba(0, 74, 173, 0.4);
+        }
+
+        /* Filter action button (right side) styled to match table heading */
+        .col-md-3.d-flex.align-items-end .btn,
+        .col-md-2.d-flex.align-items-end .btn,
+        .col-md-1.d-flex.align-items-end .btn,
+        .filter-action .btn {
+            background: linear-gradient(90deg, #133272 0%, #1e4a98 100%);
+            color: #ffd100 !important;
+            border: none;
+            font-weight: 700;
+        }
+        .col-md-3.d-flex.align-items-end .btn:hover,
+        .col-md-2.d-flex.align-items-end .btn:hover,
+        .col-md-1.d-flex.align-items-end .btn:hover,
+        .filter-action .btn:hover {
+            filter: brightness(0.95);
+        }
+
         /* Harmonized pivot header title color */
     </style>
 
@@ -212,7 +287,7 @@
             <div class="card-header d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center">
                     <i class="fas fa-table me-2"></i>
-                    <span class="pivot-header-title">Analyse Pivot – Facturation par opérateur</span>
+                    <span class="pivot-header-title">Analyse – Facturation par opérateur</span>
                 </div>
                 <div class="d-flex gap-2 align-items-center">
                     @php
@@ -336,6 +411,18 @@
                                         <td class="text-end">{{ $val > 0 ? number_format($val, 0, ',', ' ') : '-' }}
                                         </td>
                                     @endforeach
+                                    @php
+                                        // Calcul du pourcentage moyen du budget
+                                        $percentageValues = [];
+                                        foreach ($days as $day) {
+                                            $val = $rows->firstWhere('day', $day)->total ?? 0;
+                                            $dailyBudget = $budgetsPerDay[$day] ?? null;
+                                            if ($dailyBudget && $dailyBudget > 0) {
+                                                $percentageValues[] = ($val / $dailyBudget) * 100;
+                                            }
+                                        }
+                                        $avgPercentage = !empty($percentageValues) ? array_sum($percentageValues) / count($percentageValues) : 0;
+                                    @endphp
                                     <td class="text-end bg-light fw-bold">{{ number_format($sum, 0, ',', ' ') }}</td>
                                 </tr>
                             @endforeach
@@ -343,12 +430,40 @@
                         <tfoot>
                             <tr>
                                 <td>Total</td>
+                                @php
+                                    $percentageTotal = [];
+                                    $grandTotal = array_sum($totals);
+                                @endphp
                                 @foreach ($days as $day)
                                     <td class="text-end">
                                         {{ $totals[$day] > 0 ? number_format($totals[$day], 0, ',', ' ') : '-' }}
                                     </td>
+                                    @php
+                                        $dailyBudget = $budgetsPerDay[$day] ?? null;
+                                        if ($dailyBudget && $dailyBudget > 0) {
+                                            $percentageTotal[] = ($totals[$day] / $dailyBudget) * 100;
+                                        }
+                                    @endphp
                                 @endforeach
-                                <td class="text-end">{{ number_format(array_sum($totals), 0, ',', ' ') }}</td>
+                                <td class="text-end">{{ number_format($grandTotal, 0, ',', ' ') }}</td>
+                            </tr>
+                            <tr style="background-color: #fff3cd; color: #856404; font-weight: bold;">
+                                <td>% Budget Journalier</td>
+                                @foreach ($days as $day)
+                                    @php
+                                        $dailyBudget = $budgetsPerDay[$day] ?? null;
+                                        $dayPercentage = ($dailyBudget && $dailyBudget > 0) ? ($totals[$day] / $dailyBudget) * 100 : 0;
+                                        $surplus = $dayPercentage - 100;
+                                    @endphp
+                                    <td class="text-end" style="background-color: {{ $surplus >= 0 ? '#d4edda' : '#ffcccc' }}; color: {{ $surplus >= 0 ? '#155724' : '#d32f2f' }};">
+                                        @if($surplus >= 0)
+                                            +{{ number_format($surplus, 2, ',', ' ') }}% 🟢
+                                        @else
+                                            {{ number_format($surplus, 2, ',', ' ') }}% 🔴
+                                        @endif
+                                    </td>
+                                @endforeach
+                                <td class="text-end" style="background-color: #fff3cd;">-</td>
                             </tr>
                         </tfoot>
                     </table>
@@ -369,10 +484,16 @@
                             @foreach ($operators as $operator => $rows)
                                 <tr>
                                     <td>{{ $operator }}</td>
-                                    @php $prev = null; @endphp
+                                    @php
+                                        $percentageDetails = [];
+                                        $prev = null;
+                                    @endphp
                                     @foreach ($days as $day)
                                         @php
                                             $val = $rows->firstWhere('day', $day)->total ?? 0;
+                                            $dailyBudget = $budgetsPerDay[$day] ?? null;
+                                            $percentage = ($dailyBudget && $dailyBudget > 0) ? ($val / $dailyBudget * 100) : 0;
+                                            $percentageDetails[] = round($percentage, 1);
                                             $progression =
                                                 $prev && $prev > 0 ? round((($val - $prev) / $prev) * 100, 1) : null;
                                             $prev = $val;
@@ -426,6 +547,44 @@
             const chartsProgression = document.getElementById("chartsProgression");
 
             let mode = "valeurs"; // par défaut
+
+            // --- Auto-sync end_date with start_date and enforce end >= start ---
+            const startInput = document.getElementById('start_date');
+            const endInput = document.getElementById('end_date');
+
+            function setEndToMonthEnd(dateStr) {
+                if (!dateStr) return null;
+                const parts = dateStr.split('-');
+                if (parts.length !== 3) return null;
+                const year = parseInt(parts[0], 10);
+                const month = parseInt(parts[1], 10) - 1; // 0-based
+                const lastDay = new Date(year, month + 1, 0).getDate();
+                return `${year}-${String(month + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+            }
+
+            function updateEndMinAndAdjust() {
+                if (!startInput || !endInput) return;
+                const s = startInput.value;
+                if (s) {
+                    endInput.min = s;
+                    if (!endInput.value || endInput.value < s) {
+                        const newEnd = setEndToMonthEnd(s);
+                        if (newEnd) endInput.value = newEnd;
+                    }
+                } else {
+                    endInput.removeAttribute('min');
+                }
+            }
+
+            if (startInput) startInput.addEventListener('change', updateEndMinAndAdjust);
+            if (endInput) endInput.addEventListener('change', function() {
+                if (startInput && endInput.value && endInput.value < startInput.value) {
+                    endInput.value = startInput.value;
+                }
+            });
+
+            // initialize on load
+            updateEndMinAndAdjust();
 
             // === Toggle entre Valeurs / Progression ===
             toggleBtn.addEventListener("click", function() {

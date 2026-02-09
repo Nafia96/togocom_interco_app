@@ -20,8 +20,8 @@
         }
 
         .card-header {
-            background: linear-gradient(135deg, #007bff, #17a2b8);
-            color: white;
+            background: linear-gradient(90deg, #133272 0%, #1e4a98 100%);
+            color: #ffd100;
             font-weight: 600;
             font-size: 1rem;
             padding: 0.6rem 1rem;
@@ -100,7 +100,7 @@
                     </div>
 
                     <div class="col-md-3 d-flex align-items-end">
-                        <button type="submit" class="btn btn-primary w-100">Filtrer</button>
+                        <button type="submit" class="btn w-100" style="background: linear-gradient(90deg, #133272 0%, #1e4a98 100%); color: #ffd100; border: none; font-weight: 700;">Filtrer</button>
                     </div>
                 </form>
 

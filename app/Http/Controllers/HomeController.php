@@ -860,8 +860,37 @@ class HomeController extends Controller
                 $totals[$d] = (float) $records->where('day', $d)->sum('total');
             }
 
+            // Récupérer les budgets journaliers
+            $monthNum = (int) substr($month, 5, 2);
+            $year = (int) substr($month, 0, 4);
+
+            $monthNames = [
+                1 => 'Janvier', 2 => 'Février', 3 => 'Mars', 4 => 'Avril',
+                5 => 'Mai', 6 => 'Juin', 7 => 'Juillet', 8 => 'Août',
+                9 => 'Septembre', 10 => 'Octobre', 11 => 'Novembre', 12 => 'Décembre'
+            ];
+
+            $monthName = $monthNames[$monthNum] ?? '';
+            $budgetData = DB::table('budget_interco_journalier')
+                ->where('annee', $year)
+                ->where('mois', $monthName)
+                ->first();
+
+            $budgetsPerDay = [];
+            if ($budgetData) {
+                // Utiliser le budget mensuel directement pour tous les jours
+                $budgetField = $filter === 'revenu' ? 'revenu_journalier' : ($filter === 'charge' ? 'charge_journaliere' : null);
+
+                if ($budgetField) {
+                    $monthlyBudget = $budgetData->$budgetField;
+                    foreach ($days as $d) {
+                        $budgetsPerDay[$d] = $monthlyBudget;
+                    }
+                }
+            }
+
             $metricLabel = $conf['label'];
-            return view('billing.billingPivot', compact('operators', 'days', 'totals', 'month', 'filter', 'metricLabel', 'startDate', 'endDate', 'viewType'));
+            return view('billing.billingPivot', compact('operators', 'days', 'totals', 'month', 'filter', 'metricLabel', 'startDate', 'endDate', 'viewType', 'budgetsPerDay'));
 
         } elseif ($viewType === 'month') {
             $records = $q->select([

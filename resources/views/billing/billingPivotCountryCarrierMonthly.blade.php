@@ -13,19 +13,33 @@
             font-size: 0.85rem;
         }
         .table-heading-country {
-            background: linear-gradient(90deg, #4caf50 0%, #81c784 100%) !important;
-            color: white !important;
+            background: linear-gradient(90deg, #133272 0%, #1e4a98 100%) !important;
+            color: #ffd100 !important;
             font-weight: bold !important;
             text-transform: uppercase;
             text-align: center;
             font-size: 1.1em !important;
             letter-spacing: 0.5px !important;
-            border: 2px solid #388e3c !important;
+            border: 2px solid rgba(19,50,114,0.9) !important;
+        }
+
+        .col-md-3.d-flex.align-items-end .btn,
+        .col-md-2.d-flex.align-items-end .btn,
+        .filter-action .btn {
+            background: linear-gradient(90deg, #133272 0%, #1e4a98 100%);
+            color: #ffd100 !important;
+            border: none;
+            font-weight: 700;
+        }
+        .col-md-3.d-flex.align-items-end .btn:hover,
+        .col-md-2.d-flex.align-items-end .btn:hover,
+        .filter-action .btn:hover {
+            filter: brightness(0.95);
         }
         .card { border-radius: 15px; overflow: hidden; box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06); }
         .card-header {
-            background: linear-gradient(to bottom, #ffe066 0%, #ffcf33 70%, #ffcc00 100%);
-            color: #004aad;
+            background: linear-gradient(90deg, #133272 0%, #1e4a98 100%);
+            color: #ffd100;
             font-weight: 700;
             font-size: 1.05rem;
             padding: 0.75rem 1.25rem;
@@ -176,5 +190,6 @@
         </div>
     </div>
     <script src="https://kit.fontawesome.com/a2d9d6a62e.js" crossorigin="anonymous"></script>
+@include('partials.date_sync')
 </body>
 </html>

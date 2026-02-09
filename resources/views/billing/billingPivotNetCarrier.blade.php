@@ -17,14 +17,28 @@
         }
 
         .table-heading-country {
-            background: linear-gradient(90deg, #4caf50 0%, #81c784 100%) !important;
-            color: white !important;
+            background: linear-gradient(90deg, #133272 0%, #1e4a98 100%) !important;
+            color: #ffd100 !important;
             font-weight: bold !important;
             text-transform: uppercase;
             text-align: center;
             font-size: 1.1em !important;
             letter-spacing: 0.5px !important;
-            border: 2px solid #388e3c !important;
+            border: 2px solid rgba(19,50,114,0.9) !important;
+        }
+
+        .col-md-3.d-flex.align-items-end .btn,
+        .col-md-2.d-flex.align-items-end .btn,
+        .filter-action .btn {
+            background: linear-gradient(90deg, #133272 0%, #1e4a98 100%);
+            color: #ffd100 !important;
+            border: none;
+            font-weight: 700;
+        }
+        .col-md-3.d-flex.align-items-end .btn:hover,
+        .col-md-2.d-flex.align-items-end .btn:hover,
+        .filter-action .btn:hover {
+            filter: brightness(0.95);
         }
 
         .card {
@@ -34,9 +48,8 @@
         }
 
         .card-header {
-            background: linear-gradient(to bottom, #ffe066 0%, #ffcf33 70%, #ffcc00 100%);
-            color: #004aad;
-            /* Bleu profond et pur */
+            background: linear-gradient(90deg, #133272 0%, #1e4a98 100%);
+            color: #ffd100;
             font-weight: 700;
             font-size: 1.05rem;
             padding: 0.75rem 1.25rem;
@@ -274,24 +287,23 @@
             </nav>
             <div class="card-body">
                 {{-- Filtres --}}
-                <form method="GET" action="{{ route('billingPivotNetCarrier') }}"
-                    class="row g-2 mb-4 align-items-end flex-nowrap">
-                    <div class="col-auto">
-                        <label for="view_type" class="form-label fw-semibold mb-1">Vue :</label>
-                        <select id="view_type" name="view_type" class="form-select form-control-sm">
+                <form method="GET" action="{{ route('billingPivotNetCarrier') }}" class="row g-3 mb-4">
+                    <div class="col-md-2">
+                        <label for="view_type" class="form-label fw-semibold">Vue :</label>
+                        <select id="view_type" name="view_type" class="form-select">
                             <option value="day" {{ request('view_type', 'day') == 'day' ? 'selected' : '' }}>Journalière</option>
                             <option value="month" {{ request('view_type', 'day') == 'month' ? 'selected' : '' }}>Mensuelle</option>
                             <option value="year" {{ request('view_type', 'day') == 'year' ? 'selected' : '' }}>Annuelle</option>
                         </select>
                     </div>
-                    <div class="col-auto">
-                        <label for="month" class="form-label fw-semibold mb-1">Mois :</label>
-                        <input type="month" id="month" name="month" class="form-control form-control-sm"
+                    <div class="col-md-2">
+                        <label for="month" class="form-label fw-semibold">Mois :</label>
+                        <input type="month" id="month" name="month" class="form-control"
                             value="{{ $month }}">
                     </div>
-                    <div class="col-auto">
-                        <label for="filter" class="form-label fw-semibold mb-1">Type :</label>
-                        <select id="filter" name="filter" class="form-select form-control-sm">
+                    <div class="col-md-2">
+                        <label for="filter" class="form-label fw-semibold">Type :</label>
+                        <select id="filter" name="filter" class="form-select">
                             <option value="entrant" {{ $filter == 'entrant' ? 'selected' : '' }}>Volume entrant
                             </option>
                             <option value="sortant" {{ $filter == 'sortant' ? 'selected' : '' }}>Volume sortant
@@ -300,19 +312,19 @@
                             <option value="charge" {{ $filter == 'charge' ? 'selected' : '' }}>Charge</option>
                         </select>
                     </div>
-                    <div class="col-auto">
-                        <label for="start_date" class="form-label fw-semibold mb-1">Date début :</label>
-                        <input type="date" id="start_date" name="start_date" class="form-control form-control-sm"
+                    <div class="col-md-2">
+                        <label for="start_date" class="form-label fw-semibold">Date début :</label>
+                        <input type="date" id="start_date" name="start_date" class="form-control"
                             value="{{ $startDate ?? '' }}">
                     </div>
-                    <div class="col-auto">
-                        <label for="end_date" class="form-label fw-semibold mb-1">Date fin :</label>
-                        <input type="date" id="end_date" name="end_date" class="form-control form-control-sm"
+                    <div class="col-md-2">
+                        <label for="end_date" class="form-label fw-semibold">Date fin :</label>
+                        <input type="date" id="end_date" name="end_date" class="form-control"
                             value="{{ $endDate ?? '' }}">
                     </div>
-                    <div class="col-auto">
-                        <label for="carrier_name" class="form-label fw-semibold mb-1">Opérateur :</label>
-                        <select id="carrier_name" name="carrier_name" class="form-select form-control-sm">
+                    <div class="col-md-2">
+                        <label for="carrier_name" class="form-label fw-semibold">Opérateur :</label>
+                        <select id="carrier_name" name="carrier_name" class="form-select" >
                             <option value="">Tous</option>
                             @foreach ($allCarriers as $carrierOption)
                                 <option value="{{ $carrierOption }}"
@@ -322,8 +334,8 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-auto">
-                        <button type="submit" class="btn btn-success btn-sm">Filtrer</button>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-success w-100">Filtrer</button>
                     </div>
                 </form>
 
@@ -333,7 +345,7 @@
                         <div class="input-group input-group-sm" style="width:180px;">
                             <button class="btn btn-outline-secondary" type="button" id="sortTotalBtn_nets"
                                 title="Trier par Total">Trier Total ▲▼</button>
-                            <select id="topNSelect_nets" class="form-select">
+                            <select id="topNSelect_nets " >
                                 <option value="all">Tous</option>
                                 <option value="5">Top 5</option>
                                 <option value="10">Top 10</option>
@@ -900,6 +912,7 @@
         });
     </script>
     <script src="https://kit.fontawesome.com/a2d9d6a62e.js" crossorigin="anonymous"></script>
+    @include('partials.date_sync')
 </body>
 
 </html>

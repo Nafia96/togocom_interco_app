@@ -151,7 +151,8 @@
                                         @endphp
 
                                         <a
-                                            href="{{ route('kpi.KpinCarrier', ['view' => $view, 'start_date' => $start, 'end_date' => $end, 'network' => 'ALL', 'partner' => $partner, 'direction' => $kc_direction]) }}">
+            @include('partials.date_sync')
+        </body>
                                             {{ $partner }}
                                         </a>
                                     </td>

@@ -15,14 +15,28 @@
         }
 
         .table-heading-country {
-            background: linear-gradient(90deg, #4caf50 0%, #81c784 100%) !important;
-            color: white !important;
+            background: linear-gradient(90deg, #133272 0%, #1e4a98 100%) !important;
+            color: #ffd100 !important;
             font-weight: bold !important;
             text-transform: uppercase;
             text-align: center;
             font-size: 1.1em !important;
             letter-spacing: 0.5px !important;
-            border: 2px solid #388e3c !important;
+            border: 2px solid rgba(19,50,114,0.9) !important;
+        }
+
+        .col-md-3.d-flex.align-items-end .btn,
+        .col-md-2.d-flex.align-items-end .btn,
+        .filter-action .btn {
+            background: linear-gradient(90deg, #133272 0%, #1e4a98 100%);
+            color: #ffd100 !important;
+            border: none;
+            font-weight: 700;
+        }
+        .col-md-3.d-flex.align-items-end .btn:hover,
+        .col-md-2.d-flex.align-items-end .btn:hover,
+        .filter-action .btn:hover {
+            filter: brightness(0.95);
         }
 
         .card {
@@ -32,8 +46,8 @@
         }
 
         .card-header {
-            background: linear-gradient(to bottom, #ffe066 0%, #ffcf33 70%, #ffcc00 100%);
-            color: #004aad;
+            background: linear-gradient(90deg, #133272 0%, #1e4a98 100%);
+            color: #ffd100;
             font-weight: 700;
             font-size: 1.05rem;
             padding: 0.75rem 1.25rem;
@@ -182,16 +196,35 @@
 
             <!-- Breadcrumb Filtres -->
             <nav aria-label="breadcrumb" class="px-3 pt-2">
-                <ol class="breadcrumb mb-2">
-                    <li class="breadcrumb-item"><strong>Vue :</strong>
-                        @php $vt = request('view_type', 'month'); @endphp
-                        {{ $vt == 'day' ? 'Journalière' : ($vt == 'month' ? 'Mensuelle' : 'Annuelle') }}
+                <ol class="breadcrumb">
+                    @php $vt = request('view_type', 'month'); @endphp
+                    <li class="breadcrumb-item">
+                        <div class="d-flex align-items-center">
+                            <strong class="me-2">Vue :</strong>
+                            <span class="breadcrumb-value">{{ $vt == 'day' ? 'Journalière' : ($vt == 'month' ? 'Mensuelle' : 'Annuelle') }}</span>
+                        </div>
                     </li>
-                    <li class="breadcrumb-item"><strong>Type :</strong>
-                        {{ $filter == 'revenu' ? 'Revenu' : ($filter == 'charge' ? 'Charge' : ($filter == 'sortant' ? 'Volume sortant' : 'Volume entrant')) }}
+
+                    <li class="breadcrumb-item">
+                        <div class="d-flex align-items-center">
+                            <strong class="me-2">Type :</strong>
+                            <span class="breadcrumb-value">{{ $filter == 'revenu' ? 'Revenu' : ($filter == 'charge' ? 'Charge' : ($filter == 'sortant' ? 'Volume sortant' : 'Volume entrant')) }}</span>
+                        </div>
                     </li>
-                    <li class="breadcrumb-item"><strong>Date début :</strong> {{ $startDate ?? '-' }}</li>
-                    <li class="breadcrumb-item"><strong>Date fin :</strong> {{ $endDate ?? '-' }}</li>
+
+                    <li class="breadcrumb-item">
+                        <div class="d-flex align-items-center">
+                            <strong class="me-2">Date début :</strong>
+                            <span class="breadcrumb-value">{{ $startDate ?? '-' }}</span>
+                        </div>
+                    </li>
+
+                    <li class="breadcrumb-item">
+                        <div class="d-flex align-items-center">
+                            <strong class="me-2">Date fin :</strong>
+                            <span class="breadcrumb-value">{{ $endDate ?? '-' }}</span>
+                        </div>
+                    </li>
                 </ol>
             </nav>
 
@@ -210,7 +243,7 @@
                         <label for="month" class="form-label fw-semibold">Mois :</label>
                         <input type="month" id="month" name="month" class="form-control" value="{{ request('month', $month ?? '') }}">
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-2">
                         <label for="filter" class="form-label fw-semibold">Type :</label>
                         <select id="filter" name="filter" class="form-select">
                             <option value="entrant" {{ $filter == 'entrant' ? 'selected' : '' }}>Volume entrant</option>
@@ -221,13 +254,13 @@
                         </select>
                     </div>
 
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label for="start_date" class="form-label fw-semibold">Date début :</label>
                         <input type="date" id="start_date" name="start_date" class="form-control"
                             value="{{ $startDate ?? '' }}">
                     </div>
 
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label for="end_date" class="form-label fw-semibold">Date fin :</label>
                         <input type="date" id="end_date" name="end_date" class="form-control"
                             value="{{ $endDate ?? '' }}">
@@ -238,22 +271,23 @@
                     </div>
                 </form>
 
-                {{-- Tableau Valeurs Mensuelles --}}
-                <div id="tableValeurs" class="table-responsive">
-                    <div class="d-flex justify-content-end mb-2 gap-2 align-items-center">
-                        <div class="input-group input-group-sm" style="width:180px;">
-                            <button class="btn btn-outline-secondary" type="button" id="sortTotalBtn_ops"
-                                title="Trier par Total">Trier Total ▲▼</button>
-                            <select id="topNSelect_ops" class="form-select">
-                                <option value="all">Tous</option>
-                                <option value="5">Top 5</option>
-                                <option value="10">Top 10</option>
-                            </select>
+                    {{-- Tableau Valeurs Mensuelles --}}
+                    <div id="tableValeurs" class="table-responsive">
+                        <div class="d-flex justify-content-end mb-2 gap-2 align-items-center">
+                            <div class="input-group input-group-sm" style="width:180px;">
+
+                                <button class="btn btn-outline-secondary" type="button" id="sortTotalBtn_ops"
+                                    title="Trier par Total">Trier Total ▲▼</button>
+                                <select id="topNSelect_ops">
+                                    <option value="all">Tous</option>
+                                    <option value="5">Top 5</option>
+                                    <option value="10">Top 10</option>
+                                </select>
+                            </div>
                         </div>
-                    </div>
-                    <table id="pivotTableOps" class="table table-bordered table-hover table-striped align-middle">
-                        <thead>
-                            <tr>
+                        <table id="pivotTableOps" class="table table-bordered table-hover table-striped align-middle">
+                            <thead>
+                                <tr>
                                 <th class="table-heading-country">Opérateur</th>
                                 @foreach ($months as $month)
                                     @php
@@ -576,6 +610,7 @@
         });
     </script>
 
+    @include('partials.date_sync')
 </body>
 
 </html>

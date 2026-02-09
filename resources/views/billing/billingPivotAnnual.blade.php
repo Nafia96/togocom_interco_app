@@ -15,14 +15,28 @@
         }
 
         .table-heading-country {
-            background: linear-gradient(90deg, #4caf50 0%, #81c784 100%) !important;
-            color: white !important;
+            background: linear-gradient(90deg, #133272 0%, #1e4a98 100%) !important;
+            color: #ffd100 !important;
             font-weight: bold !important;
             text-transform: uppercase;
             text-align: center;
             font-size: 1.1em !important;
             letter-spacing: 0.5px !important;
-            border: 2px solid #388e3c !important;
+            border: 2px solid rgba(19,50,114,0.9) !important;
+        }
+
+        .col-md-3.d-flex.align-items-end .btn,
+        .col-md-2.d-flex.align-items-end .btn,
+        .filter-action .btn {
+            background: linear-gradient(90deg, #133272 0%, #1e4a98 100%);
+            color: #ffd100 !important;
+            border: none;
+            font-weight: 700;
+        }
+        .col-md-3.d-flex.align-items-end .btn:hover,
+        .col-md-2.d-flex.align-items-end .btn:hover,
+        .filter-action .btn:hover {
+            filter: brightness(0.95);
         }
 
         .card {
@@ -32,8 +46,8 @@
         }
 
         .card-header {
-            background: linear-gradient(to bottom, #ffe066 0%, #ffcf33 70%, #ffcc00 100%);
-            color: #004aad;
+            background: linear-gradient(90deg, #133272 0%, #1e4a98 100%);
+            color: #ffd100;
             font-weight: 700;
             font-size: 1.05rem;
             padding: 0.75rem 1.25rem;
@@ -141,7 +155,6 @@
             border: 1.5px solid #004aad;
             border-radius: 10px;
             background-color: #fff8cc;
-            padding: 4px 10px;
             transition: all 0.25s ease;
         }
 
@@ -206,7 +219,7 @@
                             <option value="year" {{ request('view_type','year') == 'year' ? 'selected' : '' }}>Annuelle</option>
                         </select>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-2">
                         <label for="filter" class="form-label fw-semibold">Type :</label>
                         <select id="filter" name="filter" class="form-select">
                             <option value="entrant" {{ $filter == 'entrant' ? 'selected' : '' }}>Volume entrant</option>
@@ -217,13 +230,13 @@
                         </select>
                     </div>
 
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label for="start_date" class="form-label fw-semibold">Date début :</label>
                         <input type="date" id="start_date" name="start_date" class="form-control"
                             value="{{ $startDate ?? '' }}">
                     </div>
 
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label for="end_date" class="form-label fw-semibold">Date fin :</label>
                         <input type="date" id="end_date" name="end_date" class="form-control"
                             value="{{ $endDate ?? '' }}">
@@ -236,11 +249,11 @@
 
                 {{-- Tableau Valeurs Annuelles --}}
                 <div id="tableValeurs" class="table-responsive">
-                    <div class="d-flex justify-content-end mb-2 gap-2 align-items-center">
+                    <div class="d-flex justify-content-end align-items-center">
                         <div class="input-group input-group-sm" style="width:180px;">
                             <button class="btn btn-outline-secondary" type="button" id="sortTotalBtn_ops"
                                 title="Trier par Total">Trier Total ▲▼</button>
-                            <select id="topNSelect_ops" class="form-select">
+                            <select id="topNSelect_ops">
                                 <option value="all">Tous</option>
                                 <option value="5">Top 5</option>
                                 <option value="10">Top 10</option>
@@ -554,6 +567,7 @@
         });
     </script>
 
+@include('partials.date_sync')
 </body>
 
 </html>

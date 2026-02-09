@@ -20,8 +20,8 @@
         }
 
         .card-header {
-            background: linear-gradient(to bottom, #ffe066 0%, #ffcf33 70%, #ffcc00 100%);
-            color: #004aad;
+            background: linear-gradient(90deg, #133272 0%, #1e4a98 100%);
+            color: #ffd100;
             font-weight: 700;
             font-size: 1.05rem;
             padding: 0.75rem 1.25rem;
@@ -56,8 +56,8 @@
         }
 
         .btn-filter {
-            background: linear-gradient(180deg, #0056d2 0%, #004aad 100%);
-            color: white;
+            background: linear-gradient(90deg, #133272 0%, #1e4a98 100%);
+            color: #ffd100 !important;
             border: none;
             border-radius: 20px;
             font-weight: 600;
@@ -67,10 +67,23 @@
         }
 
         .btn-filter:hover {
-            background: linear-gradient(180deg, #0069ff 0%, #0056d2 100%);
+            background: linear-gradient(90deg, #0f2854 0%, #1a3f85 100%);
             transform: translateY(-2px);
-            color: white;
+            color: #ffd100 !important;
             text-decoration: none;
+        }
+
+        /* Additional button styling for consistency */
+        .col-md-2.d-flex.align-items-end .btn,
+        .col-md-3.d-flex.align-items-end .btn {
+            background: linear-gradient(90deg, #133272 0%, #1e4a98 100%);
+            color: #ffd100 !important;
+            border: none;
+            font-weight: 700;
+        }
+        .col-md-2.d-flex.align-items-end .btn:hover,
+        .col-md-3.d-flex.align-items-end .btn:hover {
+            filter: brightness(0.95);
         }
 
         .chart-container {
@@ -113,29 +126,29 @@
 
             <div class="card-body">
                 <!-- Filtres -->
-                <form method="GET" action="{{ route('billingKp') }}" class="row g-2 mb-4 align-items-end">
-                    <div class="col-auto">
+                <form method="GET" action="{{ route('billingKp') }}" class="row g-3 mb-4">
+                    <div class="col-md-2">
                         <label for="start_date" class="form-label fw-semibold">Date début :</label>
-                        <input type="date" id="start_date" name="start_date" class="form-control form-control-sm"
+                        <input type="date" id="start_date" name="start_date" class="form-control"
                             value="{{ $start }}">
                     </div>
-                    <div class="col-auto">
+                    <div class="col-md-2">
                         <label for="end_date" class="form-label fw-semibold">Date fin :</label>
-                        <input type="date" id="end_date" name="end_date" class="form-control form-control-sm"
+                        <input type="date" id="end_date" name="end_date" class="form-control"
                             value="{{ $end }}">
                     </div>
-                    <div class="col-auto">
+                    <div class="col-md-2">
                         <label for="direction" class="form-label fw-semibold">Direction :</label>
-                        <select id="direction" name="direction" class="form-select form-control-sm">
+                        <select id="direction" name="direction" class="form-select">
                             <option value="">Toutes</option>
                             <option value="revenue" {{ $direction === 'revenue' ? 'selected' : '' }}>Revenue
                             </option>
                             <option value="charge" {{ $direction === 'charge' ? 'selected' : '' }}>Charge</option>
                         </select>
                     </div>
-                    <div class="col-auto">
+                    <div class="col-md-2">
                         <label for="carrier_name" class="form-label fw-semibold">Opérateur :</label>
-                        <select id="carrier_name" name="carrier_name" class="form-select form-control-sm">
+                        <select id="carrier_name" name="carrier_name" class="form-select">
                             <option value="">Tous</option>
                             @foreach ($allCarriers as $c)
                                 <option value="{{ $c }}" {{ $carrier === $c ? 'selected' : '' }}>{{ $c }}
@@ -143,8 +156,8 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-auto">
-                        <button type="submit" class="btn btn-filter">Filtrer</button>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-filter w-100">Filtrer</button>
                     </div>
                 </form>
 
@@ -324,5 +337,6 @@
         });
     </script>
     <script src="https://kit.fontawesome.com/a2d9d6a62e.js" crossorigin="anonymous"></script>
+    @include('partials.date_sync')
 </body>
 </html>

@@ -18,7 +18,7 @@
 
     <!-- Formulaire de filtrage -->
     <div class="card mb-4">
-        <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+        <div class="card-header" style="background: linear-gradient(90deg, #133272 0%, #1e4a98 100%); color: #ffd100;">
             <h5 class="mb-0">Filtres</h5>
         </div>
         <div class="card-body">
@@ -170,7 +170,7 @@
 
     <!-- Tableau Récapitulatif par Opérateur -->
     <div class="card mt-4">
-        <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+        <div class="card-header" style="background: linear-gradient(90deg, #133272 0%, #1e4a98 100%); color: #ffd100;">
             <h5 class="mb-0">Récapitulatif par Opérateur (Période)</h5>
         </div>
         <div class="card-body">
@@ -252,6 +252,9 @@
     }
 
     .card-header {
+        background: linear-gradient(90deg, #133272 0%, #1e4a98 100%);
+        color: #ffd100;
+        font-weight: 700;
         border-radius: 8px 8px 0 0;
     }
 
