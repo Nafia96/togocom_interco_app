@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pivot Facturation</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
             background: #f4f6f9;
@@ -286,6 +286,10 @@
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center">
+                    <a href="{{ route('lunchepade') }}" class="btn btn-sm btn-secondary me-3" title="Retour au launchpad" style="padding: 0.25rem 0.5rem; display: flex; align-items: center;">
+                        <img src="{{ asset('assets/img/logo.png') }}" alt="Logo" style="height: 24px; width: auto; object-fit: contain; margin-right: 6px;">
+                        <span>Launchpad</span>
+                    </a>
                     <i class="fas fa-table me-2"></i>
                     <span class="pivot-header-title">Analyse – Facturation par opérateur</span>
                 </div>
@@ -339,7 +343,7 @@
                             value="{{ $month }}">
                     </div>
 
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label for="filter" class="form-label fw-semibold">Type :</label>
                         <select id="filter" name="filter" class="form-select">
                             <option value="entrant" {{ $filter == 'entrant' ? 'selected' : '' }}>Volume entrant</option>
@@ -371,9 +375,8 @@
 
                 {{-- Tableau Valeurs --}}
                 <div id="tableValeurs" class="table-responsive">
-                    <div class="d-flex justify-content-end mb-2 gap-2 align-items-center">
+                    <div class="d-flex justify-content-between mb-2 gap-2 align-items-center">
                         <div class="input-group input-group-sm" style="width:180px;">
-
                             <button class="btn btn-outline-secondary" type="button" id="sortTotalBtn_ops"
                                 title="Trier par Total">Trier Total ▲▼</button>
                             <select id="topNSelect_ops" class="form-select">
@@ -382,6 +385,10 @@
                                 <option value="10">Top 10</option>
                             </select>
                         </div>
+                        <button id="exportTableBtn" class="btn btn-sm btn-info text-white" title="Exporter tableau en Excel">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-spreadsheet me-1" viewBox="0 0 16 16"><path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5v2z"/><path d="M3 5.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5v-1zm0 3a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5v-4z"/></svg>
+                            Excel
+                        </button>
                     </div>
                     <table id="pivotTableOps" class="table table-bordered table-hover table-striped align-middle">
                         <thead>
@@ -517,7 +524,13 @@
 
                 {{-- Graphes --}}
                 <div class="mt-5" id="chartsValeurs">
-                    <h5 class="mb-3">📊 Évolution journalière par opérateur</h5>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">📊 Évolution journalière par opérateur</h5>
+                        <button id="exportChartBtn" class="btn btn-sm btn-secondary text-white" title="Exporter graphique en PNG">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-image me-1" viewBox="0 0 16 16"><path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/><path d="M2.002 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2h-12zm12 1a1 1 0 0 1 1 1v6.5l-3.777-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12V3a1 1 0 0 1 1-1h12z"/></svg>
+                            PNG
+                        </button>
+                    </div>
                     <div id="chartControls" class="mb-2 d-flex flex-wrap gap-2 align-items-center">
                         <div class="form-check form-check-inline me-2">
                             <input class="form-check-input" type="checkbox" id="toggleAllNets" checked>
@@ -537,6 +550,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.full.min.js"></script>
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
@@ -974,6 +988,125 @@
                 });
                 chart.update();
             }
+
+            // === EXPORT FUNCTIONS ===
+
+            // Export table to Excel (only visible rows)
+            document.getElementById('exportTableBtn').addEventListener('click', function() {
+                const table = document.getElementById('pivotTableOps');
+                if (!table) return;
+
+                function doExport() {
+                    try {
+                        const data = [];
+                        // Headers
+                        const headers = Array.from(table.querySelectorAll('thead th')).map(th => th.innerText.trim());
+                        if (headers.length) data.push(headers);
+
+                        // Body (only visible rows)
+                        const rows = Array.from(table.querySelectorAll('tbody tr')).filter(r => r.style.display !== 'none');
+                        rows.forEach(row => {
+                            data.push(Array.from(row.querySelectorAll('td')).map(td => td.innerText.trim()));
+                        });
+
+                        // Footer
+                        table.querySelectorAll('tfoot tr').forEach(row => {
+                            data.push(Array.from(row.querySelectorAll('td,th')).map(c => c.innerText.trim()));
+                        });
+
+                        const wb = XLSX.utils.book_new();
+                        const ws = XLSX.utils.aoa_to_sheet(data);
+
+                        // Freeze header row
+                        ws['!freeze'] = { ySplit: 1 };
+                        ws['!cols'] = headers.map(h => ({ wch: Math.max(h.length, 12) }));
+
+                        XLSX.utils.book_append_sheet(wb, ws, 'Pivot Facturation');
+                        XLSX.writeFile(wb, `Pivot_Facturation_${new Date().toISOString().slice(0,10)}.xlsx`);
+                    } catch (e) {
+                        alert('Erreur lors de l\'export Excel: ' + (e && e.message ? e.message : e));
+                    }
+                }
+
+                // CSV fallback: export as CSV if XLSX can't be loaded
+                function doExportAsCsv() {
+                    try {
+                        const rows = [];
+                        const headers = Array.from(table.querySelectorAll('thead th')).map(th => th.innerText.trim());
+                        if (headers.length) rows.push(headers);
+
+                        const bodyRows = Array.from(table.querySelectorAll('tbody tr')).filter(r => r.style.display !== 'none');
+                        bodyRows.forEach(row => {
+                            rows.push(Array.from(row.querySelectorAll('td')).map(td => td.innerText.trim()));
+                        });
+
+                        table.querySelectorAll('tfoot tr').forEach(row => {
+                            rows.push(Array.from(row.querySelectorAll('td,th')).map(c => c.innerText.trim()));
+                        });
+
+                        // Convert to CSV (semicolon as separator for French locales)
+                        const csv = rows.map(r => r.map(cell => {
+                            // Escape quotes
+                            const v = (cell == null ? '' : cell.toString()).replace(/"/g, '""');
+                            // If contains separator or quotes or newline, wrap in quotes
+                            if (/[;"\n\r]/.test(v) || v.indexOf(',') >= 0) return `"${v}"`;
+                            return v;
+                        }).join(';')).join('\n');
+
+                        const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+                        const link = document.createElement('a');
+                        const timestamp = new Date().toISOString().split('T')[0];
+                        const filename = `Pivot_Facturation_${timestamp}.csv`;
+                        if (navigator.msSaveBlob) { // IE10+
+                            navigator.msSaveBlob(blob, filename);
+                        } else {
+                            const url = URL.createObjectURL(blob);
+                            link.href = url;
+                            link.download = filename;
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                            URL.revokeObjectURL(url);
+                        }
+                    } catch (e) {
+                        alert('Échec de l\'export CSV de secours: ' + (e && e.message ? e.message : e));
+                    }
+                }
+
+                if (typeof XLSX === 'undefined') {
+                    // Load library dynamically and retry export once loaded. If it fails, fallback to CSV export.
+                    const script = document.createElement('script');
+                    script.src = 'https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.full.min.js';
+                    script.onload = function() {
+                        if (typeof XLSX === 'undefined') {
+                            // Library still not available; fallback to CSV
+                            doExportAsCsv();
+                            return;
+                        }
+                        doExport();
+                    };
+                    script.onerror = function() {
+                        // CDN blocked or network issue — fallback to CSV so user still gets data
+                        doExportAsCsv();
+                    };
+                    document.body.appendChild(script);
+                    return;
+                }
+
+                doExport();
+            });
+
+            // Export chart to PNG
+            document.getElementById('exportChartBtn').addEventListener('click', function() {
+                const canvas = document.getElementById('chartValeurs');
+                if (!canvas) return;
+
+                const link = document.createElement('a');
+                link.href = canvas.toDataURL('image/png');
+                const timestamp = new Date().toISOString().split('T')[0];
+                link.download = `Graphique_Facturation_${timestamp}.png`;
+                link.click();
+            });
 
         });
     </script>

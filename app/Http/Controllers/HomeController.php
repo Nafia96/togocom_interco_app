@@ -67,17 +67,26 @@ class HomeController extends Controller
 
     public function forgot_password(Request $request)
     {
-        return view('forgot_password');
+        //dd('ok');
+        if (session('id') != null) {
+            return view('forgot_password');
+        }
+        return view('index');
     }
 
     public function update_password()
     {
-
-        return view('update_password');
+        //dd('ok');
+        if (session('id') != null) {
+            return view('update_password');
+        }
+        return view('index');
     }
 
     public function update_password_save(Request $request)
     {
+        //dd('ok');
+        if (session('id') != null) {
 
         $request->validate([
             'old_password' => 'required',
@@ -102,6 +111,8 @@ class HomeController extends Controller
 
             return redirect()->back()->with('error', 'Encien Mot de passe incorrect! Veuillez réessayer');
         }
+        }
+        return view('index');
     }
 
     public function dashboard(Request $request)
@@ -440,6 +451,8 @@ class HomeController extends Controller
     }
     public function billing3(Request $request)
     {
+        //dd('ok');
+        if (session('id') != null) {
         // Construire la requête de base
         $query = DB::table('billing_stat')
             ->select(
@@ -473,6 +486,8 @@ class HomeController extends Controller
 
         // Transmettre à la vue
         return view('billing.billing2', compact('results'));
+        }
+        return view('index');
     }
 
     public function billing22222222(Request $request)
@@ -783,6 +798,8 @@ class HomeController extends Controller
 
     public function billingPivot(Request $request)
     {
+        //dd('ok');
+        if (session('id') != null) {
         // Filtres
         $viewType = $request->input('view_type', 'day'); // day | month | year
         $month = $request->input('month', now()->format('Y-m'));
@@ -954,10 +971,14 @@ class HomeController extends Controller
             $metricLabel = $conf['label'];
             return view('billing.billingPivotAnnual', compact('operators', 'years', 'totals', 'filter', 'metricLabel', 'startDate', 'endDate', 'viewType'));
         }
+        }
+        return view('index');
     }
 
     public function billingPivotNetCarrier(Request $request)
     {
+        //dd('ok');
+        if (session('id') != null) {
         // Filtres
         $viewType = $request->input('view_type', 'day'); // day | month | year
         $month = $request->input('month', now()->format('Y-m'));
@@ -1103,16 +1124,21 @@ class HomeController extends Controller
             $metricLabel = $conf['label'];
             return view('billing.billingPivotNetCarrierAnnual', compact('records', 'networks', 'years', 'totals', 'filter', 'metricLabel', 'startDate', 'endDate', 'viewType', 'allCarriers'));
         }
+        }
+        return view('index');
     }
 
     public function billingPivotCountryCarrier(Request $request)
     {
+        //dd('ok');
+        if (session('id') != null) {
         // Filtres
         $viewType = $request->input('view_type', 'day'); // day | month | year
         $month = $request->input('month', now()->format('Y-m'));
         $filter = $request->input('filter', 'revenu');
         $startDate = $request->input('start_date');
         $endDate   = $request->input('end_date');
+        $carrierName = $request->input('carrier_name', ''); // Filtre opérateur
 
         // Mapping métriques (same as billingPivot)
         $map = [
@@ -1152,13 +1178,19 @@ class HomeController extends Controller
             ->whereBetween('start_date', [$start, $end])
             ->where('direction', $conf['direction']);
 
+        // Ajouter le filtre par carrier_name si sélectionné
+        if (!empty($carrierName)) {
+            $q->where('carrier_name', $carrierName);
+        }
+
         if ($viewType === 'day') {
             $records = $q->select([
                 DB::raw('orig_country_name AS country'),
+                DB::raw('carrier_name'),
                 DB::raw('DATE(start_date) AS period'),
                 DB::raw("$sumExpr AS value"),
             ])
-                ->groupBy('orig_country_name', DB::raw('DATE(start_date)'))
+                ->groupBy('orig_country_name', 'carrier_name', DB::raw('DATE(start_date)'))
                 ->orderBy('orig_country_name')
                 ->get();
 
@@ -1176,7 +1208,7 @@ class HomeController extends Controller
 
             $allCarriers = DB::connection('inter_traffic')->table('BILLING_STAT')->select('carrier_name')->distinct()->orderBy('carrier_name')->pluck('carrier_name');
             $metricLabel = $conf['label'];
-            return view('billing.billingPivotCountryCarrier', compact('records', 'countries', 'days', 'totals', 'month', 'filter', 'metricLabel', 'startDate', 'endDate', 'viewType', 'allCarriers'));
+            return view('billing.billingPivotCountryCarrier', compact('records', 'countries', 'days', 'totals', 'month', 'filter', 'metricLabel', 'startDate', 'endDate', 'viewType', 'allCarriers', 'carrierName'));
 
         } elseif ($viewType === 'month') {
             $records = $q->select([
@@ -1242,6 +1274,8 @@ class HomeController extends Controller
             $metricLabel = $conf['label'];
             return view('billing.billingPivotCountryCarrierAnnual', compact('records', 'countries', 'years', 'totals', 'filter', 'metricLabel', 'startDate', 'endDate', 'viewType', 'allCarriers'));
         }
+        }
+        return view('index');
     }
 
     private function selectValueExpression($filter)
@@ -1441,6 +1475,8 @@ class HomeController extends Controller
 
     public function complation(Request $request)
     {
+        //dd('ok');
+        if (session('id') != null) {
         $startDate = $request->input('start_date');
         $endDate   = $request->input('end_date');
         $callType  = $request->input('call_type'); // ✅ Nouveau filtre
@@ -1479,6 +1515,8 @@ class HomeController extends Controller
             'endDate'    => $endDate,
             'callType'   => $callType,
         ]);
+        }
+        return view('index');
     }
 
     // KPI Partner (improved: follow index() pattern)
@@ -2345,14 +2383,20 @@ public function KpinCarrier(Request $request)
     }
     public function add_credit()
     {
+        //dd('ok');
+        if (session('id') != null) {
         $rcredits = Rcredit::orderBy('date', 'DESC')->get();
 
         //dd( $rcredits);
         return view('BI.add_credit', compact('rcredits'));
+        }
+        return view('index');
     }
 
     public function add_roaming_credit(Request $request)
     {
+        //dd('ok');
+        if (session('id') != null) {
         $request->validate([
             'amount' => 'required|numeric|between:0,99999999999999999999.99',
             'date' => 'required|date|unique:rcredit,date',
@@ -2374,10 +2418,14 @@ public function KpinCarrier(Request $request)
         } catch (\Exception $e) {
             return redirect()->back()->with('flash_message_error', 'Erreur lors de l\'ajout du crédit : ' . $e->getMessage());
         }
+        }
+        return redirect('/')->with('error', 'Accès non autorisé');
     }
 
     public function update_credit(Request $request)
     {
+        //dd('ok');
+        if (session('id') != null) {
         $request->validate([
             'amount' => 'required|numeric|between:0,99999999999999999999.99',
 
@@ -2395,11 +2443,15 @@ public function KpinCarrier(Request $request)
         ]);
 
         return redirect()->back()->with('flash_message_success', 'Crédit mis à jour avec succès.');
+        }
+        return redirect('/')->with('error', 'Accès non autorisé');
     }
 
 
     public function import(Request $request)
     {
+        //dd('ok');
+        if (session('id') != null) {
         $request->validate([
             'file' => 'required|file|mimes:xlsx,csv,xls'
         ]);
@@ -2407,6 +2459,8 @@ public function KpinCarrier(Request $request)
         Excel::import(new UsersImport, $request->file('file'));
 
         return redirect()->back()->with('success', 'Fichier importé avec succès.');
+        }
+        return redirect('/')->with('error', 'Accès non autorisé');
     }
 
     public function interco_details(Request $request)
@@ -2438,10 +2492,13 @@ public function KpinCarrier(Request $request)
 
     public function journaux(Request $request)
     {
-
+        //dd('ok');
+        if (session('id') != null) {
         $id = session('id');
         $journaux = Journal::orderBy("created_at", 'DESC')->get();
         return view('logs', compact('journaux'));
+        }
+        return view('index');
     }
 
     public function logout(Request $request)

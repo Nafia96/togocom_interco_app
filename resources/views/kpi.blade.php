@@ -6,18 +6,53 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
 <style>
-body { background:#f4f6f9; font-size:0.85rem; }
+body {
+    background:#f4f6f9;
+    font-family: "Segoe UI", Roboto, Arial, sans-serif;
+    font-size:0.85rem;
+}
 
 th { text-align:center; white-space:nowrap; }
 td { white-space:nowrap; }
 
+.card {
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
+}
+
+.card-header {
+    background: linear-gradient(90deg, #133272 0%, #1e4a98 100%);
+    color: #ffd100;
+    font-weight: 700;
+    font-size: 1.05rem;
+    padding: 0.75rem 1.25rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 3px solid #004aad;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: inset 0 -2px 6px rgba(0, 0, 0, 0.15);
+    border-radius: 0.5rem 0.5rem 0 0;
+}
+
 .kpi-bad { background:#f8d7da; color:#842029; font-weight:bold; }
 .kpi-warn { background:#fff3cd; color:#664d03; font-weight:bold; }
 
-thead th { position:sticky; top:0; background:#212529; color:white; z-index:5; }
+thead th {
+    position:sticky;
+    top:0;
+    background: linear-gradient(90deg, #133272 0%, #1e4a98 100%);
+    color: #ffd100;
+    z-index:5;
+    font-weight: 700;
+}
 tbody td:first-child, thead th:first-child {
     position:sticky; left:0; background:#fff; z-index:6; font-weight:bold;
 }
+
+.table-hover tbody tr:hover { background: rgba(19, 50, 114, 0.03); }
 </style>
 </head>
 

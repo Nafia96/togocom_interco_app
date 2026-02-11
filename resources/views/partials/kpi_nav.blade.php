@@ -10,16 +10,18 @@
 @endphp
 
 <style>
-    .kpi-nav .btn { padding: .45rem .7rem; font-size: .9rem; border-radius: .35rem; display: inline-flex; align-items: center; gap: .4rem; }
-    .kpi-nav .kpi-active { background: #0d6efd; color: #fff; border-color: #0d6efd; box-shadow: 0 2px 6px rgba(13,110,253,.15); }
-    .kpi-nav .kpi-inactive { background: #fff; color: #0d6efd; border: 1px solid rgba(13,110,253,.25); }
-    .kpi-nav .kpi-inactive:hover { background: rgba(13,110,253,.04); }
+    .kpi-nav .btn { padding: .45rem .7rem; font-size: .9rem; border-radius: .35rem; display: inline-flex; align-items: center; gap: .4rem; transition: all 0.2s ease; }
+    .kpi-nav .kpi-active { background: #133272; color: #ffd100; border-color: #133272; box-shadow: 0 2px 6px rgba(19, 50, 114, .15); font-weight: 600; }
+    .kpi-nav .kpi-active:hover { background: rgba(19, 50, 114, 0.9); box-shadow: 0 4px 12px rgba(19, 50, 114, .25); }
+    .kpi-nav .kpi-inactive { background: #fff; color: #133272; border: 1px solid rgba(19, 50, 114, .35); }
+    .kpi-nav .kpi-inactive:hover { background: #133272; color: #ffd100; border-color: #133272; box-shadow: 0 4px 12px rgba(19, 50, 114, .25); }
     .kpi-nav svg { width: 1rem; height: 1rem; }
 
-    .kpi-toggle { padding: .35rem .65rem; font-size: .85rem; border-radius: .35rem; }
-    .kpi-toggle-active { background: #198754; color: #fff; border-color: #198754; }
-    .kpi-toggle-inactive { background: #fff; color: #198754; border: 1px solid rgba(25,135,84,.25); }
-    .kpi-toggle-inactive:hover { background: rgba(25,135,84,.04); }
+    .kpi-toggle { padding: .35rem .65rem; font-size: .85rem; border-radius: .35rem; transition: all 0.2s ease; }
+    .kpi-toggle-active { background: #133272; color: #ffd100; border-color: #133272; font-weight: 600; }
+    .kpi-toggle-active:hover { background: rgba(19, 50, 114, 0.9); box-shadow: 0 4px 12px rgba(19, 50, 114, .25); }
+    .kpi-toggle-inactive { background: #fff; color: #133272; border: 1px solid rgba(19, 50, 114, .35); }
+    .kpi-toggle-inactive:hover { background: #133272; color: #ffd100; border-color: #133272; box-shadow: 0 4px 12px rgba(19, 50, 114, .25); }
 </style>
 
 @php
@@ -45,7 +47,7 @@
         </a>
     </div>
 
-    <a href="{{ route('billingp', $qs) }}" class="btn btn-sm btn-warning ms-3 px-3" style="font-weight:700;">
+    <a href="{{ route('billingp', $qs) }}" class="btn btn-sm btn-secondary ms-3 px-3" style="font-weight:700; background: #133272; color: #ffd100; border: none;">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-receipt" viewBox="0 0 16 16"><path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h11A1.5 1.5 0 0 1 15 2.5v11a.5.5 0 0 1-.757.429L12 12.5l-2.243 1.429A.5.5 0 0 1 9 13.5V12l-2.243 1.429A.5.5 0 0 1 6 13.5V12l-2.243 1.429A.5.5 0 0 1 3 13.5V2.5a.5.5 0 0 1 .5-.5H1z"/></svg>
         Billing
     </a>

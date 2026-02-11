@@ -222,8 +222,10 @@
     <div class="container-fluid py-4">
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <div class="d-flex align-items-center">
-                    <i class="fas fa-table me-2"></i>
+                <div class="d-flex align-items-center">                    <a href="{{ route('lunchepade') }}" class="btn btn-sm btn-secondary me-3" title="Retour au launchpad" style="padding: 0.25rem 0.5rem; display: flex; align-items: center;">
+                        <img src="{{ asset('assets/img/logo.png') }}" alt="Logo" style="height: 24px; width: auto; object-fit: contain; margin-right: 6px;">
+                        <span>Launchpad</span>
+                    </a>                    <i class="fas fa-table me-2"></i>
                     <span class="pivot-header-title">Pivot – Facturation par pays origine et opérateur</span>
                 </div>
                 <div class="d-flex gap-2 align-items-center">
@@ -255,7 +257,7 @@
             </div>
             <!-- Breadcrumb Filtres -->
             <nav aria-label="breadcrumb" class="px-3 pt-2">
-                <ol class="breadcrumb mb-2">
+                <ol class="breadcrumb ">
                     <li class="breadcrumb-item"><strong>Mois :</strong> {{ $month ?? '-' }}</li>
                     <li class="breadcrumb-item"><strong>Type :</strong>
                         @switch($filter)
@@ -320,7 +322,7 @@
                             value="{{ $endDate ?? '' }}">
                     </div>
                     <div class="col-md-2">
-                        <label for="carrier_name" class="form-label fw-semibold">Pays :</label>
+                        <label for="carrier_name" class="form-label fw-semibold">Opérateurs :</label>
                         <select id="carrier_name" name="carrier_name" class="form-select">
                             <option value="">Tous</option>
                             @foreach ($allCarriers as $carrierOption)

@@ -5,8 +5,14 @@
 @section('content')
     <div class="container">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h4 class="mb-0">NETWORK KPI</h4>
-            <a href="{{ route('kpi.pivot', request()->all()) }}" class="btn btn-sm btn-warning px-3" style="font-weight:700;">
+            <div class="d-flex align-items-center">
+                <a href="{{ route('lunchepade') }}" class="btn btn-sm btn-secondary me-3" title="Retour au launchpad" style="padding: 0.25rem 0.5rem; display: flex; align-items: center;">
+                    <img src="{{ asset('assets/img/logo.png') }}" alt="Logo" style="height: 24px; width: auto; object-fit: contain; margin-right: 6px;">
+                    <span>Launchpad</span>
+                </a>
+                <h4 class="mb-0">NETWORK KPI</h4>
+            </div>
+            <a href="{{ route('kpi.pivot', request()->all()) }}" class="btn btn-sm btn-secondary px-3" style="font-weight:700; background: linear-gradient(180deg, #0056d2 0%, #004aad 100%); border: none;">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-graph-up-arrow me-1" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M0 0h1v15h15v1H0V0zm10.293 3.293a1 1 0 0 1 1.414 0L15 6.586V4a1 1 0 0 1 2 0v5a1 1 0 0 1-1 1h-5a1 1 0 0 1 0-2h2.586L11.707 6.707a1 1 0 0 1 0-1.414l-1.414-1.414zM5 9l2-2 3 3 4-4 1 1-5 5-3-3-2 2-1-1z"/></svg>
                 KPI
             </a>
@@ -16,9 +22,9 @@
             <!-- Filtres période -->
             <div class="col-12">
                 <div class="card mb-4">
-                    <div class="card-header" style="background-color:#F5F5DC;">
-                        <h6>
-                            <i class="fas fa-search card-icon col-green font-30 p-r-30"></i>
+                    <div class="card-header" style="background: linear-gradient(90deg, #133272 0%, #1e4a98 100%); color: #ffd100; font-weight: 700; padding: 0.75rem 1.25rem; border-bottom: 3px solid #004aad;">
+                        <h6 style="margin: 0; display: flex; align-items: center;">
+                            <i class="fas fa-search card-icon p-r-30" style="margin-right: 15px; font-size: 1.2rem;"></i>
                             Filtrer les statistiques par période
                         </h6>
                     </div>
