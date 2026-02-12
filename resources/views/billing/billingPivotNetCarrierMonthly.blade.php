@@ -87,13 +87,14 @@
                 </div>
             </div>
             <nav aria-label="breadcrumb" class="px-3 pt-2">
-                <ol class="breadcrumb mb-2">
+                <ol class="breadcrumb ">
                     <li class="breadcrumb-item"><strong>Vue :</strong>
                         @php $vt = request('view_type', 'month'); @endphp
                         {{ $vt == 'day' ? 'Journalière' : ($vt == 'month' ? 'Mensuelle' : 'Annuelle') }}
                     </li>
                     <li class="breadcrumb-item"><strong>Type :</strong> {{ $filter }}</li>
                     <li class="breadcrumb-item"><strong>Pays :</strong> {{ request('orig_country_name') ? request('orig_country_name') : 'Tous' }}</li>
+                                    <li class="breadcrumb-item"><strong>Réseau :</strong> {{ request('network_name') ? request('network_name') : (isset($networkName) && $networkName ? $networkName : 'Tous') }}</li>
                 </ol>
             </nav>
             <div class="card-body">
@@ -122,6 +123,10 @@
                     <div class="col-md-3">
                         <label for="end_date" class="form-label fw-semibold">Date fin :</label>
                         <input type="date" id="end_date" name="end_date" class="form-control" value="{{ $endDate ?? '' }}">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="network_name" class="form-label fw-semibold">Nom du réseau :</label>
+                        <input type="text" id="network_name" name="network_name" class="form-control" value="{{ request('network_name', $networkName ?? '') }}" placeholder="Entrer le nom du réseau">
                     </div>
                     <div class="col-md-3 d-flex align-items-end">
                         <button type="submit" class="btn btn-success w-100">Filtrer</button>

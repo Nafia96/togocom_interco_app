@@ -257,7 +257,7 @@
             </div>
             <!-- Breadcrumb Filtres -->
             <nav aria-label="breadcrumb" class="px-3 pt-2">
-                <ol class="breadcrumb mb-2">
+                <ol class="breadcrumb ">
                     <li class="breadcrumb-item"><strong>Vue :</strong>
                         @php $vt = request('view_type', 'day'); @endphp
                         {{ $vt == 'day' ? 'Journalière' : ($vt == 'month' ? 'Mensuelle' : 'Annuelle') }}
@@ -283,8 +283,7 @@
                     </li>
                     {{-- <li class="breadcrumb-item"><strong>Opérateur :</strong> {{ $carrier ? $carrier : 'Tous' }}</li> --}}
                         <li class="breadcrumb-item"><strong>Pays :</strong> {{ request('orig_country_name') ? request('orig_country_name') : 'Tous' }}</li>
-                        <li class="breadcrumb-item"><strong>{{ $isOutbound ? 'Réseau destination' : 'Réseau origine' }}
-                            :</strong> {{ request('orig_net_name') ? request('orig_net_name') : 'Tous' }}</li>
+                        <li class="breadcrumb-item"><strong>Réseau :</strong> {{ request('network_name') ? request('network_name') : (isset($networkName) && $networkName ? $networkName : 'Tous') }}</li>
                     <li class="breadcrumb-item"><strong>Date début :</strong> {{ $startDate ?? '-' }}</li>
                     <li class="breadcrumb-item"><strong>Date fin :</strong> {{ $endDate ?? '-' }}</li>
                 </ol>
@@ -337,6 +336,10 @@
                                 </option>
                             @endforeach
                         </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="network_name" class="form-label fw-semibold">Nom du réseau :</label>
+                        <input type="text" id="network_name" name="network_name" class="form-control" value="{{ request('network_name', $networkName ?? '') }}" placeholder="Entrer le nom du réseau">
                     </div>
                     <div class="col-md-2 d-flex align-items-end">
                         <button type="submit" class="btn btn-success w-100">Filtrer</button>

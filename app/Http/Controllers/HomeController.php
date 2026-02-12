@@ -985,6 +985,7 @@ class HomeController extends Controller
         $filter = $request->input('filter', 'revenu');
         $startDate = $request->input('start_date');
         $endDate   = $request->input('end_date');
+        $networkName = $request->input('network_name'); // Nouveau filtre réseau
 
         // Mapping métriques (same as billingPivot)
         $map = [
@@ -1023,6 +1024,10 @@ class HomeController extends Controller
             ->table('BILLING_STAT')
             ->whereBetween('start_date', [$start, $end])
             ->where('direction', $conf['direction']);
+        // Filtrer par nom de réseau si fourni (LIKE pour recherche partielle)
+        if ($networkName) {
+            $q->where('orig_net_name', 'like', "%" . $networkName . "%");
+        }
 
         // Filtrer par pays si fourni (peut être string ou array)
         $origCountryFilter = $request->input('orig_country_name');
@@ -1058,7 +1063,7 @@ class HomeController extends Controller
 
             $allCarriers = DB::connection('inter_traffic')->table('BILLING_STAT')->select('carrier_name')->distinct()->orderBy('carrier_name')->pluck('carrier_name');
             $metricLabel = $conf['label'];
-            return view('billing.billingPivotNetCarrier', compact('records', 'networks', 'days', 'totals', 'month', 'filter', 'metricLabel', 'startDate', 'endDate', 'viewType', 'allCarriers'));
+            return view('billing.billingPivotNetCarrier', compact('records', 'networks', 'days', 'totals', 'month', 'filter', 'metricLabel', 'startDate', 'endDate', 'viewType', 'allCarriers', 'networkName'));
 
         } elseif ($viewType === 'month') {
             $records = $q->select([
@@ -1090,7 +1095,7 @@ class HomeController extends Controller
 
             $allCarriers = DB::connection('inter_traffic')->table('BILLING_STAT')->select('carrier_name')->distinct()->orderBy('carrier_name')->pluck('carrier_name');
             $metricLabel = $conf['label'];
-            return view('billing.billingPivotNetCarrierMonthly', compact('records', 'networks', 'months', 'totals', 'filter', 'metricLabel', 'startDate', 'endDate', 'viewType', 'allCarriers'));
+            return view('billing.billingPivotNetCarrierMonthly', compact('records', 'networks', 'months', 'totals', 'filter', 'metricLabel', 'startDate', 'endDate', 'viewType', 'allCarriers', 'networkName'));
 
         } else { // year
             $records = $q->select([
@@ -1122,7 +1127,7 @@ class HomeController extends Controller
 
             $allCarriers = DB::connection('inter_traffic')->table('BILLING_STAT')->select('carrier_name')->distinct()->orderBy('carrier_name')->pluck('carrier_name');
             $metricLabel = $conf['label'];
-            return view('billing.billingPivotNetCarrierAnnual', compact('records', 'networks', 'years', 'totals', 'filter', 'metricLabel', 'startDate', 'endDate', 'viewType', 'allCarriers'));
+            return view('billing.billingPivotNetCarrierAnnual', compact('records', 'networks', 'years', 'totals', 'filter', 'metricLabel', 'startDate', 'endDate', 'viewType', 'allCarriers', 'networkName'));
         }
         }
         return view('index');
