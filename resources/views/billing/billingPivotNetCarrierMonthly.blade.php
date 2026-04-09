@@ -151,7 +151,7 @@
                         </thead>
                         <tbody>
                             @php
-                                $networkGroups = $records->groupBy('orig_net_name');
+                                $networkGroups = $records->groupBy('network_name');
                             @endphp
                             @foreach ($networkGroups as $network => $records)
                                 <tr>

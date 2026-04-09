@@ -92,7 +92,7 @@
                         {{ $vt == 'day' ? 'Journalière' : ($vt == 'month' ? 'Mensuelle' : 'Annuelle') }}
                     </li>
                     <li class="breadcrumb-item"><strong>Type :</strong> {{ $filter }}</li>
-                    {{-- <li class="breadcrumb-item"><strong>Opérateur :</strong> {{ $carrier ?? 'Tous' }}</li> --}}
+                    <li class="breadcrumb-item"><strong>Opérateur :</strong> {{ request('carrier_name') ? request('carrier_name') : (isset($carrierName) && $carrierName ? $carrierName : 'Tous') }}</li>
                 </ol>
             </nav>
             <div class="card-body">

@@ -372,10 +372,10 @@
                         </thead>
                         <tbody>
                             @php
-                                // Regroupement des données par réseau origine
+                                // Regroupement des données par réseau (normalisé pour Charge et Revenue)
                                 $pivot = [];
                                 foreach ($records as $row) {
-                                    $net = $row->orig_net_name;
+                                    $net = $row->network_name;
                                     $day = $row->period;
                                     $pivot[$net][$day] = $row->value;
                                 }
@@ -433,7 +433,7 @@
                             @php
                                 $pivot = [];
                                 foreach ($records as $row) {
-                                    $net = $row->orig_net_name;
+                                    $net = $row->network_name;
                                     $day = $row->period;
                                     $pivot[$net][$day] = $row->value;
                                 }
@@ -516,9 +516,9 @@
                 }
             });
             const records = @json($records);
-            // Courbe unique : somme de tous les réseaux origine par jour
+            // Courbe unique : somme de tous les réseaux par jour
             const selectedCarrier = "{{ request('carrier_name') ? request('carrier_name') : 'Tous' }}";
-            const selectedNet = "{{ request('orig_net_name') ? request('orig_net_name') : 'Tous' }}";
+            const selectedNet = "{{ request('network_name') ? request('network_name') : 'Tous' }}";
             let curveLabel = 'Tous';
             if (selectedCarrier !== 'Tous' && selectedNet !== 'Tous') {
                 curveLabel = selectedCarrier + '-' + selectedNet;
@@ -622,17 +622,17 @@
                 pointRadius: 3
             });
 
-            // If user entered a filter in 'Réseau origine', add one dataset per matched origin network
+            // If user entered a filter in 'Réseau', add one dataset per matched network
             if (selectedNet !== 'Tous') {
                 // Case-insensitive substring match for input filter
                 const filteredNets = [...new Set(records
-                    .filter(r => r.orig_net_name && r.orig_net_name.toLowerCase().includes(selectedNet
+                    .filter(r => r.network_name && r.network_name.toLowerCase().includes(selectedNet
                         .toLowerCase()))
-                    .map(r => r.orig_net_name))];
+                    .map(r => r.network_name))];
 
                 filteredNets.forEach((net, idx) => {
                     const netData = periods.map(p => {
-                        let filtered = records.filter(r => r.period === p && r.orig_net_name ===
+                        let filtered = records.filter(r => r.period === p && r.network_name ===
                             net);
                         if (selectedCarrier !== 'Tous') {
                             filtered = filtered.filter(r => r.carrier_name === selectedCarrier);

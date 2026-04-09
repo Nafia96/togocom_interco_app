@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pivot Pays Annuel</title>
+    <title>Pivot Network Mensuel</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -73,37 +73,38 @@
                         <img src="{{ asset('assets/img/logo.png') }}" alt="Logo" style="height: 24px; width: auto; object-fit: contain; margin-right: 6px;">
                         <span>Launchpad</span>
                     </a>
-                    <i class="fas fa-globe me-2"></i>
-                    <span>Analyse Pivot Pays – Annuelle</span>
+                    <i class="fas fa-network-wired me-2"></i>
+                    <span>Analyse Pivot Network – Mensuelle</span>
                 </div>
                 <div class="d-flex gap-2 align-items-center">
                     @php
                         $qs = ['filter' => $filter];
-                        if (request('carrier_name')) $qs['carrier_name'] = request('carrier_name');
+                        if ($startDate) $qs['start_date'] = $startDate;
+                        if ($endDate) $qs['end_date'] = $endDate;
                     @endphp
+                    <a href="{{ route('billingPivotCountryCarrier', $qs) }}" class="btn btn-sm btn-light text-primary">Pays</a>
                     <a href="{{ route('billingp', $qs) }}" class="btn btn-sm btn-light text-primary">Opérateurs</a>
-                    <a href="{{ route('billingPivotNetCarrier', $qs) }}" class="btn btn-sm btn-light text-primary">Network</a>
-                    <button id="toggleTableBtn" class="btn btn-sm btn-light text-success toggle-btn">Mode Progression</button>
                 </div>
             </div>
             <nav aria-label="breadcrumb" class="px-3 pt-2">
-                <ol class="breadcrumb mb-2">
+                <ol class="breadcrumb ">
                     <li class="breadcrumb-item"><strong>Vue :</strong>
-                        @php $vt = request('view_type', 'year'); @endphp
+                        @php $vt = request('view_type', 'month'); @endphp
                         {{ $vt == 'day' ? 'Journalière' : ($vt == 'month' ? 'Mensuelle' : 'Annuelle') }}
                     </li>
                     <li class="breadcrumb-item"><strong>Type :</strong> {{ $filter }}</li>
-                    <li class="breadcrumb-item"><strong>Opérateur :</strong> {{ request('carrier_name') ? request('carrier_name') : (isset($carrierName) && $carrierName ? $carrierName : 'Tous') }}</li>
+                    <li class="breadcrumb-item"><strong>Pays :</strong> {{ request('orig_country_name') ? request('orig_country_name') : 'Tous' }}</li>
+                                    <li class="breadcrumb-item"><strong>Réseau :</strong> {{ request('network_name') ? request('network_name') : (isset($networkName) && $networkName ? $networkName : 'Tous') }}</li>
                 </ol>
             </nav>
             <div class="card-body">
-                <form method="GET" action="{{ route('billingPivotCountryCarrier') }}" class="row g-3 mb-4">
+                <form method="GET" action="{{ route('billingPivotNetCarrier') }}" class="row g-3 mb-4">
                     <div class="col-md-2">
                         <label for="view_type" class="form-label fw-semibold">Vue :</label>
                         <select id="view_type" name="view_type" class="form-select">
-                            <option value="day" {{ request('view_type','year') == 'day' ? 'selected' : '' }}>Journalière</option>
-                            <option value="month" {{ request('view_type','year') == 'month' ? 'selected' : '' }}>Mensuelle</option>
-                            <option value="year" {{ request('view_type','year') == 'year' ? 'selected' : '' }}>Annuelle</option>
+                            <option value="day" {{ request('view_type','month') == 'day' ? 'selected' : '' }}>Journalière</option>
+                            <option value="month" {{ request('view_type','month') == 'month' ? 'selected' : '' }}>Mensuelle</option>
+                            <option value="year" {{ request('view_type','month') == 'year' ? 'selected' : '' }}>Annuelle</option>
                         </select>
                     </div>
                     <div class="col-md-3">
@@ -116,17 +117,16 @@
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <label for="carrier_name" class="form-label fw-semibold">Opérateur :</label>
-                        <select id="carrier_name" name="carrier_name" class="form-select">
-                            <option value="">-- Tous --</option>
-                            @foreach ($allCarriers as $c)
-                                <option value="{{ $c }}" {{ request('carrier_name') == $c ? 'selected' : '' }}>{{ $c }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-md-3">
                         <label for="start_date" class="form-label fw-semibold">Date début :</label>
                         <input type="date" id="start_date" name="start_date" class="form-control" value="{{ $startDate ?? '' }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="end_date" class="form-label fw-semibold">Date fin :</label>
+                        <input type="date" id="end_date" name="end_date" class="form-control" value="{{ $endDate ?? '' }}">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="network_name" class="form-label fw-semibold">Nom du réseau :</label>
+                        <input type="text" id="network_name" name="network_name" class="form-control" value="{{ request('network_name', $networkName ?? '') }}" placeholder="Entrer le nom du réseau">
                     </div>
                     <div class="col-md-3 d-flex align-items-end">
                         <button type="submit" class="btn btn-success w-100">Filtrer</button>
@@ -137,29 +137,31 @@
                     <table class="table table-bordered table-hover table-striped align-middle">
                         <thead>
                             <tr>
-                                <th class="table-heading-country">Pays</th>
-                                @foreach ($years as $year)
-                                    <th class="text-center">{{ $year }}</th>
+                                <th class="table-heading-country">Network</th>
+                                @foreach ($months as $month)
+                                    @php
+                                        $year = substr($month, 0, 4);
+                                        $monthNum = substr($month, 5, 2);
+                                        $monthName = \Carbon\Carbon::createFromDate($year, $monthNum, 1)->translatedFormat('M y');
+                                    @endphp
+                                    <th class="text-center">{{ $monthName }}</th>
                                 @endforeach
                                 <th>Total</th>
                             </tr>
                         </thead>
                         <tbody>
                             @php
-                                $countryGroups = $records->groupBy('country');
+                                $networkGroups = $records->groupBy('orig_net_name');
                             @endphp
-                            @foreach ($countryGroups as $country => $records)
+                            @foreach ($networkGroups as $network => $records)
                                 <tr>
-                                    <td>
-                                        <a href="{{ route('billingPivotNetCarrier', array_merge(request()->except('page'), ['orig_country_name' => $country, 'view_type' => request('view_type', 'year')])) }}"
-                                            class="text-decoration-underline text-success">
-                                            {{ $country }}
-                                        </a>
-                                    </td>
+                                    <td>{{ $network }}</td>
                                     @php $sum = 0; @endphp
-                                    @foreach ($years as $year)
+                                    @foreach ($months as $month)
                                         @php
-                                            $val = $records->where('year', $year)->sum('value');
+                                            $year = (int) substr($month, 0, 4);
+                                            $monthNum = (int) substr($month, 5, 2);
+                                            $val = $records->where('year', $year)->where('month', $monthNum)->sum('value');
                                             $sum += $val;
                                         @endphp
                                         <td class="text-end">{{ $val > 0 ? number_format($val, 0, ',', ' ') : '-' }}</td>
@@ -171,9 +173,11 @@
                         <tfoot>
                             <tr>
                                 <td>Total</td>
-                                @foreach ($years as $year)
+                                @foreach ($months as $month)
                                     @php
-                                        $total = $records->where('year', $year)->sum('value');
+                                        $year = (int) substr($month, 0, 4);
+                                        $monthNum = (int) substr($month, 5, 2);
+                                        $total = $records->where('year', $year)->where('month', $monthNum)->sum('value');
                                     @endphp
                                     <td class="text-end">{{ $total > 0 ? number_format($total, 0, ',', ' ') : '-' }}</td>
                                 @endforeach

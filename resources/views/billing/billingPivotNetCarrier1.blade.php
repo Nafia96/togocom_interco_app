@@ -1,9 +1,10 @@
+{{-- filepath: c:\Users\ndjire\Desktop\togocom_interco_app\resources\views\billing\billingPivotNetCarrier.blade.php --}}
 <!DOCTYPE html>
 <html lang="fr">
 
 <head>
     <meta charset="UTF-8">
-    <title>Pivot Facturation par Pays & Opérateur</title>
+    <title>Pivot Facturation par Réseau & Opérateur</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
@@ -65,7 +66,7 @@
         }
 
         /* --- Style du select Top N --- */
-        #topNSelect_countries {
+        #topNSelect_nets {
             font-size: 0.85rem;
             font-weight: 500;
             color: #004aad;
@@ -78,8 +79,8 @@
         }
 
         /* --- Effet survol et focus --- */
-        #topNSelect_countries:focus,
-        #topNSelect_countries:hover {
+        #topNSelect_nets:focus,
+        #topNSelect_nets:hover {
             background-color: #004aad;
             color: #fff;
             border-color: #004aad;
@@ -88,7 +89,7 @@
         }
 
         /* --- Option visuelle pour le menu déroulant (facultatif, selon navigateur) --- */
-        #topNSelect_countries option {
+        #topNSelect_nets option {
             background-color: #fff;
             color: #004aad;
             font-weight: 500;
@@ -222,34 +223,33 @@
     <div class="container-fluid py-4">
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <div class="d-flex align-items-center">                    <a href="{{ route('lunchepade') }}" class="btn btn-sm btn-secondary me-3" title="Retour au launchpad" style="padding: 0.25rem 0.5rem; display: flex; align-items: center;">
+                <div class="d-flex align-items-center">
+                    <a href="{{ route('lunchepade') }}" class="btn btn-sm btn-secondary me-3" title="Retour au launchpad" style="padding: 0.25rem 0.5rem; display: flex; align-items: center;">
                         <img src="{{ asset('assets/img/logo.png') }}" alt="Logo" style="height: 24px; width: auto; object-fit: contain; margin-right: 6px;">
                         <span>Launchpad</span>
-                    </a>                    <i class="fas fa-table me-2"></i>
-                    <span class="pivot-header-title">Pivot – Facturation par pays origine et opérateur</span>
+                    </a>
+                    <i class="fas fa-table me-2"></i>
+                    <span class="pivot-header-title">Pivot – Facturation par réseau destination et opérateur</span>
                 </div>
                 <div class="d-flex gap-2 align-items-center">
                     @php
                         $qs = [];
-                        foreach (
-                            ['month', 'filter', 'start_date', 'end_date', 'carrier_name', 'orig_country_name']
-                            as $k
-                        ) {
+                        foreach (['view_type', 'filter', 'start_date', 'end_date', 'carrier_name'] as $k) {
                             if (request($k) !== null && request($k) !== '') {
                                 $qs[$k] = request($k);
                             }
                         }
                     @endphp
                     <a href="{{ route('billingp', $qs) }}" class="btn btn-sm btn-light text-primary">Opérateurs</a>
-                    <a href="{{ route('billingPivotNetCarrier', $qs) }}" class="btn btn-sm btn-light text-primary">Network</a>
-                    <a href="{{ route('billingPivotCountryCarrier', $qs) }}" class="btn btn-sm btn-warning text-dark" style="font-weight: 700;">Pays</a>
-                    {{-- KPI button styled like Billing, separated to the end --}}
+                    <a href="{{ route('billingPivotNetCarrier', $qs) }}"
+                        class="btn btn-sm btn-warning text-dark" style="font-weight: 700;">Network</a>
+                    <a href="{{ route('billingPivotCountryCarrier', $qs) }}"
+                        class="btn btn-sm btn-light text-primary">Pays</a>
+                    <button id="toggleTableBtn" class="btn btn-sm btn-light text-success toggle-btn">Mode Progression</button>
                     <a href="{{ route('kpi.pivot', $qs) }}" class="btn btn-sm btn-warning ms-3 px-3" style="font-weight:700;">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-graph-up-arrow me-1" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M0 0h1v15h15v1H0V0zm10.293 3.293a1 1 0 0 1 1.414 0L15 6.586V4a1 1 0 0 1 2 0v5a1 1 0 0 1-1 1h-5a1 1 0 0 1 0-2h2.586L11.707 6.707a1 1 0 0 1 0-1.414l-1.414-1.414zM5 9l2-2 3 3 4-4 1 1-5 5-3-3-2 2-1-1z"/></svg>
                         KPI
                     </a>
-                    <button id="toggleTableBtn" class="btn btn-sm btn-light text-success toggle-btn">Mode
-                        Progression</button>
                 </div>
                 @php
                     $isOutbound = in_array(strtolower($filter ?? 'entrant'), ['charge', 'sortant']);
@@ -258,6 +258,10 @@
             <!-- Breadcrumb Filtres -->
             <nav aria-label="breadcrumb" class="px-3 pt-2">
                 <ol class="breadcrumb ">
+                    <li class="breadcrumb-item"><strong>Vue :</strong>
+                        @php $vt = request('view_type', 'day'); @endphp
+                        {{ $vt == 'day' ? 'Journalière' : ($vt == 'month' ? 'Mensuelle' : 'Annuelle') }}
+                    </li>
                     <li class="breadcrumb-item"><strong>Mois :</strong> {{ $month ?? '-' }}</li>
                     <li class="breadcrumb-item"><strong>Type :</strong>
                         @switch($filter)
@@ -277,22 +281,22 @@
                                 Volume entrant
                         @endswitch
                     </li>
-                    <li class="breadcrumb-item"><strong>Opérateur :</strong> {{ request('carrier_name') ? request('carrier_name') : (isset($carrierName) && $carrierName ? $carrierName : 'Tous') }}</li>
-                    <li class="breadcrumb-item"><strong>{{ $isOutbound ? 'Pays destination' : 'Pays origine' }}
-                            :</strong> {{ request('orig_country_name') ? request('orig_country_name') : 'Tous' }}</li>
+                    {{-- <li class="breadcrumb-item"><strong>Opérateur :</strong> {{ $carrier ? $carrier : 'Tous' }}</li> --}}
+                        <li class="breadcrumb-item"><strong>Pays :</strong> {{ request('orig_country_name') ? request('orig_country_name') : 'Tous' }}</li>
+                        <li class="breadcrumb-item"><strong>Réseau :</strong> {{ request('network_name') ? request('network_name') : (isset($networkName) && $networkName ? $networkName : 'Tous') }}</li>
                     <li class="breadcrumb-item"><strong>Date début :</strong> {{ $startDate ?? '-' }}</li>
                     <li class="breadcrumb-item"><strong>Date fin :</strong> {{ $endDate ?? '-' }}</li>
                 </ol>
             </nav>
             <div class="card-body">
                 {{-- Filtres --}}
-                <form method="GET" action="{{ route('billingPivotCountryCarrier') }}" class="row g-3 mb-4">
+                <form method="GET" action="{{ route('billingPivotNetCarrier') }}" class="row g-3 mb-4">
                     <div class="col-md-2">
                         <label for="view_type" class="form-label fw-semibold">Vue :</label>
                         <select id="view_type" name="view_type" class="form-select">
-                            <option value="day" {{ ($viewType ?? 'day') == 'day' ? 'selected' : '' }}>Journalière</option>
-                            <option value="month" {{ ($viewType ?? 'day') == 'month' ? 'selected' : '' }}>Mensuelle</option>
-                            <option value="year" {{ ($viewType ?? 'day') == 'year' ? 'selected' : '' }}>Annuelle</option>
+                            <option value="day" {{ request('view_type', 'day') == 'day' ? 'selected' : '' }}>Journalière</option>
+                            <option value="month" {{ request('view_type', 'day') == 'month' ? 'selected' : '' }}>Mensuelle</option>
+                            <option value="year" {{ request('view_type', 'day') == 'year' ? 'selected' : '' }}>Annuelle</option>
                         </select>
                     </div>
                     <div class="col-md-2">
@@ -322,8 +326,8 @@
                             value="{{ $endDate ?? '' }}">
                     </div>
                     <div class="col-md-2">
-                        <label for="carrier_name" class="form-label fw-semibold">Opérateurs :</label>
-                        <select id="carrier_name" name="carrier_name" class="form-select">
+                        <label for="carrier_name" class="form-label fw-semibold">Opérateur :</label>
+                        <select id="carrier_name" name="carrier_name" class="form-select" >
                             <option value="">Tous</option>
                             @foreach ($allCarriers as $carrierOption)
                                 <option value="{{ $carrierOption }}"
@@ -333,11 +337,9 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-auto">
-                        <label for="orig_country_name" class="form-label fw-semibold mb-1">Pays origine :</label>
-                        <input type="text" id="orig_country_name" name="orig_country_name"
-                            class="form-control form-control-sm" value="{{ request('orig_country_name') }}"
-                            placeholder="Filtrer pays...">
+                    <div class="col-md-2">
+                        <label for="network_name" class="form-label fw-semibold">Nom du réseau :</label>
+                        <input type="text" id="network_name" name="network_name" class="form-control" value="{{ request('network_name', $networkName ?? '') }}" placeholder="Entrer le nom du réseau">
                     </div>
                     <div class="col-md-2 d-flex align-items-end">
                         <button type="submit" class="btn btn-success w-100">Filtrer</button>
@@ -347,21 +349,21 @@
                 {{-- Tableau Valeurs --}}
                 <div id="tableValeurs" class="table-responsive">
                     <div class="d-flex justify-content-end mb-2 gap-2 align-items-center">
-                       <div class="input-group input-group-sm" style="width:180px;">
-                            <button class="btn btn-outline-secondary" type="button" id="sortTotalBtn_countries"
+                        <div class="input-group input-group-sm" style="width:180px;">
+                            <button class="btn btn-outline-secondary" type="button" id="sortTotalBtn_nets"
                                 title="Trier par Total">Trier Total ▲▼</button>
-                            <select id="topNSelect_countries" >
+                            <select id="topNSelect_nets " >
                                 <option value="all">Tous</option>
                                 <option value="5">Top 5</option>
                                 <option value="10">Top 10</option>
                             </select>
                         </div>
                     </div>
-                    <table id="pivotTableCountry" class="table table-bordered table-hover table-striped">
+                    <table id="pivotTableNet" class="table table-bordered table-hover table-striped">
                         <thead>
                             <tr>
                                 <th class="table-heading-country">
-                                    {{ $isOutbound ? 'Pays destination' : 'Pays origine' }}</th>
+                                    {{ $isOutbound ? 'Réseau destination' : 'Réseau origine' }}</th>
                                 @foreach ($days as $day)
                                     <th class="text-center table-success text-dark">{{ $day }}</th>
                                 @endforeach
@@ -370,26 +372,20 @@
                         </thead>
                         <tbody>
                             @php
-                                // Regroupement des données par pays
+                                // Regroupement des données par réseau origine
                                 $pivot = [];
                                 foreach ($records as $row) {
-                                    // controller now provides 'country'
-                                    $country = $row->country ?? 'Unknown';
+                                    $net = $row->orig_net_name;
                                     $day = $row->period;
-                                    $pivot[$country][$day] = $row->value;
+                                    $pivot[$net][$day] = $row->value;
                                 }
                             @endphp
-                            @foreach ($pivot as $country => $rowDays)
+                            @foreach ($pivot as $net => $rowDays)
                                 @php
                                     $rowColor = $loop->odd ? '#e3fcec' : '#ffffff';
                                 @endphp
                                 <tr style="background-color: {{ $rowColor }};">
-                                    <td>
-                                        <a href="{{ route('billingPivotNetCarrier', array_merge(request()->except('page'), ['orig_country_name' => $country])) }}"
-                                            class="text-decoration-underline text-success">
-                                            {{ $country }}
-                                        </a>
-                                    </td>
+                                    <td>{{ $net }}</td>
                                     @php $sum = 0; @endphp
                                     @foreach ($days as $day)
                                         @php
@@ -427,7 +423,7 @@
                         <thead>
                             <tr class="table-success">
                                 <th class="table-heading-country">
-                                    {{ $isOutbound ? 'Pays destination' : 'Pays origine' }}</th>
+                                    {{ $isOutbound ? 'Réseau destination' : 'Réseau origine' }}</th>
                                 @foreach ($days as $day)
                                     <th class="text-center table-success text-dark">{{ $day }}</th>
                                 @endforeach
@@ -437,40 +433,18 @@
                             @php
                                 $pivot = [];
                                 foreach ($records as $row) {
-                                    $country = $row->country ?? 'Unknown';
+                                    $net = $row->orig_net_name;
                                     $day = $row->period;
-                                    $pivot[$country][$day] = $row->value;
+                                    $pivot[$net][$day] = $row->value;
                                 }
                             @endphp
-                            @foreach ($pivot as $country => $rowDays)
+                            @foreach ($pivot as $net => $rowDays)
                                 @php
                                     $rowColor = $loop->odd ? '#e3fcec' : '#ffffff';
                                 @endphp
                                 <tr style="background-color: {{ $rowColor }};">
-                                    <td>{{ $country }}</td>
-                                    {{-- Init previous value from the day before the first displayed day if available --}}
-                                    @php
-                                        $prev = null;
-                                        if (!empty($days)) {
-                                            try {
-                                                $firstDay = $days[0];
-                                                $prevDay = \Carbon\Carbon::parse($firstDay)->subDay()->format('Y-m-d');
-                                                // Prefer value already present in the pivot row if available
-                                                $prevCandidate = $rowDays[$prevDay] ?? null;
-                                                if (is_null($prevCandidate)) {
-                                                    // Fallback: search records collection for that country & prevDay
-                                                    $prevCandidate = $records
-                                                        ->where('country', $country)
-                                                        ->where('period', $prevDay)
-                                                        ->sum('value');
-                                                }
-                                                // If previous candidate is 0 treat as missing (keep null) so we don't display misleading 0% progress
-                                                $prev = $prevCandidate && $prevCandidate > 0 ? $prevCandidate : null;
-                                            } catch (\Exception $e) {
-                                                $prev = null;
-                                            }
-                                        }
-                                    @endphp
+                                    <td>{{ $net }}</td>
+                                    @php $prev = null; @endphp
                                     @foreach ($days as $day)
                                         @php
                                             $val = $rowDays[$day] ?? 0;
@@ -499,10 +473,12 @@
                 <div class="mt-5" id="chartsValeurs">
                     <h5 class="mb-3">📊 Évolution par opérateur</h5>
                     <div id="chartControls" class="mb-2 d-flex flex-wrap gap-2 align-items-center">
+                        <!-- Master toggle (Check/Uncheck all) -->
                         <div class="form-check form-check-inline me-2">
                             <input class="form-check-input" type="checkbox" id="toggleAllNets" checked>
-                            <label class="form-check-label small" for="toggleAllNets">Toggle tous</label>
+                            <label class="form-check-label small" for="toggleAllNets">Toggle tous les réseaux</label>
                         </div>
+                        <!-- checkboxes for per-network toggles (populated by JS) -->
                     </div>
                     <canvas id="chartValeurs"></canvas>
                 </div>
@@ -542,14 +518,14 @@
             const records = @json($records);
             // Courbe unique : somme de tous les réseaux origine par jour
             const selectedCarrier = "{{ request('carrier_name') ? request('carrier_name') : 'Tous' }}";
-            const selectedCountry = "{{ request('orig_country_name') ? request('orig_country_name') : 'Tous' }}";
+            const selectedNet = "{{ request('orig_net_name') ? request('orig_net_name') : 'Tous' }}";
             let curveLabel = 'Tous';
-            if (selectedCarrier !== 'Tous' && selectedCountry !== 'Tous') {
-                curveLabel = selectedCarrier + '-' + selectedCountry;
+            if (selectedCarrier !== 'Tous' && selectedNet !== 'Tous') {
+                curveLabel = selectedCarrier + '-' + selectedNet;
             } else if (selectedCarrier !== 'Tous') {
                 curveLabel = selectedCarrier;
-            } else if (selectedCountry !== 'Tous') {
-                curveLabel = selectedCountry;
+            } else if (selectedNet !== 'Tous') {
+                curveLabel = selectedNet;
             }
             const periods = [...new Set(records.map(r => r.period))].sort();
             const dailyTotals = periods.map(p => {
@@ -563,6 +539,7 @@
             console.log('Valeurs cumulées par jour pour le graphe:', dailyTotals);
             const ctxValeurs = document.getElementById("chartValeurs").getContext("2d");
 
+            // Color palette and deterministic name -> color mapping
             // Use a central palette if provided, otherwise fall back to the default
             window.PIVOT_PALETTE = window.PIVOT_PALETTE || [
                 '#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f',
@@ -577,14 +554,16 @@
             const PALETTE = window.PIVOT_PALETTE;
 
             function hashStringToIndex(s) {
-                let h = 2166136261 >>> 0;
+                let h = 2166136261 >>> 0; // FNV-1a 32-bit
                 for (let i = 0; i < s.length; i++) {
                     h ^= s.charCodeAt(i);
                     h += (h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24);
                 }
                 return Math.abs(h) % PALETTE.length;
             }
-            // attempt to restore previous color assignments from localStorage for a stable palette across reloads
+
+            // Deterministic, collision-resistant name -> color mapping using linear probing
+            // Restore previous assignments from localStorage when available so colors remain stable
             const _colorMap = (function loadColorMap() {
                 try {
                     const raw = localStorage.getItem('pivot_color_map_v1');
@@ -592,7 +571,7 @@
                     const parsed = JSON.parse(raw);
                     if (typeof parsed === 'object' && parsed !== null) return parsed;
                 } catch (e) {
-                    // ignore malformed storage
+                    // ignore
                 }
                 return {};
             })();
@@ -601,17 +580,19 @@
                 try {
                     localStorage.setItem('pivot_color_map_v1', JSON.stringify(_colorMap));
                 } catch (e) {
-                    // storage full or disabled — ignore
-                }
+                    /* ignore */ }
             }
 
             function colorForName(name) {
                 if (!name) return '#999999';
                 if (_colorMap[name]) return _colorMap[name];
+
                 const baseIndex = hashStringToIndex(name.toString());
+                // linear probe palette for an unused color (deterministic)
                 for (let probe = 0; probe < PALETTE.length; probe++) {
                     const idx = (baseIndex + probe) % PALETTE.length;
                     const candidate = PALETTE[idx];
+                    // If candidate not already used by another name, assign it
                     const usedBy = Object.keys(_colorMap).find(k => _colorMap[k] === candidate);
                     if (!usedBy) {
                         _colorMap[name] = candidate;
@@ -619,6 +600,8 @@
                         return candidate;
                     }
                 }
+
+                // Palette exhausted: fallback to generated HSL based on full hash
                 const fallbackHue = (baseIndex * 23) % 360;
                 const fallback = `hsl(${fallbackHue},65%,45%)`;
                 _colorMap[name] = fallback;
@@ -626,7 +609,7 @@
                 return fallback;
             }
 
-            // Build datasets: aggregated first, then per-country if filtered
+            // Build datasets starting with the original aggregated curve
             const datasets = [];
             datasets.push({
                 label: curveLabel,
@@ -639,25 +622,29 @@
                 pointRadius: 3
             });
 
-            if (selectedCountry !== 'Tous') {
-                const filteredCountries = [...new Set(records
-                    .filter(r => r.country && r.country.toLowerCase().includes(
-                        selectedCountry.toLowerCase()))
-                    .map(r => r.country))];
+            // If user entered a filter in 'Réseau origine', add one dataset per matched origin network
+            if (selectedNet !== 'Tous') {
+                // Case-insensitive substring match for input filter
+                const filteredNets = [...new Set(records
+                    .filter(r => r.orig_net_name && r.orig_net_name.toLowerCase().includes(selectedNet
+                        .toLowerCase()))
+                    .map(r => r.orig_net_name))];
 
-                filteredCountries.forEach((country, idx) => {
-                    const countryData = periods.map(p => {
-                        let filtered = records.filter(r => r.period === p && r.country ===
-                            country);
-                        if (selectedCarrier !== 'Tous') filtered = filtered.filter(r => r
-                            .carrier_name === selectedCarrier);
+                filteredNets.forEach((net, idx) => {
+                    const netData = periods.map(p => {
+                        let filtered = records.filter(r => r.period === p && r.orig_net_name ===
+                            net);
+                        if (selectedCarrier !== 'Tous') {
+                            filtered = filtered.filter(r => r.carrier_name === selectedCarrier);
+                        }
                         return filtered.reduce((acc, r) => acc + parseFloat(r.value ?? 0), 0);
                     });
-                    // Map color by country name only (independent of operator)
-                    const color = colorForName(country);
+
+                    // Map color by network name only (independent of selected operator)
+                    const color = colorForName(net);
                     datasets.push({
-                        label: country,
-                        data: countryData,
+                        label: net,
+                        data: netData,
                         borderWidth: 2,
                         fill: false,
                         borderColor: color,
@@ -668,6 +655,8 @@
                 });
             }
 
+            // Create a single chart instance that contains both the aggregated curve and per-network curves
+            // Make the aggregated curve more prominent
             if (datasets.length > 0) {
                 datasets[0].borderWidth = 4;
                 datasets[0].pointRadius = 4;
@@ -694,38 +683,46 @@
                 }
             });
 
-            // Populate controls with checkboxes for per-country datasets
+            // Populate chartControls with checkboxes for per-network datasets (skip aggregated dataset at index 0)
             const controlsContainer = document.getElementById('chartControls');
             if (datasets.length > 1 && controlsContainer) {
                 datasets.slice(1).forEach((ds, idx) => {
-                    const controlId = `country-toggle-${idx}`;
+                    const controlId = `net-toggle-${idx}`;
                     const wrapper = document.createElement('div');
                     wrapper.className = 'form-check form-check-inline';
+
                     const input = document.createElement('input');
                     input.className = 'form-check-input';
                     input.type = 'checkbox';
                     input.id = controlId;
                     input.checked = true;
+
                     const label = document.createElement('label');
                     label.className = 'form-check-label small';
                     label.htmlFor = controlId;
                     label.style.color = ds.borderColor;
+                    // truncate long labels and add full text as tooltip
                     const fullLabel = ds.label || '';
                     label.title = fullLabel;
                     label.innerText = fullLabel.length > 24 ? fullLabel.slice(0, 24) + '…' : fullLabel;
+
                     input.addEventListener('change', function() {
+                        // dataset index in chartInstance is offset by +1 because we sliced datasets
                         const datasetIndex = idx + 1;
+                        const meta = chartInstance.getDatasetMeta(datasetIndex);
                         chartInstance.data.datasets[datasetIndex].hidden = !this.checked;
                         chartInstance.update();
                     });
+
                     wrapper.appendChild(input);
                     wrapper.appendChild(label);
                     controlsContainer.appendChild(wrapper);
                 });
+                // Master toggle behavior: attach after creating all per-network inputs
                 const toggleAll = document.getElementById('toggleAllNets');
                 const perNetInputs = Array.from(controlsContainer.querySelectorAll('input.form-check-input'));
 
-                // Hide master toggle if there are no per-country inputs
+                // Hide master toggle if there are no per-network inputs
                 if (perNetInputs.length === 0 && toggleAll) {
                     toggleAll.closest('.form-check').style.display = 'none';
                 }
@@ -743,15 +740,24 @@
                         toggleAll.indeterminate = true;
                     }
                 }
+
+                // initialize master state
                 updateMasterCheckbox();
+
+                // when master changes, toggle all per-network
                 toggleAll.addEventListener('change', function() {
                     perNetInputs.forEach((input, idx) => {
                         input.checked = this.checked;
+                        // trigger change event for each to update chart
                         input.dispatchEvent(new Event('change'));
                     });
                     toggleAll.indeterminate = false;
                 });
-                perNetInputs.forEach(inp => inp.addEventListener('change', updateMasterCheckbox));
+
+                // when any per-network changes, update master state
+                perNetInputs.forEach(inp => {
+                    inp.addEventListener('change', updateMasterCheckbox);
+                });
             }
             const totals = {};
             periods.forEach(p => {
@@ -795,9 +801,11 @@
                 },
                 plugins: [ChartDataLabels]
             });
+
             // --- Table sorting / Top N utilities (for Total column) ---
             function parseNumberFromCell(text) {
                 if (!text) return 0;
+                // remove spaces and non-digit chars except minus and dot
                 const cleaned = text.toString().replace(/[^0-9\-.,]/g, '').replace(/\./g, '').replace(/,/g, '.');
                 const n = parseFloat(cleaned);
                 return isNaN(n) ? 0 : n;
@@ -809,6 +817,7 @@
                 const tbody = table.tBodies[0];
                 if (!tbody) return;
                 const rows = Array.from(tbody.querySelectorAll('tr'));
+                // assume Total is last column
                 rows.sort((a, b) => {
                     const aText = a.cells[a.cells.length - 1].innerText || '';
                     const bText = b.cells[b.cells.length - 1].innerText || '';
@@ -816,6 +825,7 @@
                     const bNum = parseNumberFromCell(bText);
                     return ascending ? aNum - bNum : bNum - aNum;
                 });
+                // re-append rows in sorted order
                 rows.forEach(r => tbody.appendChild(r));
             }
 
@@ -834,27 +844,28 @@
                 });
             }
 
-            // Wire controls for countries table
+            // Wire controls for nets table
             (function() {
-                const sortBtn = document.getElementById('sortTotalBtn_countries');
-                const topSelect = document.getElementById('topNSelect_countries');
+                const sortBtn = document.getElementById('sortTotalBtn_nets');
+                const topSelect = document.getElementById('topNSelect_nets');
                 if (sortBtn) {
                     let asc = false;
                     sortBtn.addEventListener('click', function() {
                         asc = !asc;
-                        sortTableByTotal('pivotTableCountry', asc);
+                        sortTableByTotal('pivotTableNet', asc);
+                        // after sorting, re-apply topN if selected
                         const v = topSelect ? topSelect.value : 'all';
-                        applyTopN('pivotTableCountry', v);
+                        applyTopN('pivotTableNet', v);
                         // update chart datasets to reflect current TopN
-                        const topNames = getTopNamesFromTable('pivotTableCountry', v);
+                        const topNames = getTopNamesFromTable('pivotTableNet', v);
                         updateChartForTopNames(chartInstance, topNames, /*keepAggregatedLabel*/
                             curveLabel);
                     });
                 }
                 if (topSelect) {
                     topSelect.addEventListener('change', function() {
-                        applyTopN('pivotTableCountry', this.value);
-                        const topNames = getTopNamesFromTable('pivotTableCountry', this.value);
+                        applyTopN('pivotTableNet', this.value);
+                        const topNames = getTopNamesFromTable('pivotTableNet', this.value);
                         updateChartForTopNames(chartInstance, topNames, /*keepAggregatedLabel*/
                             curveLabel);
                     });
@@ -884,6 +895,7 @@
                 const inputs = controls ? Array.from(controls.querySelectorAll('input.form-check-input')) : [];
 
                 chart.data.datasets.forEach((ds, idx) => {
+                    // keep aggregated dataset visible if requested
                     if (typeof keepAggregatedLabel !== 'undefined' && _normalizeLabel(ds.label) ===
                         _normalizeLabel(keepAggregatedLabel)) {
                         chart.data.datasets[idx].hidden = false;
@@ -892,6 +904,7 @@
                     const dsNorm = _normalizeLabel(ds.label);
                     const shouldShow = normalizedTop.has(dsNorm);
                     chart.data.datasets[idx].hidden = !shouldShow;
+                    // sync checkbox if any
                     if (controls) {
                         inputs.forEach(inp => {
                             const lbl = controls.querySelector(`label[for="${inp.id}"]`);
