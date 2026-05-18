@@ -20,7 +20,7 @@
                                     {{ csrf_field() }}
                                     <div class="form-group">
                                         <label for="login">Nom d'utilisateur</label>
-                                        <input id="login" type="login" placeholder="Votre nom d'utilisateur" class="form-control" name="login" required value="{{old('login')}}">
+                                        <input id="login" type="text" placeholder="Votre nom d'utilisateur" class="form-control" name="login" required value="{{old('login')}}" tabindex="1">
                                         <div class="invalid-feedback">
                                             Veuillez remplir votre nom d'utilisateur
                                         </div>

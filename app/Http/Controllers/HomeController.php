@@ -1030,6 +1030,16 @@ class HomeController extends Controller
             $q->where($networkColumn, 'like', "%" . $networkName . "%");
         }
 
+        // Filtrer par opérateur si fourni (peut être string ou array)
+        $carrierFilter = $request->input('carrier_name');
+        if ($carrierFilter) {
+            if (is_array($carrierFilter)) {
+                $q->whereIn('carrier_name', $carrierFilter);
+            } else {
+                $q->where('carrier_name', $carrierFilter);
+            }
+        }
+
         // Filtrer par pays si fourni (peut être string ou array)
         $origCountryFilter = $request->input('orig_country_name');
         if ($origCountryFilter) {
@@ -1163,6 +1173,7 @@ class HomeController extends Controller
         $startDate = $request->input('start_date');
         $endDate   = $request->input('end_date');
         $carrierName = $request->input('carrier_name', ''); // Filtre opérateur
+        $origCountry = $request->input('orig_country_name');
 
         // Mapping métriques (same as billingPivot)
         $map = [
@@ -1207,6 +1218,15 @@ class HomeController extends Controller
             $q->where('carrier_name', $carrierName);
         }
 
+        // Ajouter le filtre par pays origine si fourni (string ou array)
+        if ($origCountry) {
+            if (is_array($origCountry)) {
+                $q->whereIn('orig_country_name', $origCountry);
+            } else {
+                $q->where('orig_country_name', $origCountry);
+            }
+        }
+
         if ($viewType === 'day') {
             $records = $q->select([
                 DB::raw('orig_country_name AS country'),
@@ -1232,7 +1252,7 @@ class HomeController extends Controller
 
             $allCarriers = DB::connection('inter_traffic')->table('BILLING_STAT')->select('carrier_name')->distinct()->orderBy('carrier_name')->pluck('carrier_name');
             $metricLabel = $conf['label'];
-            return view('billing.billingPivotCountryCarrier', compact('records', 'countries', 'days', 'totals', 'month', 'filter', 'metricLabel', 'startDate', 'endDate', 'viewType', 'allCarriers', 'carrierName'));
+            return view('billing.billingPivotCountryCarrier', compact('records', 'countries', 'days', 'totals', 'month', 'filter', 'metricLabel', 'startDate', 'endDate', 'viewType', 'allCarriers', 'carrierName', 'origCountry'));
 
         } elseif ($viewType === 'month') {
             $records = $q->select([
@@ -1264,7 +1284,7 @@ class HomeController extends Controller
 
             $allCarriers = DB::connection('inter_traffic')->table('BILLING_STAT')->select('carrier_name')->distinct()->orderBy('carrier_name')->pluck('carrier_name');
             $metricLabel = $conf['label'];
-            return view('billing.billingPivotCountryCarrierMonthly', compact('records', 'countries', 'months', 'totals', 'filter', 'metricLabel', 'startDate', 'endDate', 'viewType', 'allCarriers'));
+            return view('billing.billingPivotCountryCarrierMonthly', compact('records', 'countries', 'months', 'totals', 'filter', 'metricLabel', 'startDate', 'endDate', 'viewType', 'allCarriers', 'carrierName', 'origCountry'));
 
         } else { // year
             $records = $q->select([
@@ -1296,7 +1316,7 @@ class HomeController extends Controller
 
             $allCarriers = DB::connection('inter_traffic')->table('BILLING_STAT')->select('carrier_name')->distinct()->orderBy('carrier_name')->pluck('carrier_name');
             $metricLabel = $conf['label'];
-            return view('billing.billingPivotCountryCarrierAnnual', compact('records', 'countries', 'years', 'totals', 'filter', 'metricLabel', 'startDate', 'endDate', 'viewType', 'allCarriers'));
+            return view('billing.billingPivotCountryCarrierAnnual', compact('records', 'countries', 'years', 'totals', 'filter', 'metricLabel', 'startDate', 'endDate', 'viewType', 'allCarriers', 'carrierName', 'origCountry'));
         }
         }
         return view('index');
