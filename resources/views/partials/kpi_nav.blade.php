@@ -30,6 +30,19 @@
 @endphp
 
 <div class="mb-2 kpi-nav d-flex align-items-center">
+
+    <div class="d-flex me-3 gap-2">
+        <a href="{{ route('partnerKpi', $qs) }}" class="btn btn-sm {{ $cls('partnerKpi') }}">
+            <svg viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M2 2h12v3H2V2zm0 4h5v8H2V6zm6 0h6v8H8V6z"/></svg>
+            P. KPI
+        </a>
+
+        <a href="{{ route('networkkpi', $qs) }}" class="btn btn-sm {{ $cls('networkkpi') }}">
+            <svg viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zm3.5 4h-2A5.5 5.5 0 0 0 4 9.5v2A3.5 3.5 0 0 1 7.5 8h4A1.5 1.5 0 0 0 13.5 6V4z"/></svg>
+            N. KPI
+        </a>
+    </div>
+
     <div class="btn-group" role="group" aria-label="KPI nav">
         <a href="{{ route('kpi.pivot', $qs) }}" class="btn btn-sm {{ $cls('kpi.pivot') }}">
             <svg viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M3 2.5a.5.5 0 0 1 .5-.5H6a.5.5 0 0 1 .5.5V5a.5.5 0 0 1-.5.5H3.5A.5.5 0 0 1 3 5V2.5zM3.5 6.5H6a.5.5 0 0 1 .5.5V9a.5.5 0 0 1-.5.5H3.5A.5.5 0 0 1 3 9V7a.5.5 0 0 1 .5-.5zM9.5 2H12a.5.5 0 0 1 .5.5V5a.5.5 0 0 1-.5.5H9.5A.5.5 0 0 1 9 5V2.5A.5.5 0 0 1 9.5 2zM9.5 6.5H12a.5.5 0 0 1 .5.5V9a.5.5 0 0 1-.5.5H9.5A.5.5 0 0 1 9 9V7a.5.5 0 0 1 .5-.5z"/></svg>

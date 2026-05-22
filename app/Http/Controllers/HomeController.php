@@ -2432,6 +2432,17 @@ public function KpinCarrier(Request $request)
         $rcredits = Rcredit::orderBy('date', 'DESC')->get();
 
         //dd( $rcredits);
+        $userType = null;
+        try {
+            $userType = getUserType()->type_user ?? null;
+        } catch (\Exception $e) {
+            $userType = null;
+        }
+
+        if ($userType === 3) {
+            return view('BI.add_credit_admin', compact('rcredits'));
+        }
+
         return view('BI.add_credit', compact('rcredits'));
         }
         return view('index');
@@ -2526,6 +2537,17 @@ public function KpinCarrier(Request $request)
                 ->orderBy('direction')
                 ->orderBy('start_date')
                 ->get();
+
+            $userType = null;
+            try {
+                $userType = getUserType()->type_user ?? null;
+            } catch (\Exception $e) {
+                $userType = null;
+            }
+
+            if ($userType === 3) {
+                return view('BI.interco_details_admin', compact('reports'))->render();
+            }
 
             return view('BI.interco_details', compact('reports'))->render();
         }

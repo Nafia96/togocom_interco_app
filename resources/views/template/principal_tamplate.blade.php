@@ -186,7 +186,7 @@
 
 
 
-                        <li class="menu-header">Gestions des données</li>
+                        <li class="menu-header">Gestions des INTERCONNEXIONS</li>
                         <li
                             class="dropdown  {{ Request::is('add_operator') ? 'active' : '' }}
                                   {{ Request::is('liste_operator') ? 'active' : '' }}
@@ -335,14 +335,55 @@
                             </li>
                         @endif
 
-                        @if (getUserType()->type_user == 3)
-                            <li style="position: fixed; bottom: 0;"
-                                class="dropdown  {{ Request::is('setting') ? 'active' : '' }}">
+
+
+                        @if (getUserType()->type_user == 3 || getUserType()->type_user == 2)
+                            <li class="menu-header">Gestions Données bi</li>
+                            <li class="dropdown  {{ Request::is('interco_details') ? 'active' : '' }}
+                                 ">
+
+                                <a href="#" class="menu-toggle nav-link has-dropdown"><i
+                                        data-feather="cpu"></i><span>Interco - Roaming part</span></a>
+                                <ul class="dropdown-menu">
+
+                                    @if (getUserType()->type_user == 6 || getUserType()->type_user == 3)
+                                        <li class="{{ Request::is('interco_details') ? 'active' : '' }}"><a
+                                                class="nav-link " href="{{ route('interco_details') }}">Details
+                                            </a></li>
+                                    @endif
+
+                                </ul>
+                            </li>
+
+
+                            <li class="dropdown  {{ Request::is('add_credit') ? 'active' : '' }}
+                      ">
+
+                                <a href="#" class="menu-toggle nav-link has-dropdown"><i
+                                        data-feather="slack"></i><span>crédit Journalier</span></a>
+                                <ul class="dropdown-menu">
+
+                                    @if (getUserType()->type_user == 6 || getUserType()->type_user == 3)
+                                        <li class="{{ Request::is('add_credit') ? 'active' : '' }}"><a
+                                                class="nav-link " href="{{ route('add_credit') }}">Ajouter
+                                            </a></li>
+
+                                            <li class="{{ Request::is('add_credit') ? 'active' : '' }}"><a
+                                                class="nav-link " href="{{ route('add_credit') }}">Liste  credit journalier
+                                            </a></li>
+                                    @endif
+
+                                </ul>
+                            </li>
+                        @endif
+                         @if (getUserType()->type_user == 3)
+                            <li class="menu-header">Paramètrage Données interco</li>
+
+                            <li class="dropdown  {{ Request::is('setting') ? 'active' : '' }}">
                                 <a href="{{ route('setting') }}" class="nav-link"><i
                                         data-feather="settings"></i><span>Paramètres </span></a>
                             </li>
                         @endif
-
 
 @endif
 
