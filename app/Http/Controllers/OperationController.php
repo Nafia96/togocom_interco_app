@@ -963,6 +963,8 @@ class OperationController extends Controller
                     'is_delete' => 0,
 
                 ])->update([
+                    'period' => $data['period'],
+                    'periodDate' => periodeDate($data['period']),
                     'debt' => $data['amount'],
                     'debt_cfa' => $data['amount'] * $tgc_account->operator->euro_conversion,
 
@@ -975,6 +977,8 @@ class OperationController extends Controller
                     'is_delete' => 0,
 
                 ])->update([
+                    'period' => $data['period'],
+                    'periodDate' => periodeDate($data['period']),
                     'debt' => $data['amount'],
                     'debt_cfa' => $data['amount'] * $tgc_account->operator->dollar_conversion,
 
@@ -987,6 +991,8 @@ class OperationController extends Controller
                     'is_delete' => 0,
 
                 ])->update([
+                    'period' => $data['period'],
+                    'periodDate' => periodeDate($data['period']),
                     'debt' => $data['amount'],
                     'debt_cfa' => $data['amount'] * $tgc_account->operator->xaf_conversion,
 
@@ -999,6 +1005,8 @@ class OperationController extends Controller
                     'is_delete' => 0,
 
                 ])->update([
+                    'period' => $data['period'],
+                    'periodDate' => periodeDate($data['period']),
                     'debt' => $data['amount'],
                     'debt_cfa' => $data['amount'],
 
@@ -1106,6 +1114,8 @@ class OperationController extends Controller
                     'is_delete' => 0,
 
                 ])->update([
+                    'period' => $data['period'],
+                    'periodDate' => periodeDate($data['period']),
                     'receivable' => $data['amount'],
                     'receivable_cfa' => $data['amount'] * $tgc_account->operator->euro_conversion,
 
@@ -1118,6 +1128,8 @@ class OperationController extends Controller
                     'is_delete' => 0,
 
                 ])->update([
+                    'period' => $data['period'],
+                    'periodDate' => periodeDate($data['period']),
                     'receivable' => $data['amount'],
                     'receivable_cfa' => $data['amount'] * $tgc_account->operator->dollar_conversion,
 
@@ -1130,6 +1142,8 @@ class OperationController extends Controller
                     'is_delete' => 0,
 
                 ])->update([
+                    'period' => $data['period'],
+                    'periodDate' => periodeDate($data['period']),
                     'receivable' => $data['amount'],
                     'receivable_cfa' => $data['amount'] * $tgc_account->operator->xaf_conversion,
 
@@ -1142,6 +1156,8 @@ class OperationController extends Controller
                     'is_delete' => 0,
 
                 ])->update([
+                    'period' => $data['period'],
+                    'periodDate' => periodeDate($data['period']),
                     'receivable' => $data['amount'],
                     'receivable_cfa' => $data['amount'],
 
