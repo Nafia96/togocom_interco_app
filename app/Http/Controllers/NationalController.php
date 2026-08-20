@@ -69,7 +69,7 @@ class NationalController extends Controller
     public function show_by_direction($direction)
     {
         // direction may be URL-encoded; normalize
-        $direction = urldecode($direction);
+        $direction = $this->normalizeDirection(urldecode($direction));
 
         // If we have a simple route for this direction, redirect to it for cleaner URLs
         $route = $this->directionToRoute($direction);
@@ -105,7 +105,7 @@ class NationalController extends Controller
 
         // Prevent duplicate for same direction+period
         $period = $request->periode;
-        $direction = $request->direction ?? 'TGT->TGC';
+        $direction = $this->normalizeDirection($request->direction ?? 'TGT->TGC');
         if (Measure::where('direction', $direction)->where('period', $period)->exists()) {
             return redirect()->back()->with('error', 'Une mesure pour cette période et cette direction existe déjà.')->withInput();
         }
@@ -145,7 +145,7 @@ class NationalController extends Controller
         }
 
         // Redirect to a simple named route for the direction when available
-        $route = $this->directionToRoute($measure->direction);
+        $route = $this->directionToRoute($this->normalizeDirection($measure->direction));
         if ($route) {
             return redirect()->route($route)->with('success', 'Mesure ajoutée avec succès.');
         }
@@ -176,7 +176,7 @@ class NationalController extends Controller
 
         // Prevent duplicate for same direction+period
         $period = $request->periode;
-        $direction = $request->direction;
+        $direction = $this->normalizeDirection($request->direction);
         if (Measure::where('direction', $direction)->where('period', $period)->exists()) {
             return redirect()->back()->with('error', 'Une mesure pour cette période et cette direction existe déjà.')->withInput();
         }
@@ -189,7 +189,7 @@ class NationalController extends Controller
                 'diff' => $diff,
                 'pct_diff' => $pct,
                 'comment' => $request->comment ?? null,
-                'direction' => $request->direction,
+                'direction' => $direction,
                 'created_by' => auth()->id() ?? null,
             ]);
         } catch (\Illuminate\Database\QueryException $e) {
@@ -214,7 +214,7 @@ class NationalController extends Controller
         }
 
         // redirect back to the show page for that direction using simple route when possible
-        $route = $this->directionToRoute($measure->direction);
+        $route = $this->directionToRoute($this->normalizeDirection($measure->direction));
         if ($route) {
             return redirect()->route($route)->with('success', 'Mesure ajoutée avec succès.');
         }
@@ -261,7 +261,7 @@ class NationalController extends Controller
         $measure->save();
 
         // Try to redirect back to the measure's direction page if possible
-        $route = $this->directionToRoute($measure->direction);
+        $route = $this->directionToRoute($this->normalizeDirection($measure->direction));
         if ($route) {
             return redirect()->route($route)->with('success', 'Trafic validé mis à jour.');
         }
@@ -360,7 +360,7 @@ class NationalController extends Controller
 
         $measure->save();
 
-        $route = $this->directionToRoute($measure->direction);
+        $route = $this->directionToRoute($this->normalizeDirection($measure->direction));
         if ($route) {
             return redirect()->route($route)->with('success', 'Mesure mise à jour avec succès.');
         }
@@ -384,6 +384,32 @@ class NationalController extends Controller
         ];
 
         return $map[$direction] ?? null;
+    }
+
+    /**
+     * Normalize different direction representations to canonical form.
+     * Examples: 'TGC->TGT', 'TGC - TGT', 'tgc_tgt' -> 'TGC->TGT'
+     */
+    private function normalizeDirection($direction)
+    {
+        if (!$direction) return $direction;
+        $d = strtoupper(trim($direction));
+
+        // common separators -> unify to '->'
+        $d = preg_replace('/\s*[-_]+\s*/', '->', $d);
+        $d = preg_replace('/\s*->\s*/', '->', $d);
+        $d = str_replace(' ', '', $d);
+
+        // ensure parts are in correct order and use canonical arrows
+        if (strpos($d, 'TGT->TGC') !== false) return 'TGT->TGC';
+        if (strpos($d, 'TGC->TGT') !== false) return 'TGC->TGT';
+        if (strpos($d, 'TGT->MAT') !== false) return 'TGT->MAT';
+        if (strpos($d, 'MAT->TGT') !== false) return 'MAT->TGT';
+
+        // fallback: return uppercased with arrow if it looks like 'XXX->YYY'
+        if (preg_match('/^[A-Z]{3}->[A-Z]{3}$/', $d)) return $d;
+
+        return $direction;
     }
 
     /**
@@ -418,7 +444,8 @@ class NationalController extends Controller
             return redirect()->back()->with('error', 'Aucune ligne sélectionnée pour la génération de facture.');
         }
 
-        $measures = Measure::whereIn('id', $ids)->where('direction', $request->direction)->get();
+        $direction = $this->normalizeDirection($request->direction);
+        $measures = Measure::whereIn('id', $ids)->where('direction', $direction)->get();
         if ($measures->count() === 0) {
             return redirect()->back()->with('error', 'Aucune mesure valide trouvée pour la direction sélectionnée.');
         }
@@ -459,7 +486,7 @@ class NationalController extends Controller
 
         $nationalInvoice = NationalInvoice::create([
             'invoice_number' => $invoiceNumber,
-            'direction' => $request->direction,
+            'direction' => $direction,
             'period' => $measures->first()->period,
             'periodDate' => periodeDate($measures->first()->period),
             'invoice_date' => date('Y-m-d'),
@@ -564,7 +591,32 @@ class NationalController extends Controller
     public function show_tgc_tgt()
     {
         $measures = Measure::where('direction', 'TGC->TGT')->orderBy('period', 'desc')->get();
-        return view('national.tgc_tgt_dashboard', compact('measures'));
+
+        $currentYear = date('Y');
+
+        $computeSums = function ($collection, $field) use ($currentYear) {
+            $total = 0.0;
+            $yearTotal = 0.0;
+            foreach ($collection as $m) {
+                $val = floatval($m->{$field} ?? 0);
+                $total += $val;
+                if (strpos((string) $m->period, (string) $currentYear) !== false) {
+                    $yearTotal += $val;
+                }
+            }
+            return ['year' => $yearTotal, 'total' => $total];
+        };
+
+        $tgc_tgt_sums = $computeSums($measures, 'm_tgc');
+        $ecart_sums = $computeSums($measures, 'diff');
+        $tgt_sums = $computeSums($measures, 'm_tgt');
+
+        return view('national.tgc_tgt_dashboard', compact(
+            'measures',
+            'tgc_tgt_sums',
+            'ecart_sums',
+            'tgt_sums'
+        ));
     }
 
     public function show_tgt_mat()

@@ -20,36 +20,36 @@
                     <div class="form-row">
                         <div class="form-group col-md-4">
                             <label for="periode">Période (YYYY-MM)</label>
-                            <input id="periode" name="periode" type="month" class="form-control @error('periode') is-invalid @enderror" value="{{ old('periode') }}" required>
-                            @error('periode')
-                                <span class="invalid-feedback" role="alert"><strong>{{ $message }}</strong></span>
-                            @enderror
+                            <input id="periode" name="periode" type="month" class="form-control @if(isset($errors) && $errors->has('periode')) is-invalid @endif" value="{{ old('periode') }}" required>
+                            @if(isset($errors) && $errors->has('periode'))
+                                <span class="invalid-feedback" role="alert"><strong>{{ $errors->first('periode') }}</strong></span>
+                            @endif
                         </div>
 
                         <div class="form-group col-md-4">
                             <label for="m_tgt">Déclaration TGT</label>
-                            <input id="m_tgt" name="m_tgt" type="number" step="0.01" min="0" lang="en" class="form-control @error('m_tgt') is-invalid @enderror" value="{{ old('m_tgt') }}" required>
-                            @error('m_tgt')
-                                <span class="invalid-feedback" role="alert"><strong>{{ $message }}</strong></span>
-                            @enderror
+                            <input id="m_tgt" name="m_tgt" type="number" step="0.01" min="0" lang="en" class="form-control @if(isset($errors) && $errors->has('m_tgt')) is-invalid @endif" value="{{ old('m_tgt') }}" required>
+                            @if(isset($errors) && $errors->has('m_tgt'))
+                                <span class="invalid-feedback" role="alert"><strong>{{ $errors->first('m_tgt') }}</strong></span>
+                            @endif
                         </div>
 
                         <div class="form-group col-md-4">
                             <label for="m_tgc">Mesure de TGC</label>
-                            <input id="m_tgc" name="m_tgc" type="number" step="0.01" min="0" lang="en" class="form-control @error('m_tgc') is-invalid @enderror" value="{{ old('m_tgc') }}" required>
-                            @error('m_tgc')
-                                <span class="invalid-feedback" role="alert"><strong>{{ $message }}</strong></span>
-                            @enderror
+                            <input id="m_tgc" name="m_tgc" type="number" step="0.01" min="0" lang="en" class="form-control @if(isset($errors) && $errors->has('m_tgc')) is-invalid @endif" value="{{ old('m_tgc') }}" required>
+                            @if(isset($errors) && $errors->has('m_tgc'))
+                                <span class="invalid-feedback" role="alert"><strong>{{ $errors->first('m_tgc') }}</strong></span>
+                            @endif
                         </div>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group col-md-12">
                             <label>Commentaire sur la mesure</label>
-                            <textarea name="comment" class="form-control @error('comment') is-invalid @enderror">{{ old('comment') }}</textarea>
-                            @error('comment')
-                                <span class="invalid-feedback" role="alert"><strong>{{ $message }}</strong></span>
-                            @enderror
+                            <textarea name="comment" class="form-control @if(isset($errors) && $errors->has('comment')) is-invalid @endif">{{ old('comment') }}</textarea>
+                            @if(isset($errors) && $errors->has('comment'))
+                                <span class="invalid-feedback" role="alert"><strong>{{ $errors->first('comment') }}</strong></span>
+                            @endif
                         </div>
                     </div>
 

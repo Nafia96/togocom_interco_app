@@ -169,16 +169,13 @@
                                             @if($m->traffic_validated !== null)
                                                 {{ number_format($m->traffic_validated, 2, ',', ' ') }}
                                             @else
-                                                    <button class="btn btn-sm btn-outline-primary set-validated-btn" data-id="{{ $m->id }}" data-period="{{ $m->period }}">Saisir</button>
+                                                <button class="btn btn-sm btn-outline-primary set-validated-btn" data-id="{{ $m->id }}" data-period="{{ $m->period }}">Saisir</button>
                                             @endif
                                         @endif
-                                                    <button class="btn btn-sm btn-outline-primary set-validated-btn" data-id="{{ $m->id }}" data-period="{{ $m->period }}">Saisir</button>
-                                                @endif
-                                            @endif
-                                        </td>
-                                        <td>{{ number_format($m->valuation ?? 0, 2, ',', ' ') }}</td>
-                                    </tr>
-                                @endforeach
+                                    </td>
+                                    <td>{{ number_format($m->valuation ?? 0, 2, ',', ' ') }}</td>
+                                </tr>
+                            @endforeach
                             @else
                                 <tr>
                                     <td colspan="9" class="text-center">Aucune mesure disponible.</td>
