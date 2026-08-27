@@ -21,7 +21,7 @@
             <div class="d-flex justify-content-end container-fluid mt-n3">
                 @if (getUserType()->type_user == 3 || getUserType()->type_user == 2)
                     <!-- Open add measure modal; form inside will post to generic mesure.route and include direction -->
-            <a data-toggle="modal" data-target="#addMesurModal11" data-direction="TGT->TGC"> <button type="button" class=" btn btn-dark mx-1">+ AJOUTER
+            <a data-toggle="modal" data-target="#addMesurModal_tgt_tgc"> <button type="button" class=" btn btn-dark mx-1">+ AJOUTER
                             MESURE</button></a>
                 @endif
 
@@ -34,6 +34,7 @@
 
     </nav>
 @stop
+@include('national.modals.addMesure_tgt_tgc')
 <div class="row">
     <div class="col-lg-4 col-md-12 col-sm-12">
         <div class="card card-statistic-2">

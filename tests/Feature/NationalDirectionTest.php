@@ -20,6 +20,7 @@ class NationalDirectionTest extends TestCase
             $table->string('period');
             $table->decimal('m_tgt', 20, 2)->nullable();
             $table->decimal('m_tgc', 20, 2)->nullable();
+            $table->decimal('m_mat', 20, 2)->nullable();
             $table->decimal('diff', 20, 2)->nullable();
             $table->decimal('pct_diff', 8, 2)->nullable();
             $table->string('traffic_validated')->nullable();
@@ -77,7 +78,7 @@ class NationalDirectionTest extends TestCase
 
         $storeResponse = $this->post(route('mesure.store'), [
             'periode' => '2026-08',
-            'm_tgc' => '4500.00',
+            'm_mat' => '4500.00',
             'm_tgt' => '4000.00',
             'direction' => 'TGT->MAT',
         ]);
@@ -86,6 +87,65 @@ class NationalDirectionTest extends TestCase
         $this->assertDatabaseHas('measures', [
             'period' => '2026-08',
             'direction' => 'TGT->MAT',
+        ]);
+    }
+
+    public function test_mat_tgc_route_and_store_use_canonical_direction()
+    {
+        $this->withoutMiddleware();
+        session(['id' => 1]);
+
+        $response = $this->get(route('mat-tgc'));
+        $response->assertOk();
+
+        $storeResponse = $this->post(route('mesure.store'), [
+            'periode' => '2026-08',
+            'm_mat' => '4500.00',
+            'm_tgc' => '4000.00',
+            'm_tgt' => '4100.00',
+            'direction' => 'MAT->TGC',
+        ]);
+
+        $storeResponse->assertRedirect(route('mat-tgc'));
+        $this->assertDatabaseHas('measures', [
+            'period' => '2026-08',
+            'direction' => 'MAT->TGC',
+        ]);
+    }
+
+    public function test_legacy_direction_variants_are_treated_as_same_direction()
+    {
+        $this->withoutMiddleware();
+
+        Measure::create([
+            'period' => '2026-07',
+            'm_tgc' => 1000,
+            'm_tgt' => 900,
+            'diff' => 100,
+            'pct_diff' => 11.11,
+            'direction' => 'TGC_TGT',
+        ]);
+
+        $response = $this->post(route('mesure.store'), [
+            'periode' => '2026-07',
+            'm_tgc' => '1200.00',
+            'm_tgt' => '1100.00',
+            'direction' => 'TGC->TGT',
+        ]);
+
+        $response->assertSessionHas('error', 'Une mesure pour cette période et cette direction existe déjà.');
+
+        $response2 = $this->post(route('mesure.store'), [
+            'periode' => '2026-07',
+            'm_tgc' => '2000.00',
+            'm_tgt' => '1900.00',
+            'direction' => 'TGT->TGC',
+        ]);
+
+        $response2->assertRedirect(route('tgt-tgc'));
+        $this->assertDatabaseHas('measures', [
+            'period' => '2026-07',
+            'direction' => 'TGT->TGC',
         ]);
     }
 }

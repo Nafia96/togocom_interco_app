@@ -1,10 +1,10 @@
-<div class="modal fade bd-example-modal-lg" id="addMesurModal_tgc_tgt" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+<div class="modal fade bd-example-modal-lg" id="addMesurModal_tgc_mat" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
                 <div class="row container-fluid mt-3 ">
                     <div class="mt-3 col-12 text-center  m-auto">
-                        <h6 class="modal-title" style="background-color:#03a04f; color: aliceblue ; " id="myLargeModalLabel">AJOUT D'UNE MESURE - TGC → TGT</h6>
+                        <h6 class="modal-title" style="background-color:#03a04f; color: aliceblue ; " id="myLargeModalLabel">AJOUT D'UNE MESURE - TGC → MAT</h6>
                     </div>
                 </div>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -15,22 +15,22 @@
                 <form action="{{ url('mesure') }}" enctype="multipart/form-data" method="post">
                     @csrf
 
-                    <input type="hidden" name="direction" value="TGC->TGT">
+                    <input type="hidden" name="direction" value="TGC->MAT">
 
                     <div class="form-row">
                         <div class="form-group col-md-4">
-                            <label for="periode_tgc_tgt">Période (YYYY-MM)</label>
-                            <input id="periode_tgc_tgt" name="periode" type="month" class="form-control" value="{{ old('periode') }}" required>
+                            <label for="periode_tgc_mat">Période (YYYY-MM)</label>
+                            <input id="periode_tgc_mat" name="periode" type="month" class="form-control" value="{{ old('periode') }}" required>
                         </div>
 
                         <div class="form-group col-md-4">
-                            <label for="m_tgc_tgc_tgt">Déclaration TGC</label>
-                            <input id="m_tgc_tgc_tgt" name="m_tgc" type="number" step="0.01" min="0" lang="en" class="form-control" value="{{ old('m_tgc') }}" required>
+                            <label for="m_tgc_tgc_mat">Déclaration TGC</label>
+                            <input id="m_tgc_tgc_mat" name="m_tgc" type="number" step="0.01" min="0" lang="en" class="form-control" value="{{ old('m_tgc') }}" required>
                         </div>
 
                         <div class="form-group col-md-4">
-                            <label for="m_tgt_tgc_tgt">Mesure TGT</label>
-                            <input id="m_tgt_tgc_tgt" name="m_tgt" type="number" step="0.01" min="0" lang="en" class="form-control" value="{{ old('m_tgt') }}" required>
+                            <label for="m_mat_tgc_mat">Mesure MAT</label>
+                            <input id="m_mat_tgc_mat" name="m_mat" type="number" step="0.01" min="0" lang="en" class="form-control" value="{{ old('m_mat') }}" required>
                         </div>
                     </div>
 

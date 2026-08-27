@@ -13,7 +13,7 @@
 
             <div class="d-flex justify-content-end container-fluid mt-n3">
                 @if (getUserType()->type_user == 3 || getUserType()->type_user == 2)
-                    <a data-toggle="modal" data-target="#addMesurModal11" data-direction="TGC->TGT">
+                    <a data-toggle="modal" data-target="#addMesurModal_tgc_tgt">
                         <button type="button" class="btn btn-dark mx-1">+ AJOUTER MESURE</button>
                     </a>
                 @endif
@@ -21,6 +21,7 @@
         </ol>
     </nav>
 @stop
+@include('national.modals.addMesure_tgc_tgt')
 
 <div class="row">
     <div class="col-lg-4 col-md-12 col-sm-12">

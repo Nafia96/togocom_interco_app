@@ -129,10 +129,10 @@
                         </li>
 
                         <li
-                            class="dropdown  {{ Request::is('mat_tgt_dashboard') ? 'active' : '' }} {{ Request::is('mat_tgc_dashboard') ? 'active' : '' }}">
+                            class="dropdown {{ Request::is('mat_tgt_dashboard') || Request::is('mat_tgc_dashboard') ? 'active open' : '' }}">
 
                             <a href="#" class="menu-toggle nav-link has-dropdown"><i data-feather="radio"></i><span>MAT</span></a>
-                            <ul class="dropdown-menu">
+                            <ul class="dropdown-menu" style="{{ Request::is('mat_tgt_dashboard') || Request::is('mat_tgc_dashboard') ? 'display:block;' : '' }}">
                                 <li class="{{ Request::is('mat_tgt_dashboard') ? 'active' : '' }}"><a class="nav-link" href="{{ route('mat_tgt_dashboard') }}">MAT -> TGT</a></li>
                                 <li class="{{ Request::is('mat_tgc_dashboard') ? 'active' : '' }}"><a class="nav-link" href="{{ route('mat_tgc_dashboard') }}">MAT -> TGC</a></li>
                             </ul>
@@ -208,62 +208,55 @@
 
                         <li class="menu-header">Gestions des mesures</li>
                         <li
-                            class="dropdown  {{ Request::is('show_tgt_tgc') ? 'active' : '' }}
-                                  {{ Request::is('liste_operator') ? 'active' : '' }}
-                                  {{ Request::is('delete_operator_liste') ? 'active' : '' }}
-                                  {{ Request::is('ope_dashboard') ? 'active' : '' }}
-                                 ">
+                            class="dropdown {{ Request::is('show_tgt_tgc') || Request::is('tgt-tgc') || Request::is('tgt-mat') || Request::is('liste_operator') || Request::is('delete_operator_liste') || Request::is('ope_dashboard') ? 'active open' : '' }}
+                                  ">
 
                             <a href="#" class="menu-toggle nav-link has-dropdown"><i
                                     data-feather="radio"></i><span>TOGOTELECOM </span></a>
-                            <ul class="dropdown-menu">
+                            <ul class="dropdown-menu" style="{{ Request::is('show_tgt_tgc') || Request::is('tgt-tgc') || Request::is('tgt-mat') || Request::is('liste_operator') || Request::is('delete_operator_liste') || Request::is('ope_dashboard') ? 'display:block;' : '' }}">
                                 @if (getUserType()->type_user == 3 || getUserType()->type_user == 2)
-                                    <li class="{{ Request::is('tgt-tgc') ? 'active' : '' }}"><a class="nav-link" href="{{ route('tgt-tgc') }}">TGT -> TGC (National)</a></li>
+                                    <li class="{{ Request::is('tgt-tgc') ? 'active' : '' }}"><a class="nav-link" href="{{ route('tgt-tgc') }}">TGT -> TGC </a></li>
                                 @endif
-                                <li class="{{ Request::is('tgc-tgt') ? 'active' : '' }}"><a class="nav-link" href="{{ route('tgc-tgt') }}">TGC -> TGT</a></li>
+
                                 <li class="{{ Request::is('tgt-mat') ? 'active' : '' }}"><a class="nav-link" href="{{ route('tgt-mat') }}">TGT -> MAT</a></li>
-                                <li class="{{ Request::is('mat-tgt') ? 'active' : '' }}"><a class="nav-link" href="{{ route('mat-tgt') }}">MAT -> TGT</a></li>
+
                             </ul>
                         </li>
 
 
                         <li
-                            class="dropdown  {{ Request::is('all_invoice_list') ? 'active' : '' }}
-                              {{ Request::is('all_resum_list') ? 'active' : '' }}
-                              {{ Request::is('delete_invoice_list') ? 'active' : '' }}
-                             ">
+                            class="dropdown {{ Request::is('all_invoice_list') || Request::is('all_resum_list') || Request::is('delete_invoice_list') || Request::is('tgc-tgt') || Request::is('tgc-mat') ? 'active open' : '' }}
+                              ">
 
                             <a href="#" class="menu-toggle nav-link has-dropdown"><i
-                                    data-feather="radio"></i><span>TOGOCOCEL </span></a>
-                            <ul class="dropdown-menu">
-                                <li class="{{ Request::is('tgc-tgt') ? 'active' : '' }}"><a class="nav-link" href="{{ route('tgc-tgt') }}">TGC -> TGT (National)</a></li>
-                                <li class="{{ Request::is('tgc_tgt_dashboard') ? 'active' : '' }}"><a class="nav-link" href="{{ route('tgc_tgt_dashboard') }}">TGC -> TGT (Dashboard)</a></li>
+                                    data-feather="radio"></i><span>TOGOCEL </span></a>
+
+
+                            <ul class="dropdown-menu" style="{{ Request::is('all_invoice_list') || Request::is('all_resum_list') || Request::is('delete_invoice_list') || Request::is('tgc-tgt') || Request::is('tgc-mat') ? 'display:block;' : '' }}">
+                                <li class="{{ Request::is('tgc-tgt') ? 'active' : '' }}"><a class="nav-link" href="{{ route('tgc-tgt') }}">TGC -> TGT</a></li>
+
+                                  <li class="{{ Request::is('tgc-mat') ? 'active' : '' }}"><a class="nav-link" href="{{ route('tgc-mat') }}">TGC -> MAT</a></li>
+
+
+
                             </ul>
                         </li>
 
 
                         <li
-                            class="dropdown  {{ Request::is('all_operations') ? 'active' : '' }}
-                              {{ Request::is('all_cancel_operations') ? 'active' : '' }}
+                            class="dropdown {{ Request::is('all_operations') || Request::is('all_cancel_operations') || Request::is('mat-tgt') || Request::is('mat-tgc') ? 'active open' : '' }}
 
                              ">
 
                             <a href="#" class="menu-toggle nav-link has-dropdown"><i
                                     data-feather="radio"></i><span>MOOV</span></a>
-                            <ul class="dropdown-menu">
+                            <ul class="dropdown-menu" style="{{ Request::is('all_operations') || Request::is('all_cancel_operations') || Request::is('mat-tgt') || Request::is('mat-tgc') ? 'display:block;' : '' }}">
 
-                                <li class="{{ Request::is('all_operations') ? 'active' : '' }}"><a class="nav-link "
-                                        href="{{ route('all_operations') }}"> MOOV - TGT International
-                                    </a></li>
-                                <li class="{{ Request::is('all_cancel_operations') ? 'active' : '' }}"><a
-                                        class="nav-link " href="{{ route('all_cancel_operations') }}"> MOOV - TGT
-                                        national</a>
-                                </li>
+                                <li class="{{ Request::is('mat-tgt') ? 'active' : '' }}"><a class="nav-link" href="{{ route('mat-tgt') }}">MAT -> TGT</a></li>
 
-                                <li class="{{ Request::is('all_cancel_operations') ? 'active' : '' }}"><a
-                                        class="nav-link " href="{{ route('all_cancel_operations') }}"> MOOV - TGC
-                                        national</a>
-                                </li>
+ <li class="{{ Request::is('mat-tgc') ? 'active' : '' }}"><a class="nav-link" href="{{ route('mat-tgc') }}">MAT -> TGC</a></li>
+
+
 
 
 
@@ -409,8 +402,7 @@
 
 
 
-    <!-- Include add measure modal here so its markup is placed after the main content (avoids z-index/display under tables) -->
-    @include('national.addMesureModal')
+    <!-- Per-direction modals are included in each dashboard view; removed global modal include to avoid conflicts. -->
 
     <script src={{ asset('assets/js/app.min.js') }}></script>
     <!-- JS Libraies -->
@@ -424,6 +416,35 @@
 
     <!-- Custom JS File -->
     <script src={{ asset('assets/js/custom.js') }}></script>
+
+    <!-- Fix: ensure per-direction modals are appended to body and cleanup backdrops -->
+    <script>
+        (function(){
+            // Move add-measure modals to body to avoid z-index/backdrop issues
+            $(function(){
+                $('div[id^="addMesurModal"]').each(function(){
+                    // append only if not already direct child of body
+                    if ($(this).parent()[0].tagName.toLowerCase() !== 'body') {
+                        $(this).appendTo('body');
+                    }
+                });
+
+                // On show, remove stray backdrops to prevent stacking
+                $(document).on('show.bs.modal', function(e){
+                    $('.modal-backdrop').remove();
+                });
+
+                // On hidden, remove any leftover backdrops and restore body state
+                $(document).on('hidden.bs.modal', function(e){
+                    // if no other modal is visible, remove modal-open class
+                    if ($('.modal.show').length === 0) {
+                        $('body').removeClass('modal-open');
+                    }
+                    $('.modal-backdrop').remove();
+                });
+            });
+        })();
+    </script>
 
     <script src={{ asset('assets/bundles/izitoast/js/iziToast.min.js') }}></script>
     <!-- Page Specific JS File -->

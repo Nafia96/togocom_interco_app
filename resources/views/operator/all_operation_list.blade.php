@@ -72,9 +72,9 @@
                                                 <span data-toggle="tooltip" data-placement="top"
                                                     title="Annuler l'opération">
                                                     <a class=" delete-confirm mb-2 btn btn-sm btn-danger"
-                                                        href="/cancel_operation/{{ $operation->id }}">
-                                                        <i class="fas far fa-times-circle text-white"> </i>
-                                                    </a>
+                                                            href="{{ route('cancel_operation', $operation->id) }}">
+                                                            <i class="fas far fa-times-circle text-white"> </i>
+                                                        </a>
                                                 </span>
                                             @endif
 
