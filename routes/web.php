@@ -48,6 +48,7 @@ Route::get('billingp', [HomeController::class, 'billingpivot'])->name('billingp'
 Route::get('billingn', [HomeController::class, 'billingPivotNetCarrier'])->name('billingPivotNetCarrier');
 
 Route::get('/billingc', [App\Http\Controllers\HomeController::class, 'billingPivotCountryCarrier'])->name('billingPivotCountryCarrier');
+Route::get('/billing-provisional-measures', [HomeController::class, 'billingProvisionalMeasures'])->name('billingProvisionalMeasures');
 
 Route::get('/billingKp', [HomeController::class, 'billingKp'])->name('billingKp');
 
