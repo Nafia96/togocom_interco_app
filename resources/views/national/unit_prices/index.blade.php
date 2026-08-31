@@ -27,7 +27,8 @@
                         <option value="TGC->TGT">TGC->TGT</option>
                         <option value="TGT->MAT">TGT->MAT</option>
                         <option value="MAT->TGT">MAT->TGT</option>
-                        <!-- add more as needed -->
+                        <option value="TGC->MAT">TGC->MAT</option>
+                        <option value="MAT->TGC">MAT->TGC</option>
                     </select>
                 </div>
                 <div class="col-md-3">

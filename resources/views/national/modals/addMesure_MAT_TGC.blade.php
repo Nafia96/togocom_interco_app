@@ -36,13 +36,6 @@
 
                     <div class="form-row">
                         <div class="form-group col-md-12">
-                            <label for="m_tgt_mat_tgc">Référence / Valeur de comparaison</label>
-                            <input id="m_tgt_mat_tgc" name="m_tgt" type="number" step="0.01" min="0" lang="en" class="form-control" value="{{ old('m_tgt') }}" required>
-                        </div>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group col-md-12">
                             <label>Commentaire sur la mesure</label>
                             <textarea name="comment" class="form-control">{{ old('comment') }}</textarea>
                         </div>
