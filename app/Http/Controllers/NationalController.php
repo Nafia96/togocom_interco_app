@@ -23,10 +23,13 @@ class NationalController extends Controller
     //Togotelecom - tgc view
     public function show_tgt_tgc()
     {
-        $measures = Measure::where('direction', 'TGT->TGC')->orderBy('period', 'desc')->get();
+        $tgtTgcVariants = $this->directionVariants('TGT->TGC');
+        $tgcTgtVariants = $this->directionVariants('TGC->TGT');
+
+        $measures = Measure::whereIn('direction', $tgtTgcVariants)->orderBy('period', 'desc')->get();
 
         // Also gather corresponding measures for the opposite direction (TGC->TGT) for comparison
-        $measures_tgcc = Measure::where('direction', 'TGC->TGT')->orderBy('period', 'desc')->get();
+        $measures_tgcc = Measure::whereIn('direction', $tgcTgtVariants)->orderBy('period', 'desc')->get();
 
         $currentYear = date('Y');
 
@@ -69,7 +72,7 @@ class NationalController extends Controller
     public function show_by_direction($direction)
     {
         // direction may be URL-encoded; normalize
-        $direction = urldecode($direction);
+        $direction = $this->normalizeDirection(urldecode($direction));
 
         // If we have a simple route for this direction, redirect to it for cleaner URLs
         $route = $this->directionToRoute($direction);
@@ -86,17 +89,40 @@ class NationalController extends Controller
     public function mesure_tgt_tgc(Request $request)
     {
         $request->validate([
-            'm_tgc' => 'required|numeric|between:0,99999999999999999999.99',
-            'm_tgt' => 'required|numeric|between:0,99999999999999999999.99',
+            // require either m_tgc or m_mat
+            'm_tgc' => 'required_without:m_mat|numeric|between:0,99999999999999999999.99',
+            'm_mat' => 'required_without:m_tgc|numeric|between:0,99999999999999999999.99',
+            'm_tgt' => 'nullable|numeric|between:0,99999999999999999999.99',
         ]);
 
         $data = $request->all();
         //dd($data);
 
-        $m_tgc = floatval($request->m_tgc);
-        $m_tgt = floatval($request->m_tgt);
-        $diff = $m_tgc - $m_tgt;
-        $pct = $m_tgt > 0 ? ($diff / $m_tgt) * 100 : 0;
+        // Support alternative measured fields (m_tgc or m_mat) depending on direction
+        $m_tgt = isset($request->m_tgt) ? floatval($request->m_tgt) : null;
+        $m_tgc = isset($request->m_tgc) ? floatval($request->m_tgc) : 0.0;
+        $m_mat = isset($request->m_mat) ? floatval($request->m_mat) : 0.0;
+
+        $direction = $this->normalizeDirection($request->direction ?? 'TGT->TGC');
+
+        // For MAT<->TGC directions, calculate diff directly between m_mat and m_tgc
+        // For other directions, use m_tgt as reference
+        if (stripos($direction, 'MAT') !== false && stripos($direction, 'TGC') !== false) {
+            // Direction involves both MAT and TGC (e.g., MAT->TGC or TGC->MAT)
+            $reference = $m_mat;
+            $measured = $m_tgc;
+            $diff = $measured - $reference;
+            $pct = $reference > 0 ? ($diff / $reference) * 100 : 0;
+        } else {
+            // For TGT<->others, m_tgt is required as reference
+            if ($m_tgt === null) {
+                return redirect()->back()->with('error', 'La valeur de référence est requise pour cette direction.')->withInput();
+            }
+            $measured = (stripos($direction, 'MAT') !== false) ? $m_mat : $m_tgc;
+            $diff = $measured - $m_tgt;
+            $pct = $m_tgt > 0 ? ($diff / $m_tgt) * 100 : 0;
+        }
+
         // Prevent DB out-of-range for pct_diff (migration defines decimal(8,4))
         $maxPct = 9999.9999;
         if (!is_finite($pct) || abs($pct) > $maxPct) {
@@ -105,16 +131,16 @@ class NationalController extends Controller
 
         // Prevent duplicate for same direction+period
         $period = $request->periode;
-        $direction = $request->direction ?? 'TGT->TGC';
-        if (Measure::where('direction', $direction)->where('period', $period)->exists()) {
+        if ($this->measureExistsForPeriodAndDirection($period, $direction)) {
             return redirect()->back()->with('error', 'Une mesure pour cette période et cette direction existe déjà.')->withInput();
         }
 
         try {
             $measure = Measure::create([
                 'period' => $request->periode,
-                'm_tgt' => $m_tgt,
+                'm_tgt' => $m_tgt ?? 0,
                 'm_tgc' => $m_tgc,
+                'm_mat' => $m_mat,
                 'diff' => $diff,
                 'pct_diff' => $pct,
                 'comment' => $request->comment ?? null,
@@ -126,26 +152,28 @@ class NationalController extends Controller
             return redirect()->back()->with('error', 'Impossible d\'ajouter la mesure : une entrée existe déjà pour cette période/direction.')->withInput();
         }
 
-        // If difference is small (< 2%), automatically set traffic_validated = measured (m_tgc)
+        // Determine unit price for valuation calculation
+        $up = UnitPrice::where('direction', $measure->direction)
+            ->where('period', $measure->period)
+            ->orderBy('effective_from', 'desc')
+            ->first();
+
+        if (!$up) {
+            $up = UnitPrice::where('direction', $measure->direction)->orderBy('effective_from', 'desc')->first();
+        }
+        $price = $up ? floatval($up->price) : 0;
+
+        // If difference is small (< 2%), automatically set traffic_validated = measured
         if (abs($pct) < 2.0) {
-            $measure->traffic_validated = $m_tgc;
-
-            // determine unit price as in set_validated_traffic
-            $up = UnitPrice::where('direction', $measure->direction)
-                ->where('period', $measure->period)
-                ->orderBy('effective_from', 'desc')
-                ->first();
-
-            if (!$up) {
-                $up = UnitPrice::where('direction', $measure->direction)->orderBy('effective_from', 'desc')->first();
-            }
-            $price = $up ? floatval($up->price) : 0;
-            $measure->valuation = $price * $m_tgc;
-            $measure->save();
+            $measure->traffic_validated = $measured;
         }
 
+        // Always calculate valuation based on measured value
+        $measure->valuation = $price * $measured;
+        $measure->save();
+
         // Redirect to a simple named route for the direction when available
-        $route = $this->directionToRoute($measure->direction);
+        $route = $this->directionToRoute($this->normalizeDirection($measure->direction));
         if ($route) {
             return redirect()->route($route)->with('success', 'Mesure ajoutée avec succès.');
         }
@@ -159,15 +187,38 @@ class NationalController extends Controller
     public function mesure_store(Request $request)
     {
         $request->validate([
-            'm_tgc' => 'required|numeric|between:0,99999999999999999999.99',
-            'm_tgt' => 'required|numeric|between:0,99999999999999999999.99',
+            'm_tgc' => 'required_without:m_mat|numeric|between:0,99999999999999999999.99',
+            'm_mat' => 'required_without:m_tgc|numeric|between:0,99999999999999999999.99',
+            'm_tgt' => 'nullable|numeric|between:0,99999999999999999999.99',
             'direction' => 'required|string'
         ]);
 
-        $m_tgc = floatval($request->m_tgc);
-        $m_tgt = floatval($request->m_tgt);
-        $diff = $m_tgc - $m_tgt;
-        $pct = $m_tgt > 0 ? ($diff / $m_tgt) * 100 : 0;
+        // Support alternative measured fields (m_tgc or m_mat) depending on direction
+        $m_tgt = isset($request->m_tgt) ? floatval($request->m_tgt) : null;
+        $m_tgc = isset($request->m_tgc) ? floatval($request->m_tgc) : 0.0;
+        $m_mat = isset($request->m_mat) ? floatval($request->m_mat) : 0.0;
+
+        $direction = $this->normalizeDirection($request->direction);
+
+        // For MAT<->TGC directions, calculate diff directly between m_mat and m_tgc
+        // For other directions, use m_tgt as reference
+        if (stripos($direction, 'MAT') !== false && stripos($direction, 'TGC') !== false) {
+            // Direction involves both MAT and TGC (e.g., MAT->TGC or TGC->MAT)
+            // diff = m_tgc - m_mat (or m_mat - m_tgc depending on direction order)
+            $reference = $m_mat;
+            $measured = $m_tgc;
+            $diff = $measured - $reference;
+            $pct = $reference > 0 ? ($diff / $reference) * 100 : 0;
+        } else {
+            // For TGT<->others, m_tgt is required as reference
+            if ($m_tgt === null) {
+                return redirect()->back()->with('error', 'La valeur de référence est requise pour cette direction.')->withInput();
+            }
+            $measured = (stripos($direction, 'MAT') !== false) ? $m_mat : $m_tgc;
+            $diff = $measured - $m_tgt;
+            $pct = $m_tgt > 0 ? ($diff / $m_tgt) * 100 : 0;
+        }
+
         // Clamp pct_diff to DB column precision to avoid out-of-range errors
         $maxPct = 9999.9999;
         if (!is_finite($pct) || abs($pct) > $maxPct) {
@@ -176,20 +227,20 @@ class NationalController extends Controller
 
         // Prevent duplicate for same direction+period
         $period = $request->periode;
-        $direction = $request->direction;
-        if (Measure::where('direction', $direction)->where('period', $period)->exists()) {
+        if ($this->measureExistsForPeriodAndDirection($period, $direction)) {
             return redirect()->back()->with('error', 'Une mesure pour cette période et cette direction existe déjà.')->withInput();
         }
 
         try {
             $measure = Measure::create([
                 'period' => $request->periode,
-                'm_tgt' => $m_tgt,
+                'm_tgt' => $m_tgt ?? 0,
                 'm_tgc' => $m_tgc,
+                'm_mat' => $m_mat,
                 'diff' => $diff,
                 'pct_diff' => $pct,
                 'comment' => $request->comment ?? null,
-                'direction' => $request->direction,
+                'direction' => $direction,
                 'created_by' => auth()->id() ?? null,
             ]);
         } catch (\Illuminate\Database\QueryException $e) {
@@ -197,24 +248,28 @@ class NationalController extends Controller
             return redirect()->back()->with('error', 'Impossible d\'ajouter la mesure : une entrée existe déjà pour cette période/direction.')->withInput();
         }
 
+        // Determine unit price for valuation calculation
+        $up = UnitPrice::where('direction', $measure->direction)
+            ->where('period', $measure->period)
+            ->orderBy('effective_from', 'desc')
+            ->first();
+
+        if (!$up) {
+            $up = UnitPrice::where('direction', $measure->direction)->orderBy('effective_from', 'desc')->first();
+        }
+        $price = $up ? floatval($up->price) : 0;
+
+        // If difference is small (< 2%), automatically set traffic_validated = measured
         if (abs($pct) < 2.0) {
-            $measure->traffic_validated = $m_tgc;
-
-            $up = UnitPrice::where('direction', $measure->direction)
-                ->where('period', $measure->period)
-                ->orderBy('effective_from', 'desc')
-                ->first();
-
-            if (!$up) {
-                $up = UnitPrice::where('direction', $measure->direction)->orderBy('effective_from', 'desc')->first();
-            }
-            $price = $up ? floatval($up->price) : 0;
-            $measure->valuation = $price * $m_tgc;
-            $measure->save();
+            $measure->traffic_validated = $measured;
         }
 
+        // Always calculate valuation based on measured value
+        $measure->valuation = $price * $measured;
+        $measure->save();
+
         // redirect back to the show page for that direction using simple route when possible
-        $route = $this->directionToRoute($measure->direction);
+        $route = $this->directionToRoute($this->normalizeDirection($measure->direction));
         if ($route) {
             return redirect()->route($route)->with('success', 'Mesure ajoutée avec succès.');
         }
@@ -261,7 +316,7 @@ class NationalController extends Controller
         $measure->save();
 
         // Try to redirect back to the measure's direction page if possible
-        $route = $this->directionToRoute($measure->direction);
+        $route = $this->directionToRoute($this->normalizeDirection($measure->direction));
         if ($route) {
             return redirect()->route($route)->with('success', 'Trafic validé mis à jour.');
         }
@@ -275,17 +330,38 @@ class NationalController extends Controller
     public function update_measure(Request $request, $id)
     {
         $request->validate([
-            'm_tgc' => 'required|numeric|min:0',
-            'm_tgt' => 'required|numeric|min:0',
+            'm_tgc' => 'required_without:m_mat|numeric|min:0',
+            'm_mat' => 'required_without:m_tgc|numeric|min:0',
+            'm_tgt' => 'nullable|numeric|min:0',
             'periode' => 'required|string',
         ]);
 
         $measure = Measure::findOrFail($id);
 
-        $m_tgc = floatval($request->m_tgc);
-        $m_tgt = floatval($request->m_tgt);
-        $diff = $m_tgc - $m_tgt;
-        $pct = $m_tgt > 0 ? ($diff / $m_tgt) * 100 : 0;
+        $m_tgt = isset($request->m_tgt) ? floatval($request->m_tgt) : null;
+        $m_tgc = isset($request->m_tgc) ? floatval($request->m_tgc) : 0.0;
+        $m_mat = isset($request->m_mat) ? floatval($request->m_mat) : 0.0;
+
+        $direction = $this->normalizeDirection($request->direction ?? $measure->direction);
+
+        // For MAT<->TGC directions, calculate diff directly between m_mat and m_tgc
+        // For other directions, use m_tgt as reference
+        if (stripos($direction, 'MAT') !== false && stripos($direction, 'TGC') !== false) {
+            // Direction involves both MAT and TGC (e.g., MAT->TGC or TGC->MAT)
+            $reference = $m_mat;
+            $measured = $m_tgc;
+            $diff = $measured - $reference;
+            $pct = $reference > 0 ? ($diff / $reference) * 100 : 0;
+        } else {
+            // For TGT<->others, m_tgt is required as reference
+            if ($m_tgt === null) {
+                return redirect()->back()->with('error', 'La valeur de référence est requise pour cette direction.')->withInput();
+            }
+            $measured = (stripos($direction, 'MAT') !== false) ? $m_mat : $m_tgc;
+            $diff = $measured - $m_tgt;
+            $pct = $m_tgt > 0 ? ($diff / $m_tgt) * 100 : 0;
+        }
+
         // Clamp pct_diff to the DB column maximum to prevent numeric overflow
         $maxPct = 9999.9999;
         if (!is_finite($pct) || abs($pct) > $maxPct) {
@@ -302,7 +378,8 @@ class NationalController extends Controller
 
         $measure->period = $period;
         $measure->m_tgc = $m_tgc;
-        $measure->m_tgt = $m_tgt;
+        $measure->m_mat = $m_mat;
+        $measure->m_tgt = $m_tgt ?? 0;
         $measure->diff = $diff;
         $measure->pct_diff = $pct;
         $measure->comment = $request->comment ?? $measure->comment;
@@ -342,7 +419,7 @@ class NationalController extends Controller
             $measure->valuation = $price * $traffic_validated;
         } elseif (abs($pct) < 2.0) {
             // Auto-validate/valorise when difference small
-            $measure->traffic_validated = $m_tgc;
+            $measure->traffic_validated = $measured;
             $up = UnitPrice::where('direction', $measure->direction)
                 ->where('period', $measure->period)
                 ->orderBy('effective_from', 'desc')
@@ -351,7 +428,7 @@ class NationalController extends Controller
                 $up = UnitPrice::where('direction', $measure->direction)->orderBy('effective_from', 'desc')->first();
             }
             $price = $up ? floatval($up->price) : 0;
-            $measure->valuation = $price * $m_tgc;
+            $measure->valuation = $price * $measured;
         } else {
             // Clear validated traffic and valuation until manual validation
             $measure->traffic_validated = null;
@@ -360,7 +437,7 @@ class NationalController extends Controller
 
         $measure->save();
 
-        $route = $this->directionToRoute($measure->direction);
+        $route = $this->directionToRoute($this->normalizeDirection($measure->direction));
         if ($route) {
             return redirect()->route($route)->with('success', 'Mesure mise à jour avec succès.');
         }
@@ -380,10 +457,64 @@ class NationalController extends Controller
             'TGC->TGT' => 'tgc-tgt',
             'TGT->MAT' => 'tgt-mat',
             'MAT->TGT' => 'mat-tgt',
+            'TGC->MAT' => 'tgc-mat',
+            'MAT->TGC' => 'mat-tgc',
             // add other mappings here if you create more simple routes
         ];
 
         return $map[$direction] ?? null;
+    }
+
+    /**
+     * Normalize different direction representations to canonical form.
+     * Examples: 'TGC->TGT', 'TGC - TGT', 'tgc_tgt' -> 'TGC->TGT'
+     */
+    private function normalizeDirection($direction)
+    {
+        if (!$direction) return $direction;
+        $d = strtoupper(trim((string)$direction));
+
+        // common separators -> unify to '->'
+        $d = preg_replace('/\s*[\-_\/]+\s*/', '->', $d);
+        $d = preg_replace('/\s*->\s*/', '->', $d);
+        $d = str_replace(' ', '', $d);
+
+        // ensure parts are in correct order and use canonical arrows
+        if (strpos($d, 'TGT->TGC') !== false) return 'TGT->TGC';
+        if (strpos($d, 'TGC->TGT') !== false) return 'TGC->TGT';
+        if (strpos($d, 'TGT->MAT') !== false) return 'TGT->MAT';
+        if (strpos($d, 'MAT->TGT') !== false) return 'MAT->TGT';
+        if (strpos($d, 'MAT->TGC') !== false) return 'MAT->TGC';
+        if (strpos($d, 'TGC->MAT') !== false) return 'TGC->MAT';
+
+        // fallback: return uppercased with arrow if it looks like 'XXX->YYY'
+        if (preg_match('/^[A-Z]{3}->[A-Z]{3}$/', $d)) return $d;
+
+        return strtoupper(trim((string)$direction));
+    }
+
+    private function directionVariants($direction)
+    {
+        $canonical = $this->normalizeDirection($direction);
+        $variants = [$canonical];
+
+        foreach (['->', '-', '_', ' ', '/'] as $sep) {
+            $variants[] = str_replace('->', $sep, $canonical);
+        }
+
+        $variants[] = str_replace('->', '', $canonical);
+        $variants[] = strtoupper(str_replace('->', ' ', $canonical));
+
+        return array_values(array_unique(array_filter($variants, fn($v) => !empty($v))));
+    }
+
+    private function measureExistsForPeriodAndDirection($period, $direction)
+    {
+        $variants = $this->directionVariants($direction);
+
+        return Measure::where('period', $period)
+            ->whereIn('direction', $variants)
+            ->exists();
     }
 
     /**
@@ -418,7 +549,8 @@ class NationalController extends Controller
             return redirect()->back()->with('error', 'Aucune ligne sélectionnée pour la génération de facture.');
         }
 
-        $measures = Measure::whereIn('id', $ids)->where('direction', $request->direction)->get();
+        $direction = $this->normalizeDirection($request->direction);
+        $measures = Measure::whereIn('id', $ids)->where('direction', $direction)->get();
         if ($measures->count() === 0) {
             return redirect()->back()->with('error', 'Aucune mesure valide trouvée pour la direction sélectionnée.');
         }
@@ -430,7 +562,16 @@ class NationalController extends Controller
         foreach ($measures as $m) {
             // Determine validated volume (if present) or measured
             $useMeasured = abs(floatval($m->pct_diff)) < 2.0;
-            $volume = $useMeasured ? floatval($m->m_tgc) : (floatval($m->traffic_validated) ?: 0);
+            if ($useMeasured) {
+                // prefer m_mat when direction involves MAT
+                if (stripos($m->direction ?? '', 'MAT') !== false && isset($m->m_mat)) {
+                    $volume = floatval($m->m_mat);
+                } else {
+                    $volume = floatval($m->m_tgc);
+                }
+            } else {
+                $volume = floatval($m->traffic_validated) ?: 0;
+            }
 
             // Lookup unit price for direction + period, fallback to latest
             $up = UnitPrice::where('direction', $m->direction)->where('period', $m->period)->orderBy('effective_from', 'desc')->first();
@@ -459,7 +600,7 @@ class NationalController extends Controller
 
         $nationalInvoice = NationalInvoice::create([
             'invoice_number' => $invoiceNumber,
-            'direction' => $request->direction,
+            'direction' => $direction,
             'period' => $measures->first()->period,
             'periodDate' => periodeDate($measures->first()->period),
             'invoice_date' => date('Y-m-d'),
@@ -563,26 +704,142 @@ class NationalController extends Controller
     // Dedicated dashboards for specific sens
     public function show_tgc_tgt()
     {
-        $measures = Measure::where('direction', 'TGC->TGT')->orderBy('period', 'desc')->get();
-        return view('national.tgc_tgt_dashboard', compact('measures'));
+        $directionVariants = $this->directionVariants('TGC->TGT');
+        $measures = Measure::whereIn('direction', $directionVariants)->orderBy('period', 'desc')->get();
+
+        $currentYear = date('Y');
+
+        $computeSums = function ($collection, $field) use ($currentYear) {
+            $total = 0.0;
+            $yearTotal = 0.0;
+            foreach ($collection as $m) {
+                $val = floatval($m->{$field} ?? 0);
+                $total += $val;
+                if (strpos((string) $m->period, (string) $currentYear) !== false) {
+                    $yearTotal += $val;
+                }
+            }
+            return ['year' => $yearTotal, 'total' => $total];
+        };
+
+        $tgc_tgt_sums = $computeSums($measures, 'm_tgc');
+        $ecart_sums = $computeSums($measures, 'diff');
+        $tgt_sums = $computeSums($measures, 'm_tgt');
+
+        return view('national.tgc_tgt_dashboard', compact(
+            'measures',
+            'tgc_tgt_sums',
+            'ecart_sums',
+            'tgt_sums'
+        ));
     }
 
     public function show_tgt_mat()
     {
-        $measures = Measure::where('direction', 'TGT->MAT')->orderBy('period', 'desc')->get();
-        return view('national.tgt_mat_dashboard', compact('measures'));
+        $directionVariants = $this->directionVariants('TGT->MAT');
+        $measures = Measure::whereIn('direction', $directionVariants)->orderBy('period', 'desc')->get();
+
+        $currentYear = date('Y');
+
+        $computeSums = function ($collection, $field) use ($currentYear) {
+            $total = 0.0;
+            $yearTotal = 0.0;
+            foreach ($collection as $m) {
+                $val = floatval($m->{$field} ?? 0);
+                $total += $val;
+                if (strpos((string)$m->period, (string)$currentYear) !== false) {
+                    $yearTotal += $val;
+                }
+            }
+            return ['year' => $yearTotal, 'total' => $total];
+        };
+
+        $tgt_mat_sums = $computeSums($measures, 'm_tgt');
+        $ecart_sums = $computeSums($measures, 'diff');
+        $mat_sums = $computeSums($measures, 'm_mat');
+
+        return view('national.tgt_mat_dashboard', compact('measures', 'tgt_mat_sums', 'ecart_sums', 'mat_sums'));
     }
 
     public function show_mat_tgt()
     {
-        $measures = Measure::where('direction', 'MAT->TGT')->orderBy('period', 'desc')->get();
-        return view('national.mat_tgt_dashboard', compact('measures'));
+        $directionVariants = $this->directionVariants('MAT->TGT');
+        $measures = Measure::whereIn('direction', $directionVariants)->orderBy('period', 'desc')->get();
+
+        $currentYear = date('Y');
+
+        $computeSums = function ($collection, $field) use ($currentYear) {
+            $total = 0.0;
+            $yearTotal = 0.0;
+            foreach ($collection as $m) {
+                $val = floatval($m->{$field} ?? 0);
+                $total += $val;
+                if (strpos((string)$m->period, (string)$currentYear) !== false) {
+                    $yearTotal += $val;
+                }
+            }
+            return ['year' => $yearTotal, 'total' => $total];
+        };
+
+        $mat_sums = $computeSums($measures, 'm_mat');
+        $ecart_sums = $computeSums($measures, 'diff');
+        $tgt_sums = $computeSums($measures, 'm_tgt');
+
+        return view('national.mat_tgt_dashboard', compact('measures', 'mat_sums', 'ecart_sums', 'tgt_sums'));
     }
 
     public function show_mat_tgc()
     {
-        $measures = Measure::where('direction', 'MAT->TGC')->orderBy('period', 'desc')->get();
-        return view('national.mat_tgc_dashboard', compact('measures'));
+        $directionVariants = $this->directionVariants('MAT->TGC');
+        $measures = Measure::whereIn('direction', $directionVariants)->orderBy('period', 'desc')->get();
+
+        $currentYear = date('Y');
+
+        $computeSums = function ($collection, $field) use ($currentYear) {
+            $total = 0.0;
+            $yearTotal = 0.0;
+            foreach ($collection as $m) {
+                $val = floatval($m->{$field} ?? 0);
+                $total += $val;
+                if (strpos((string)$m->period, (string)$currentYear) !== false) {
+                    $yearTotal += $val;
+                }
+            }
+            return ['year' => $yearTotal, 'total' => $total];
+        };
+
+        $mat_sums = $computeSums($measures, 'm_mat');
+        $ecart_sums = $computeSums($measures, 'diff');
+        $tgc_sums = $computeSums($measures, 'm_tgc');
+
+        return view('national.mat_tgc_dashboard', compact('measures', 'mat_sums', 'ecart_sums', 'tgc_sums'));
+    }
+
+    public function show_tgc_mat()
+    {
+        $directionVariants = $this->directionVariants('TGC->MAT');
+        $measures = Measure::whereIn('direction', $directionVariants)->orderBy('period', 'desc')->get();
+
+        $currentYear = date('Y');
+
+        $computeSums = function ($collection, $field) use ($currentYear) {
+            $total = 0.0;
+            $yearTotal = 0.0;
+            foreach ($collection as $m) {
+                $val = floatval($m->{$field} ?? 0);
+                $total += $val;
+                if (strpos((string)$m->period, (string)$currentYear) !== false) {
+                    $yearTotal += $val;
+                }
+            }
+            return ['year' => $yearTotal, 'total' => $total];
+        };
+
+        $tgc_mat_sums = $computeSums($measures, 'm_tgc');
+        $ecart_sums = $computeSums($measures, 'diff');
+        $mat_sums = $computeSums($measures, 'm_mat');
+
+        return view('national.tgc_mat_dashboard', compact('measures', 'tgc_mat_sums', 'ecart_sums', 'mat_sums'));
     }
 
 

@@ -153,7 +153,7 @@
                                 @yield('content')
                             </div>
                         </section>
-                        @include('national.addMesureModal')
+                        <!-- Removed global national.addMesureModal include; billing has its own invoice modal. -->
                     </div>
                     <footer class="main-footer">
                         <div class="simple-footer" style="width: 100%; margin: auto  !important;">
@@ -169,7 +169,7 @@
 
 
       <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-      
+
         @yield('scripts')
     <script src={{ asset('assets/js/app.min.js') }}></script>
     <!-- JS Libraies -->

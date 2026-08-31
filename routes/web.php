@@ -137,7 +137,9 @@ Route::middleware([NotConnected::class])->group(function () {
     Route::get('tgt-tgc', [NationalController::class, 'show_tgt_tgc'])->name('tgt-tgc');
     Route::get('tgc-tgt', [NationalController::class, 'show_tgc_tgt'])->name('tgc-tgt');
     Route::get('tgt-mat', [NationalController::class, 'show_tgt_mat'])->name('tgt-mat');
+    Route::get('tgc-mat', [NationalController::class, 'show_tgc_mat'])->name('tgc-mat');
     Route::get('mat-tgt', [NationalController::class, 'show_mat_tgt'])->name('mat-tgt');
+    Route::get('mat-tgc', [NationalController::class, 'show_mat_tgc'])->name('mat-tgc');
     Route::post('mesure_tgt_tgc', [NationalController::class, 'mesure_tgt_tgc'])->name('mesure_tgt_tgc');
 
     // Generic routes that work with any direction value. Use URL-encoded direction names when needed.

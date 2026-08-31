@@ -15,6 +15,7 @@ class Measure extends Model
         'period',
         'm_tgt',
         'm_tgc',
+        'm_mat',
         'diff',
         'pct_diff',
         'traffic_validated',
