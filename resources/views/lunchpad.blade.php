@@ -96,6 +96,27 @@
                             </div>
                         </div>
                     </a>
+                    <a class="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-xs-12" href="{{ url('/billing-provisional-measures') }}">
+                        <div class="card" style="background-color: #133272;">
+                            <div class="card-statistic-4">
+                                <div class="align-items-center justify-content-between">
+                                    <div class="row ">
+                                        <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pr-0 pt-3">
+                                            <div class="card-content">
+                                                <h5 class="font-15" style="color:#ffd100;">MESURES</h5>
+                                                <h2 class="mb-3 font-18" style="color:#ffd100;">PROVISOIRE</h2>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pl-0">
+                                            <div class="banner-img">
+                                                <img src="{{ asset('assets/img/banner/2.png')}}" alt="">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
                     <a class="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-xs-12" href="{{ url('/roaming') }}">
                         <div class="card" style="background-color: #133272;">
                             <div class="card-statistic-4">

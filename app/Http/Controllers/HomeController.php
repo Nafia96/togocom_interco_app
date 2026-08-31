@@ -975,6 +975,81 @@ class HomeController extends Controller
         return view('index');
     }
 
+    public function billingProvisionalMeasures(Request $request)
+    {
+        if (session('id') != null) {
+            $month = $request->input('month', now()->subMonth()->format('Y-m'));
+            $monthLabel = Carbon::createFromFormat('Y-m', $month)->translatedFormat('F Y');
+
+            $year = (int) substr($month, 0, 4);
+            $monthNum = (int) substr($month, 5, 2);
+            $start = Carbon::create($year, $monthNum, 1)->startOfDay();
+            $end = Carbon::create($year, $monthNum, 1)->endOfMonth()->endOfDay();
+
+            $records = DB::connection('inter_traffic')
+                ->table('BILLING_STAT')
+                ->whereBetween('start_date', [$start, $end])
+                ->select(
+                    'carrier_name',
+                    DB::raw('SUM(CAST(minutes AS DECIMAL(20,6))) as volume_sortant'),
+                    DB::raw('SUM(CAST(amount_cfa AS DECIMAL(20,2))) as charge'),
+                )
+                ->where('direction', 'Charge')
+                ->groupBy('carrier_name')
+                ->get();
+
+            $incomingRecords = DB::connection('inter_traffic')
+                ->table('BILLING_STAT')
+                ->whereBetween('start_date', [$start, $end])
+                ->select(
+                    'carrier_name',
+                    DB::raw('SUM(CAST(minutes AS DECIMAL(20,6))) as volume_entrant'),
+                    DB::raw('SUM(CAST(amount_cfa AS DECIMAL(20,2))) as revenu'),
+                )
+                ->where('direction', 'Revenue')
+                ->groupBy('carrier_name')
+                ->get();
+
+            $operators = [];
+            $totals = [
+                'volume_sortant' => 0,
+                'charge' => 0,
+                'volume_entrant' => 0,
+                'revenu' => 0,
+            ];
+
+            foreach ($records as $record) {
+                $operator = $record->carrier_name ?? 'N/A';
+                $operators[$operator]['volume_sortant'] = (float) $record->volume_sortant;
+                $operators[$operator]['charge'] = (float) $record->charge;
+                $totals['volume_sortant'] += (float) $record->volume_sortant;
+                $totals['charge'] += (float) $record->charge;
+            }
+
+            foreach ($incomingRecords as $record) {
+                $operator = $record->carrier_name ?? 'N/A';
+                if (!isset($operators[$operator])) {
+                    $operators[$operator] = [
+                        'volume_sortant' => 0,
+                        'charge' => 0,
+                        'volume_entrant' => 0,
+                        'revenu' => 0,
+                    ];
+                }
+                $operators[$operator]['volume_entrant'] = (float) $record->volume_entrant;
+                $operators[$operator]['revenu'] = (float) $record->revenu;
+                $totals['volume_entrant'] += (float) $record->volume_entrant;
+                $totals['revenu'] += (float) $record->revenu;
+            }
+
+            ksort($operators);
+
+            return view('billing.billingPivotProvisionalMeasures', compact('operators', 'totals', 'month', 'monthLabel'));
+        }
+
+        return view('index');
+    }
+
     public function billingPivotNetCarrier(Request $request)
     {
         //dd('ok');
