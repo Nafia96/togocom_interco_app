@@ -23,7 +23,7 @@
         </ol>
     </nav>
 @stop
-@include('national.modals.addMesure_tgt_mat')
+@include('national.modals.addMesure_TGT_MAT')
 <div class="row">
     <div class="col-lg-4 col-md-12 col-sm-12">
         <div class="card card-statistic-2">

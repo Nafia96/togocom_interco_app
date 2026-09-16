@@ -34,7 +34,7 @@
 
     </nav>
 @stop
-@include('national.modals.addMesure_tgt_tgc')
+@include('national.modals.addMesure_TGT_TGC')
 <div class="row">
     <div class="col-lg-4 col-md-12 col-sm-12">
         <div class="card card-statistic-2">
