@@ -58,6 +58,11 @@
             <svg viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M2 2h12v3H2V2zm0 4h5v8H2V6zm6 0h6v8H8V6z"/></svg>
             Routing View
         </a>
+
+        <a href="{{ route('kpi.roaming', $qs) }}" class="btn btn-sm {{ request()->routeIs('kpi.roaming') ? 'kpi-active' : 'kpi-inactive' }}">
+            <svg viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M2 2.75A.75.75 0 0 1 2.75 2h10.5a.75.75 0 0 1 .75.75v10.5a.75.75 0 0 1-.75.75H2.75A.75.75 0 0 1 2 13.25V2.75zm2 1.5h8.5v1.5H4v-1.5zm0 3h8.5v1.5H4v-1.5zm0 3h5.5v1.5H4v-1.5z"/></svg>
+            KPI Roming
+        </a>
     </div>
 
     <a href="{{ route('billingp', $qs) }}" class="btn btn-sm btn-secondary ms-3 px-3" style="font-weight:700; background: #133272; color: #ffd100; border: none;">

@@ -1879,127 +1879,164 @@ public function kpip(Request $request)
     ]);
 }
 
-
-public function Kpin(Request $request)
+public function kpiRoming(Request $request)
 {
-    /* ===============================
-       PARAMÈTRES
-    =============================== */
-    $view = $request->get('view', 'day'); // day | week | month | year
-    $direction = $request->get('direction', 'ORIGINATED'); // ORIGINATED | DESTINATED
+    if (session('id') == null) {
+        return redirect()->route('home');
+    }
+
+    $direction = trim((string) $request->input('direction', 'ALL'));
+    $view = in_array($request->input('view', 'day'), ['day', 'week', 'month', 'year'], true)
+        ? $request->input('view', 'day')
+        : 'day';
+    $start = $request->input('start_date', '2026-08-01');
+    $end = $request->input('end_date', '2026-08-10');
+    $origType = $request->input('orig_type');
+    $destType = $request->input('dest_type');
+    $origNet = $request->input('orig_net');
+    $destNet = $request->input('dest_net');
+    $partner = trim((string) $request->input('partner', ''));
+
+    $periodMap = [
+        'day' => 'event_date',
+        'week' => "CONCAT(YEAR(event_date), '-W', LPAD(WEEK(event_date, 1), 2, '0'))",
+        'month' => "DATE_FORMAT(event_date, '%Y-%m')",
+        'year' => 'YEAR(event_date)',
+    ];
+    $periodSql = $periodMap[$view] ?? $periodMap['day'];
+
+    $networkField = 'orig_net_name';
+    if ($direction === 'Terminating') {
+        $networkField = 'dest_net_name';
+    } elseif ($direction === 'Originating') {
+        $networkField = 'orig_net_name';
+    }
+
+    $filters = ['event_date BETWEEN :start AND :end'];
+    $params = ['start' => $start, 'end' => $end];
+
+    if ($direction !== 'ALL' && $direction !== '') {
+        $filters[] = 'LOWER(TRIM(call_direction)) = :direction';
+        $params['direction'] = strtolower($direction);
+    }
+
+    if (!empty($origType)) {
+        $filters[] = 'orig_type = :orig_type';
+        $params['orig_type'] = $origType;
+    }
+
+    if (!empty($destType)) {
+        $filters[] = 'dest_type = :dest_type';
+        $params['dest_type'] = $destType;
+    }
+
+    if (!empty($origNet)) {
+        $filters[] = 'orig_net_name = :orig_net';
+        $params['orig_net'] = $origNet;
+    }
+
+    if (!empty($destNet)) {
+        $filters[] = 'dest_net_name = :dest_net';
+        $params['dest_net'] = $destNet;
+    }
+
+    if ($partner !== '') {
+        $filters[] = 'partner_name LIKE :partner';
+        $params['partner'] = '%' . $partner . '%';
+    }
+
+    $sql = "
+        SELECT
+            {$periodSql} AS PERIOD,
+            {$networkField} AS NETWORK_NAME,
+            partner_name AS PARTNER_NAME,
+            SUM(attempt) AS ATTEMPTS,
+            ROUND((SUM(completed) / NULLIF(SUM(attempt), 0)) * 100, 2) AS NER,
+            ROUND((SUM(answered) / NULLIF(SUM(attempt), 0)) * 100, 2) AS ASR,
+            IF(SUM(answered) = 0, 0, ROUND(SUM(duration) / SUM(answered))) AS ACD_SEC
+        FROM splitted_qos
+        WHERE " . implode(' AND ', $filters) . "
+        GROUP BY PERIOD, NETWORK_NAME, PARTNER_NAME
+        ORDER BY PERIOD DESC, NETWORK_NAME, PARTNER_NAME
+    ";
 
     try {
-        $start = $request->filled('start_date')
-            ? Carbon::parse($request->get('start_date'))->toDateString()
-            : now()->startOfMonth()->toDateString();
-
-        $end = $request->filled('end_date')
-            ? Carbon::parse($request->get('end_date'))->toDateString()
-            : now()->endOfMonth()->toDateString();
+        $data = collect(DB::connection('inter_traffic')->select($sql, $params));
     } catch (\Exception $e) {
-        $start = now()->startOfMonth()->toDateString();
-        $end   = now()->endOfMonth()->toDateString();
+        $data = collect();
     }
 
-    /* ===============================
-       PERIOD SQL
-    =============================== */
-    switch ($view) {
-        case 'week':
-            $periodSql = "YEARWEEK(event_date,1)";
-            break;
-        case 'month':
-            $periodSql = "SUBSTR(event_date,1,7)";
-            break;
-        case 'year':
-            $periodSql = "YEAR(event_date)";
-            break;
-        default:
-            $periodSql = "event_date";
-            break;
+    if ($view === 'week') {
+        $data = $data->map(function ($row) {
+            $row->PERIOD_LABEL = $row->PERIOD;
+            return $row;
+        });
     }
 
-    /* ===============================
-       SQL SELON DIRECTION
-    =============================== */
-    if ($direction === 'ORIGINATED') {
-
-        $sql = "
-            SELECT
-                call_type AS CALL_DIRECTION,
-                {$periodSql} AS PERIOD,
-                orig_net_name AS NETWORK_NAME,
-                SUM(attempt) AS ATTEMPTS,
-                SUM(minutes) AS MINUTES,
-                ROUND((SUM(completed) / NULLIF(SUM(attempt),0)) * 100, 2) AS NER,
-                ROUND((SUM(answered) / NULLIF(SUM(attempt),0)) * 100, 2) AS ASR,
-                IF(
-                    SUM(minutes)=0,
-                    0,
-                    ROUND((SUM(minutes)*60) / NULLIF(SUM(answered),0))
-                ) AS ACD_SEC
-            FROM COMPLETION_STAT
-            WHERE event_date BETWEEN :start AND :end
-              AND orig_net_name NOT LIKE 'Not Available'
-              AND call_type LIKE 'Incoming'
-            GROUP BY CALL_DIRECTION, PERIOD, NETWORK_NAME
-            ORDER BY PERIOD, NETWORK_NAME
-        ";
-
-    } else {
-
-        $sql = "
-            SELECT
-                call_type AS CALL_DIRECTION,
-                {$periodSql} AS PERIOD,
-                dest_net_name AS NETWORK_NAME,
-                SUM(attempt) AS ATTEMPTS,
-                SUM(minutes) AS MINUTES,
-                ROUND((SUM(completed) / NULLIF(SUM(attempt),0)) * 100, 2) AS NER,
-                ROUND((SUM(answered) / NULLIF(SUM(attempt),0)) * 100, 2) AS ASR,
-                IF(
-                    SUM(minutes)=0,
-                    0,
-                    ROUND((SUM(minutes)*60) / NULLIF(SUM(answered),0))
-                ) AS ACD_SEC
-            FROM COMPLETION_STAT
-            WHERE event_date BETWEEN :start AND :end
-              AND dest_net_name NOT LIKE 'Not Available'
-              AND call_type LIKE 'Outgoing'
-            GROUP BY CALL_DIRECTION, PERIOD, NETWORK_NAME
-            ORDER BY PERIOD, NETWORK_NAME
-        ";
+    try {
+        $query = DB::connection('inter_traffic')->table('splitted_qos');
+        $directionOptions = $query->select('call_direction')
+            ->distinct()->whereNotNull('call_direction')->where('call_direction', '!=', '')
+            ->orderBy('call_direction')->pluck('call_direction')->map(function ($value) {
+                return trim((string) $value);
+            })->filter()->unique()->values()->all();
+        $origTypes = $query->select('orig_type')->distinct()->whereNotNull('orig_type')->where('orig_type', '!=', '')->orderBy('orig_type')->pluck('orig_type')->map(function ($value) {
+            return trim((string) $value);
+        })->filter()->unique()->values()->all();
+        $destTypes = $query->select('dest_type')->distinct()->whereNotNull('dest_type')->where('dest_type', '!=', '')->orderBy('dest_type')->pluck('dest_type')->map(function ($value) {
+            return trim((string) $value);
+        })->filter()->unique()->values()->all();
+        $origNets = $query->select('orig_net_name')->distinct()->whereNotNull('orig_net_name')->where('orig_net_name', '!=', '')->orderBy('orig_net_name')->pluck('orig_net_name')->map(function ($value) {
+            return trim((string) $value);
+        })->filter()->unique()->values()->all();
+        $destNets = $query->select('dest_net_name')->distinct()->whereNotNull('dest_net_name')->where('dest_net_name', '!=', '')->orderBy('dest_net_name')->pluck('dest_net_name')->map(function ($value) {
+            return trim((string) $value);
+        })->filter()->unique()->values()->all();
+        $partners = $query->select('partner_name')->distinct()->whereNotNull('partner_name')->where('partner_name', '!=', '')->orderBy('partner_name')->pluck('partner_name')->map(function ($value) {
+            return trim((string) $value);
+        })->filter()->unique()->values()->all();
+    } catch (\Exception $e) {
+        $directionOptions = [];
+        $origTypes = [];
+        $destTypes = [];
+        $origNets = [];
+        $destNets = [];
+        $partners = [];
     }
 
-    /* ===============================
-       EXÉCUTION
-    =============================== */
-    $data = collect(DB::connection('inter_traffic')->select($sql, [
-        'start' => $start,
-        'end'   => $end,
-    ]));
+    $periods = $view === 'week'
+        ? $data->pluck('PERIOD_LABEL')->unique()->sort()->values()
+        : $data->pluck('PERIOD')->unique()->sort()->values();
 
-    /* ===============================
-       STRUCTURATION
-    =============================== */
-    $periods  = $data->pluck('PERIOD')->unique()->sort()->values();
-  $networks = $data
-    ->groupBy('NETWORK_NAME')
-    ->sortByDesc(function ($rows) {
-        return $rows->sum('ATTEMPTS');
-    });
+    $networks = $data
+        ->groupBy('NETWORK_NAME')
+        ->sortByDesc(fn ($rows) => $rows->sum('ATTEMPTS'))
+        ->map(fn ($rows) => $rows->groupBy('PARTNER_NAME'));
 
-    /* ===============================
-       RENDER
-    =============================== */
-    return view('kpi.network', [
-        'networks'  => $networks,
-        'periods'   => $periods,
-        'view'      => $view,
-        'direction' => $direction,
-        'start'     => $start,
-        'end'       => $end,
-    ]);
+    $networksList = $data->pluck('NETWORK_NAME')->unique()->sort()->values();
+    $partnersList = $data->pluck('PARTNER_NAME')->unique()->sort()->values();
+
+    return view('kpi.roaming', compact(
+        'networks',
+        'networksList',
+        'partnersList',
+        'periods',
+        'direction',
+        'view',
+        'start',
+        'end',
+        'directionOptions',
+        'origTypes',
+        'destTypes',
+        'origNets',
+        'destNets',
+        'partners',
+        'origType',
+        'destType',
+        'origNet',
+        'destNet',
+        'partner'
+    ));
 }
 
 public function KpinCarrier(Request $request)
@@ -2007,8 +2044,8 @@ public function KpinCarrier(Request $request)
     /* ===============================
        PARAMÈTRES
     =============================== */
-    $view      = $request->get('view', 'day'); // day | week | month | year
-    $direction = $request->get('direction', 'ORIGINATED'); // ORIGINATED | DESTINATED
+    $view      = $request->get('view', 'day');
+    $direction = $request->get('direction', 'ORIGINATED');
     $network   = $request->get('network', 'ALL');
     $partner   = $request->get('partner', 'ALL');
 
@@ -2025,12 +2062,9 @@ public function KpinCarrier(Request $request)
         $end   = now()->endOfMonth()->toDateString();
     }
 
-    /* ===============================
-       PERIOD SQL (CLÉ TECHNIQUE)
-    =============================== */
     switch ($view) {
         case 'week':
-            $periodSql = "YEARWEEK(event_date, 1)"; // ex: 202527
+            $periodSql = "YEARWEEK(event_date, 1)";
             break;
         case 'month':
             $periodSql = "DATE_FORMAT(event_date,'%Y-%m')";
@@ -2042,9 +2076,6 @@ public function KpinCarrier(Request $request)
             $periodSql = "event_date";
     }
 
-    /* ===============================
-       DIRECTION LOGIQUE
-    =============================== */
     if ($direction === 'ORIGINATED') {
         $networkField = 'orig_net_name';
         $callType     = 'Incoming';
@@ -2053,9 +2084,6 @@ public function KpinCarrier(Request $request)
         $callType     = 'Outgoing';
     }
 
-    /* ===============================
-       FILTRES
-    =============================== */
     $filters = "
         event_date BETWEEN :start AND :end
         AND call_type = :callType
@@ -2071,9 +2099,6 @@ public function KpinCarrier(Request $request)
         $filters .= " AND partner_name = :partner";
     }
 
-    /* ===============================
-       SQL
-    =============================== */
     $sql = "
         SELECT
             call_type AS CALL_DIRECTION,
@@ -2100,17 +2125,15 @@ public function KpinCarrier(Request $request)
         'callType' => $callType,
     ];
 
-    if ($network !== 'ALL')  $bindings['network'] = $network;
-    if ($partner !== 'ALL')  $bindings['partner'] = $partner;
+    if ($network !== 'ALL') {
+        $bindings['network'] = $network;
+    }
+    if ($partner !== 'ALL') {
+        $bindings['partner'] = $partner;
+    }
 
-    /* ===============================
-       EXÉCUTION
-    =============================== */
     $data = collect(DB::connection('inter_traffic')->select($sql, $bindings));
 
-    /* ===============================
-       LABEL SEMAINE (AFFICHAGE)
-    =============================== */
     if ($view === 'week') {
         $data = $data->map(function ($row) {
             $year = substr($row->PERIOD, 0, 4);
@@ -2120,30 +2143,18 @@ public function KpinCarrier(Request $request)
         });
     }
 
-    /* ===============================
-       LISTES FILTRES
-    =============================== */
     $networksList = $data->pluck('NETWORK_NAME')->unique()->sort()->values();
     $partnersList = $data->pluck('PARTNER_NAME')->unique()->sort()->values();
 
-    /* ===============================
-       PERIODS (AFFICHAGE)
-    =============================== */
     $periods = $view === 'week'
         ? $data->pluck('PERIOD_LABEL')->unique()->sort()->values()
         : $data->pluck('PERIOD')->unique()->sort()->values();
 
-    /* ===============================
-       TRI PAR ATTEMPTS (IMPORTANT)
-    =============================== */
     $networks = $data
         ->groupBy('NETWORK_NAME')
-        ->sortByDesc(fn ($rows) => $rows->sum('ATTEMPTS')) // 🔥 TRI KPI
+        ->sortByDesc(fn ($rows) => $rows->sum('ATTEMPTS'))
         ->map(fn ($rows) => $rows->groupBy('PARTNER_NAME'));
 
-    /* ===============================
-       RENDER
-    =============================== */
     return view('kpi.network_carrier', compact(
         'networks',
         'networksList',
@@ -2157,6 +2168,7 @@ public function KpinCarrier(Request $request)
         'partner'
     ));
 }
+
     private function dailySql()
     {
         return "

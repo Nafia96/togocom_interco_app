@@ -55,6 +55,7 @@ Route::get('/billingKpiNetwork', [HomeController::class, 'billingKpiNetwork'])->
 
 // KPI pivot
 Route::get('kpi/pivot', [HomeController::class, 'kpip'])->name('kpi.pivot');
+Route::get('/kpi/roaming', [HomeController::class, 'kpiRoming'])->name('kpi.roaming');
 Route::get('/kpi/network', [HomeController::class, 'Kpin'])->name('kpi.network');
 
 Route::get('/kpi/KpinCarrier', [HomeController::class, 'KpinCarrier'])->name('kpi.KpinCarrier');
