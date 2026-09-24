@@ -1885,158 +1885,299 @@ public function kpiRoming(Request $request)
         return redirect()->route('home');
     }
 
-    $direction = trim((string) $request->input('direction', 'ALL'));
-    $view = in_array($request->input('view', 'day'), ['day', 'week', 'month', 'year'], true)
-        ? $request->input('view', 'day')
-        : 'day';
-    $start = $request->input('start_date', '2026-08-01');
-    $end = $request->input('end_date', '2026-08-10');
-    $origType = $request->input('orig_type');
-    $destType = $request->input('dest_type');
-    $origNet = $request->input('orig_net');
-    $destNet = $request->input('dest_net');
-    $partner = trim((string) $request->input('partner', ''));
+    $query = $this->buildKpiRoamingQuery($request);
+    $start = $query['start'];
+    $end = $query['end'];
+    $filters = $query['filters'];
 
-    $periodMap = [
-        'day' => 'event_date',
-        'week' => "CONCAT(YEAR(event_date), '-W', LPAD(WEEK(event_date, 1), 2, '0'))",
-        'month' => "DATE_FORMAT(event_date, '%Y-%m')",
-        'year' => 'YEAR(event_date)',
+    $monthOptions = [];
+    $currentMonth = Carbon::now()->startOfMonth();
+    for ($offset = 0; $offset <= 12; $offset++) {
+        $monthDate = $currentMonth->copy()->subMonths($offset);
+        $monthOptions[] = [
+            'value' => $monthDate->format('Y-m'),
+            'label' => mb_convert_case($monthDate->locale('fr')->translatedFormat('F Y'), MB_CASE_TITLE, 'UTF-8'),
+        ];
+    }
+
+    $selectedMonth = $query['month'];
+    if ($selectedMonth === '') {
+        $resolvedStart = Carbon::createFromFormat('Y-m-d', $start);
+        $resolvedEnd = Carbon::createFromFormat('Y-m-d', $end);
+        if ($resolvedStart->isSameDay($resolvedStart->copy()->startOfMonth())
+            && $resolvedEnd->isSameDay($resolvedEnd->copy()->endOfMonth())) {
+            $selectedMonth = $resolvedStart->format('Y-m');
+        }
+    }
+
+    try {
+        $results = collect(DB::connection('inter_traffic')->select($query['sql'], $query['params']));
+    } catch (\Exception $e) {
+        $results = collect();
+    }
+
+    $filterOptions = [];
+    try {
+        $filterColumns = [
+            'direction' => 'call_direction',
+            'orig_type' => 'orig_type',
+            'dest_type' => 'dest_type',
+            'orig_net' => 'orig_net_name',
+            'dest_net' => 'dest_net_name',
+            'partner' => 'partner_name',
+        ];
+
+        $builder = function (string $filterKey, string $direction = 'asc') use ($start, $end, $filters, $filterColumns) {
+            $column = $filterColumns[$filterKey];
+            $query = DB::connection('inter_traffic')->table('splitted_qos');
+
+            $query->whereBetween('event_date', [$start, $end]);
+
+            foreach ($filters as $key => $config) {
+                if ($key !== $filterKey && $config['value'] !== '' && $config['value'] !== 'ALL') {
+                    $query->where($config['column'], $config['value']);
+                }
+            }
+
+            $values = $query
+                ->select($column)
+                ->distinct()
+                ->whereNotNull($column)
+                ->where($column, '!=', '')
+                ->orderBy($column, $direction)
+                ->pluck($column)
+                ->map(fn ($value) => trim((string) $value))
+                ->filter()
+                ->unique()
+                ->values();
+
+            $selectedValue = trim((string) ($filters[$filterKey]['value'] ?? ''));
+            if ($selectedValue !== '' && $selectedValue !== 'ALL' && !$values->contains($selectedValue)) {
+                $values->push($selectedValue);
+            }
+
+            return $values->values()->all();
+        };
+
+        foreach ($filterColumns as $key => $column) {
+            $filterOptions[$key] = $builder($key, 'asc');
+        }
+    } catch (\Exception $e) {
+        \Log::error($e->getMessage());
+        $filterOptions = [
+            'direction' => [],
+            'orig_type' => [],
+            'dest_type' => [],
+            'orig_net' => [],
+            'dest_net' => [],
+            'partner' => [],
+        ];
+    }
+
+    $filterDirection = $filters['direction']['value'];
+    $filterOrigType = $filters['orig_type']['value'];
+    $filterDestType = $filters['dest_type']['value'];
+    $filterOrigNet = $filters['orig_net']['value'];
+    $filterDestNet = $filters['dest_net']['value'];
+    $filterPartner = $filters['partner']['value'];
+    $periodStart = Carbon::createFromFormat('Y-m-d', $start);
+    $periodEnd = Carbon::createFromFormat('Y-m-d', $end);
+    $periodLabel = $selectedMonth !== ''
+        ? mb_convert_case($periodStart->locale('fr')->translatedFormat('F Y'), MB_CASE_TITLE, 'UTF-8')
+            . ' (' . $periodStart->format('d/m/Y') . ' → ' . $periodEnd->format('d/m/Y') . ')'
+        : $periodStart->format('d/m/Y') . ' → ' . $periodEnd->format('d/m/Y');
+
+    $breadcrumb = [[
+        'type' => 'period',
+        'label' => 'Période',
+        'value' => $periodLabel,
+    ]];
+
+    if ($filterDirection !== '' && $filterDirection !== 'ALL') {
+        $breadcrumb[] = [
+            'type' => 'filter',
+            'label' => 'Direction',
+            'value' => $filterDirection,
+            'column' => 'direction',
+            'removeUrl' => route('kpi.roaming', \Illuminate\Support\Arr::except($request->query(), ['filter_direction'])),
+        ];
+    }
+
+    $breadcrumbFilters = [
+        ['param' => 'filter_orig_type', 'label' => 'Orig type', 'value' => $filterOrigType, 'column' => 'orig_type'],
+        ['param' => 'filter_dest_type', 'label' => 'Dest type', 'value' => $filterDestType, 'column' => 'dest_type'],
+        ['param' => 'filter_orig_net', 'label' => 'Orig net', 'value' => $filterOrigNet, 'column' => 'orig_net_name'],
+        ['param' => 'filter_dest_net', 'label' => 'Dest net', 'value' => $filterDestNet, 'column' => 'dest_net_name'],
+        ['param' => 'filter_partner', 'label' => 'Partner', 'value' => $filterPartner, 'column' => 'partner_name'],
     ];
-    $periodSql = $periodMap[$view] ?? $periodMap['day'];
 
-    $networkField = 'orig_net_name';
-    if ($direction === 'Terminating') {
-        $networkField = 'dest_net_name';
-    } elseif ($direction === 'Originating') {
-        $networkField = 'orig_net_name';
+    foreach ($breadcrumbFilters as $filter) {
+        if ($filter['value'] !== '' && $filter['value'] !== 'ALL') {
+            $breadcrumb[] = [
+                'type' => 'filter',
+                'label' => $filter['label'],
+                'value' => $filter['value'],
+                'column' => $filter['column'],
+                'removeUrl' => route('kpi.roaming', \Illuminate\Support\Arr::except($request->query(), [$filter['param']])),
+            ];
+        }
     }
 
-    $filters = ['event_date BETWEEN :start AND :end'];
+    if (count($breadcrumb) === 1) {
+        $breadcrumb[] = [
+            'type' => 'empty',
+            'label' => '',
+            'value' => 'Aucun filtre',
+        ];
+    }
+
+    $rowCount = $results->count();
+
+    return view('kpi.roaming', compact(
+        'results',
+        'start',
+        'end',
+        'filterOptions',
+        'filterDirection',
+        'filterOrigType',
+        'filterDestType',
+        'filterOrigNet',
+        'filterDestNet',
+        'filterPartner',
+        'monthOptions',
+        'selectedMonth',
+        'breadcrumb',
+        'rowCount'
+    ));
+}
+
+public function kpiRoamingExport(Request $request)
+{
+    if (session('id') == null) {
+        return redirect()->route('home');
+    }
+
+    $query = $this->buildKpiRoamingQuery($request);
+    $knownColumns = [
+        'orig_type' => 'Orig type',
+        'dest_type' => 'Dest type',
+        'orig_net_name' => 'Orig net',
+        'dest_net_name' => 'Dest net',
+        'partner_name' => 'Partner',
+        'attempt' => 'Attempt',
+        'ner' => 'NER',
+        'asr' => 'ASR',
+        'acd_sec' => 'ACD sec',
+    ];
+
+    $requestedColumns = array_filter(array_map('trim', explode(',', (string) $request->input('cols', ''))));
+    $columns = array_values(array_intersect($requestedColumns, array_keys($knownColumns)));
+    if (!$columns) {
+        $columns = array_keys($knownColumns);
+    }
+
+    $filename = 'kpi_roaming_' . $query['start'] . '_' . $query['end'] . '.csv';
+
+    return response()->streamDownload(function () use ($query, $columns, $knownColumns) {
+        $output = fopen('php://output', 'w');
+        fwrite($output, "\xEF\xBB\xBF");
+        fputcsv($output, array_map(function ($column) use ($knownColumns) {
+            return $knownColumns[$column];
+        }, $columns), ';');
+
+        foreach (DB::connection('inter_traffic')->cursor($query['sql'], $query['params']) as $row) {
+            fputcsv($output, array_map(function ($column) use ($row) {
+                return $row->{$column};
+            }, $columns), ';');
+        }
+
+        fclose($output);
+    }, $filename, [
+        'Content-Type' => 'text/csv; charset=UTF-8',
+    ]);
+}
+
+private function buildKpiRoamingQuery(Request $request)
+{
+    $defaultStart = now()->startOfMonth()->toDateString();
+    $defaultEnd = now()->endOfMonth()->toDateString();
+    $parseDate = function ($value, string $default) {
+        if (!$value) {
+            return $default;
+        }
+
+        try {
+            $date = Carbon::createFromFormat('Y-m-d', $value);
+            return $date && $date->format('Y-m-d') === $value
+                ? $date->toDateString()
+                : $default;
+        } catch (\Exception $e) {
+            return $default;
+        }
+    };
+
+    $requestedMonth = trim((string) $request->input('month', ''));
+    $month = '';
+    $monthDate = null;
+    if (preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $requestedMonth) === 1) {
+        try {
+            $candidateMonth = Carbon::createFromFormat('!Y-m', $requestedMonth);
+            if ($candidateMonth && $candidateMonth->format('Y-m') === $requestedMonth) {
+                $month = $requestedMonth;
+                $monthDate = $candidateMonth;
+            }
+        } catch (\Exception $e) {
+            $month = '';
+        }
+    }
+
+    if ($monthDate) {
+        $start = $monthDate->copy()->startOfMonth()->toDateString();
+        $end = $monthDate->copy()->endOfMonth()->toDateString();
+    } else {
+        $start = $parseDate($request->input('start_date'), $defaultStart);
+        $end = $parseDate($request->input('end_date'), $defaultEnd);
+        if (Carbon::parse($start)->gt(Carbon::parse($end))) {
+            [$start, $end] = [$end, $start];
+        }
+    }
+
+    $filters = [
+        'direction' => ['column' => 'call_direction', 'value' => trim((string) $request->input('filter_direction', '')), 'param' => 'direction'],
+        'orig_type' => ['column' => 'orig_type', 'value' => trim((string) $request->input('filter_orig_type', '')), 'param' => 'orig_type'],
+        'dest_type' => ['column' => 'dest_type', 'value' => trim((string) $request->input('filter_dest_type', '')), 'param' => 'dest_type'],
+        'orig_net' => ['column' => 'orig_net_name', 'value' => trim((string) $request->input('filter_orig_net', '')), 'param' => 'orig_net'],
+        'dest_net' => ['column' => 'dest_net_name', 'value' => trim((string) $request->input('filter_dest_net', '')), 'param' => 'dest_net'],
+        'partner' => ['column' => 'partner_name', 'value' => trim((string) $request->input('filter_partner', '')), 'param' => 'partner'],
+    ];
+
+    $where = ['event_date BETWEEN :start AND :end'];
     $params = ['start' => $start, 'end' => $end];
-
-    if ($direction !== 'ALL' && $direction !== '') {
-        $filters[] = 'LOWER(TRIM(call_direction)) = :direction';
-        $params['direction'] = strtolower($direction);
-    }
-
-    if (!empty($origType)) {
-        $filters[] = 'orig_type = :orig_type';
-        $params['orig_type'] = $origType;
-    }
-
-    if (!empty($destType)) {
-        $filters[] = 'dest_type = :dest_type';
-        $params['dest_type'] = $destType;
-    }
-
-    if (!empty($origNet)) {
-        $filters[] = 'orig_net_name = :orig_net';
-        $params['orig_net'] = $origNet;
-    }
-
-    if (!empty($destNet)) {
-        $filters[] = 'dest_net_name = :dest_net';
-        $params['dest_net'] = $destNet;
-    }
-
-    if ($partner !== '') {
-        $filters[] = 'partner_name LIKE :partner';
-        $params['partner'] = '%' . $partner . '%';
+    foreach ($filters as $config) {
+        if ($config['value'] !== '' && $config['value'] !== 'ALL') {
+            $where[] = $config['column'] . ' = :' . $config['param'];
+            $params[$config['param']] = $config['value'];
+        }
     }
 
     $sql = "
         SELECT
-            {$periodSql} AS PERIOD,
-            {$networkField} AS NETWORK_NAME,
-            partner_name AS PARTNER_NAME,
-            SUM(attempt) AS ATTEMPTS,
-            ROUND((SUM(completed) / NULLIF(SUM(attempt), 0)) * 100, 2) AS NER,
-            ROUND((SUM(answered) / NULLIF(SUM(attempt), 0)) * 100, 2) AS ASR,
-            IF(SUM(answered) = 0, 0, ROUND(SUM(duration) / SUM(answered))) AS ACD_SEC
+            orig_type,
+            dest_type,
+            orig_net_name,
+            dest_net_name,
+            partner_name,
+            SUM(attempt) AS attempt,
+            CONCAT(ROUND((SUM(completed) / NULLIF(SUM(attempt), 0)) * 100), '%') AS ner,
+            CONCAT(ROUND((SUM(answered) / NULLIF(SUM(attempt), 0)) * 100), '%') AS asr,
+            IF(SUM(answered) = 0, 0, ROUND(SUM(duration) / SUM(answered))) AS acd_sec
         FROM splitted_qos
-        WHERE " . implode(' AND ', $filters) . "
-        GROUP BY PERIOD, NETWORK_NAME, PARTNER_NAME
-        ORDER BY PERIOD DESC, NETWORK_NAME, PARTNER_NAME
+        WHERE " . implode(' AND ', $where) . "
+        GROUP BY orig_type, dest_type, orig_net_name, dest_net_name, partner_name
+        ORDER BY orig_net_name, dest_net_name, partner_name, orig_type, dest_type
     ";
 
-    try {
-        $data = collect(DB::connection('inter_traffic')->select($sql, $params));
-    } catch (\Exception $e) {
-        $data = collect();
-    }
-
-    if ($view === 'week') {
-        $data = $data->map(function ($row) {
-            $row->PERIOD_LABEL = $row->PERIOD;
-            return $row;
-        });
-    }
-
-    try {
-        $query = DB::connection('inter_traffic')->table('splitted_qos');
-        $directionOptions = $query->select('call_direction')
-            ->distinct()->whereNotNull('call_direction')->where('call_direction', '!=', '')
-            ->orderBy('call_direction')->pluck('call_direction')->map(function ($value) {
-                return trim((string) $value);
-            })->filter()->unique()->values()->all();
-        $origTypes = $query->select('orig_type')->distinct()->whereNotNull('orig_type')->where('orig_type', '!=', '')->orderBy('orig_type')->pluck('orig_type')->map(function ($value) {
-            return trim((string) $value);
-        })->filter()->unique()->values()->all();
-        $destTypes = $query->select('dest_type')->distinct()->whereNotNull('dest_type')->where('dest_type', '!=', '')->orderBy('dest_type')->pluck('dest_type')->map(function ($value) {
-            return trim((string) $value);
-        })->filter()->unique()->values()->all();
-        $origNets = $query->select('orig_net_name')->distinct()->whereNotNull('orig_net_name')->where('orig_net_name', '!=', '')->orderBy('orig_net_name')->pluck('orig_net_name')->map(function ($value) {
-            return trim((string) $value);
-        })->filter()->unique()->values()->all();
-        $destNets = $query->select('dest_net_name')->distinct()->whereNotNull('dest_net_name')->where('dest_net_name', '!=', '')->orderBy('dest_net_name')->pluck('dest_net_name')->map(function ($value) {
-            return trim((string) $value);
-        })->filter()->unique()->values()->all();
-        $partners = $query->select('partner_name')->distinct()->whereNotNull('partner_name')->where('partner_name', '!=', '')->orderBy('partner_name')->pluck('partner_name')->map(function ($value) {
-            return trim((string) $value);
-        })->filter()->unique()->values()->all();
-    } catch (\Exception $e) {
-        $directionOptions = [];
-        $origTypes = [];
-        $destTypes = [];
-        $origNets = [];
-        $destNets = [];
-        $partners = [];
-    }
-
-    $periods = $view === 'week'
-        ? $data->pluck('PERIOD_LABEL')->unique()->sort()->values()
-        : $data->pluck('PERIOD')->unique()->sort()->values();
-
-    $networks = $data
-        ->groupBy('NETWORK_NAME')
-        ->sortByDesc(fn ($rows) => $rows->sum('ATTEMPTS'))
-        ->map(fn ($rows) => $rows->groupBy('PARTNER_NAME'));
-
-    $networksList = $data->pluck('NETWORK_NAME')->unique()->sort()->values();
-    $partnersList = $data->pluck('PARTNER_NAME')->unique()->sort()->values();
-
-    return view('kpi.roaming', compact(
-        'networks',
-        'networksList',
-        'partnersList',
-        'periods',
-        'direction',
-        'view',
-        'start',
-        'end',
-        'directionOptions',
-        'origTypes',
-        'destTypes',
-        'origNets',
-        'destNets',
-        'partners',
-        'origType',
-        'destType',
-        'origNet',
-        'destNet',
-        'partner'
-    ));
+    return compact('sql', 'params', 'start', 'end', 'filters', 'month');
 }
 
 public function KpinCarrier(Request $request)
