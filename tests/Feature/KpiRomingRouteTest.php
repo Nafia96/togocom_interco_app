@@ -12,4 +12,14 @@ class KpiRomingRouteTest extends TestCase
 
         $response->assertOk();
     }
+
+    public function test_kpi_roming_route_accepts_granularity_and_renders_period_control()
+    {
+        $response = $this->withSession(['id' => 1])->get('/kpi/roaming?filter_direction=IN&start_date=2026-08-01&end_date=2026-08-10&granularity=week');
+
+        $response->assertOk();
+        $response->assertSee('Granularité');
+        $response->assertSee('Semaine');
+        $response->assertSee('Période');
+    }
 }

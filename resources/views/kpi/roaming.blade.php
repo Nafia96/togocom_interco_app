@@ -74,15 +74,15 @@ table.kpi-roaming-table td[data-col="dest_type"] {
     width: 11%;
 }
 
-table.kpi-roaming-table th[data-col="orig_net_name"],
-table.kpi-roaming-table td[data-col="orig_net_name"],
-table.kpi-roaming-table th[data-col="dest_net_name"],
-table.kpi-roaming-table td[data-col="dest_net_name"] {
+table.kpi-roaming-table th[data-col="orig_net"],
+table.kpi-roaming-table td[data-col="orig_net"],
+table.kpi-roaming-table th[data-col="dest_net"],
+table.kpi-roaming-table td[data-col="dest_net"] {
     width: 14%;
 }
 
-table.kpi-roaming-table th[data-col="partner_name"],
-table.kpi-roaming-table td[data-col="partner_name"] {
+table.kpi-roaming-table th[data-col="partner"],
+table.kpi-roaming-table td[data-col="partner"] {
     width: 16%;
 }
 
@@ -102,9 +102,9 @@ table.kpi-roaming-table td[data-col="acd_sec"] {
 
 table.kpi-roaming-table td[data-col="orig_type"],
 table.kpi-roaming-table td[data-col="dest_type"],
-table.kpi-roaming-table td[data-col="orig_net_name"],
-table.kpi-roaming-table td[data-col="dest_net_name"],
-table.kpi-roaming-table td[data-col="partner_name"] {
+table.kpi-roaming-table td[data-col="orig_net"],
+table.kpi-roaming-table td[data-col="dest_net"],
+table.kpi-roaming-table td[data-col="partner"] {
     overflow: hidden;
     text-overflow: ellipsis;
 }
@@ -255,8 +255,11 @@ tr.filter-row th:first-child {
                                 <span>{{ $breadcrumbItem['label'] }} : <strong>{{ $breadcrumbItem['value'] }}</strong></span>
                             </li>
                         @elseif ($breadcrumbItem['type'] === 'filter')
-                            <li class="breadcrumb-item filter-item" data-breadcrumb-col="{{ $breadcrumbItem['column'] }}">
+                            <li class="breadcrumb-item filter-item {{ !empty($breadcrumbItem['hidden']) ? 'breadcrumb-filter-muted' : '' }}" data-breadcrumb-col="{{ $breadcrumbItem['column'] }}">
                                 <span>{{ $breadcrumbItem['label'] }} : <strong>{{ $breadcrumbItem['value'] }}</strong></span>
+                                @if (!empty($breadcrumbItem['hidden']))
+                                    <small class="hidden-column-note">(colonne masquée)</small>
+                                @endif
                                 <a href="{{ $breadcrumbItem['removeUrl'] }}" class="filter-remove" title="Retirer ce filtre" aria-label="Retirer le filtre {{ $breadcrumbItem['label'] }}">&times;</a>
                             </li>
                         @else
@@ -270,16 +273,13 @@ tr.filter-row th:first-child {
             </nav>
 
             @php
-                $tableColumns = [
-                    'orig_type' => 'Orig type',
-                    'dest_type' => 'Dest type',
-                    'orig_net_name' => 'Orig net',
-                    'dest_net_name' => 'Dest net',
-                    'partner_name' => 'Partner',
-                    'attempt' => 'Attempt',
-                    'ner' => 'NER',
-                    'asr' => 'ASR',
-                    'acd_sec' => 'ACD sec',
+                $tableColumns = $allCols;
+                $visibleColumns = array_merge($visibleDims, $visibleMetrics);
+                $visibleColumnCount = count($visibleColumns);
+                $resultFields = [
+                    'orig_net' => 'orig_net_name',
+                    'dest_net' => 'dest_net_name',
+                    'partner' => 'partner_name',
                 ];
 
                 $filterConfigs = [
@@ -319,6 +319,16 @@ tr.filter-row th:first-child {
                             @endforeach
                         </select>
                     </div>
+                    <div class="col-lg-1 col-md-3 kpi-filter-field kpi-filter-narrow">
+                        <label for="granularity" class="form-label">Granularité</label>
+                        <select id="granularity" name="granularity" class="form-select form-select-sm" onchange="this.form.submit()">
+                            <option value="none" {{ ($granularity ?? 'none') === 'none' ? 'selected' : '' }}>Aucune</option>
+                            <option value="day" {{ ($granularity ?? 'none') === 'day' ? 'selected' : '' }}>Jour</option>
+                            <option value="week" {{ ($granularity ?? 'none') === 'week' ? 'selected' : '' }}>Semaine</option>
+                            <option value="month" {{ ($granularity ?? 'none') === 'month' ? 'selected' : '' }}>Mois</option>
+                            <option value="year" {{ ($granularity ?? 'none') === 'year' ? 'selected' : '' }}>Année</option>
+                        </select>
+                    </div>
                     <div class="col-12 col-lg-auto d-flex flex-wrap gap-2">
                         <button type="submit" class="btn btn-sm btn-primary">Appliquer</button>
                         <a href="{{ route('kpi.roaming') }}" class="btn btn-sm btn-outline-secondary">Réinitialiser</a>
@@ -331,8 +341,14 @@ tr.filter-row th:first-child {
                             </button>
                             <div class="dropdown-menu dropdown-menu-end p-2" id="column-menu">
                                 @foreach ($tableColumns as $columnKey => $columnLabel)
-                                    <label class="dropdown-item d-flex align-items-center gap-2">
-                                        <input type="checkbox" class="form-check-input column-toggle" value="{{ $columnKey }}" checked>
+                                    @php($isLockedPeriod = $columnKey === 'period' && (($granularity ?? 'none') !== 'none'))
+                                    <label class="dropdown-item d-flex align-items-center gap-2 {{ $isLockedPeriod ? 'text-muted' : '' }}">
+                                        <input type="checkbox"
+                                               class="form-check-input column-toggle"
+                                               name="cols[]"
+                                               value="{{ $columnKey }}"
+                                               {{ in_array($columnKey, $visibleColumns, true) ? 'checked' : '' }}
+                                               {{ $isLockedPeriod ? 'checked disabled title="Désactivez la granularité pour retirer cette colonne"' : '' }}>
                                         <span>{{ $columnLabel }}</span>
                                     </label>
                                 @endforeach
@@ -347,50 +363,79 @@ tr.filter-row th:first-child {
                         <table class="table kpi-roaming-table table-bordered table-hover table-sm align-middle mb-0">
                             <thead>
                                 <tr>
-                                    <th data-col="orig_type">Orig type</th>
-                                    <th data-col="dest_type">Dest type</th>
-                                    <th data-col="orig_net_name">Orig net</th>
-                                    <th data-col="dest_net_name">Dest net</th>
-                                    <th data-col="partner_name">Partner</th>
-                                    <th data-col="attempt">Attempt</th>
-                                    <th data-col="ner">NER</th>
-                                    <th data-col="asr">ASR</th>
-                                    <th data-col="acd_sec">ACD sec</th>
+                                    @foreach ($allCols as $columnKey => $columnLabel)
+                                        @if (in_array($columnKey, $visibleColumns, true))
+                                            <th data-col="{{ $columnKey }}">{{ $columnLabel }}</th>
+                                        @endif
+                                    @endforeach
                                 </tr>
                                 <tr class="filter-row">
-                                    @foreach ($filterConfigs as $key => $config)
-                                        <th data-col="{{ $config['column'] }}">
-                                            <select name="{{ $config['name'] }}" class="form-select form-select-sm" onchange="this.form.submit()">
-                                                <option value="">Tous</option>
-                                                @foreach (($filterOptions[$key] ?? []) as $value)
-                                                    <option value="{{ $value }}" {{ ($config['selected'] ?? '') == $value ? 'selected' : '' }}>{{ $value }}</option>
-                                                @endforeach
-                                            </select>
-                                        </th>
+                                    @foreach ($allCols as $columnKey => $columnLabel)
+                                        @if (in_array($columnKey, $visibleColumns, true))
+                                            @if (isset($filterConfigs[$columnKey]))
+                                                @php($config = $filterConfigs[$columnKey])
+                                                <th data-col="{{ $columnKey }}">
+                                                    <select name="{{ $config['name'] }}" class="form-select form-select-sm" onchange="this.form.submit()">
+                                                        <option value="">Tous</option>
+                                                        @foreach (($filterOptions[$columnKey] ?? []) as $value)
+                                                            <option value="{{ $value }}" {{ ($config['selected'] ?? '') == $value ? 'selected' : '' }}>{{ $value }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </th>
+                                            @else
+                                                <th data-col="{{ $columnKey }}" class="text-center text-muted">-</th>
+                                            @endif
+                                        @endif
                                     @endforeach
-                                    <th data-col="attempt" class="text-center text-muted">-</th>
-                                    <th data-col="ner" class="text-center text-muted">-</th>
-                                    <th data-col="asr" class="text-center text-muted">-</th>
-                                    <th data-col="acd_sec" class="text-center text-muted">-</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @if ($results->isEmpty())
                                     <tr>
-                                        <td colspan="9" class="text-center text-muted">Aucune donnée pour cette période / ces filtres.</td>
+                                        <td colspan="{{ $visibleColumnCount }}" class="text-center text-muted">Aucune donnée pour cette période / ces filtres.</td>
                                     </tr>
                                 @else
                                     @foreach ($results as $row)
                                         <tr>
-                                            <td data-col="orig_type">{{ $row->orig_type ?? '-' }}</td>
-                                            <td data-col="dest_type">{{ $row->dest_type ?? '-' }}</td>
-                                            <td data-col="orig_net_name">{{ $row->orig_net_name ?? '-' }}</td>
-                                            <td data-col="dest_net_name">{{ $row->dest_net_name ?? '-' }}</td>
-                                            <td data-col="partner_name">{{ $row->partner_name ?? '-' }}</td>
-                                            <td data-col="attempt" class="text-end">{{ number_format((float) ($row->attempt ?? 0), 0, ',', ' ') }}</td>
-                                            <td data-col="ner" class="text-end">{{ $row->ner ?? '-' }}</td>
-                                            <td data-col="asr" class="text-end">{{ $row->asr ?? '-' }}</td>
-                                            <td data-col="acd_sec" class="text-end">{{ $row->acd_sec ?? '-' }}</td>
+                                            @foreach ($allCols as $columnKey => $columnLabel)
+                                                <?php if (in_array($columnKey, $visibleColumns, true)): ?>
+                                                    <?php
+                                                        $resultField = $resultFields[$columnKey] ?? $columnKey;
+                                                        $cellValue = $row->{$resultField} ?? null;
+                                                        $cellClass = in_array($columnKey, $visibleDims, true) ? '' : 'text-end';
+                                                        $cellText = '-';
+
+                                                        if ($columnKey === 'period') {
+                                                            if (!empty($cellValue)) {
+                                                                switch ($granularity ?? 'none') {
+                                                                    case 'day':
+                                                                        $cellText = \Carbon\Carbon::parse($cellValue)->locale('fr')->translatedFormat('d/m/Y');
+                                                                        break;
+                                                                    case 'week':
+                                                                        $weekStart = \Carbon\Carbon::parse($cellValue)->locale('fr');
+                                                                        $weekEnd = $weekStart->copy()->addDays(6);
+                                                                        $cellText = 'Semaine du ' . $weekStart->translatedFormat('d/m/Y') . ($weekEnd->isSameDay($weekStart) ? '' : ' (' . $weekEnd->translatedFormat('d/m/Y') . ')');
+                                                                        break;
+                                                                    case 'month':
+                                                                        $cellText = mb_convert_case(\Carbon\Carbon::parse($cellValue)->locale('fr')->translatedFormat('F Y'), MB_CASE_TITLE, 'UTF-8');
+                                                                        break;
+                                                                    case 'year':
+                                                                        $cellText = \Carbon\Carbon::parse($cellValue)->locale('fr')->translatedFormat('Y');
+                                                                        break;
+                                                                    default:
+                                                                        $cellText = $cellValue;
+                                                                        break;
+                                                                }
+                                                            }
+                                                        } elseif ($columnKey === 'attempt') {
+                                                            $cellText = number_format((float) ($cellValue ?? 0), 0, ',', ' ');
+                                                        } else {
+                                                            $cellText = $cellValue ?? '-';
+                                                        }
+                                                    ?>
+                                                    <td data-col="{{ $columnKey }}" class="{{ $cellClass }}">{{ $cellText }}</td>
+                                                <?php endif; ?>
+                                            @endforeach
                                         </tr>
                                     @endforeach
                                 @endif
@@ -428,86 +473,52 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    const storageKey = 'kpi-roaming-hidden-columns';
-    const exportButton = document.getElementById('btn-export');
     const toggles = Array.from(document.querySelectorAll('.column-toggle'));
-    const filterColumnMap = {
-        filter_orig_type: 'orig_type',
-        filter_dest_type: 'dest_type',
-        filter_orig_net: 'orig_net_name',
-        filter_dest_net: 'dest_net_name',
-        filter_partner: 'partner_name'
-    };
-    const labels = @json($tableColumns);
-
-    function hiddenColumns() {
-        return toggles.filter(toggle => !toggle.checked).map(toggle => toggle.value);
-    }
-
-    function updateExportLink(visibleColumns) {
-        if (!exportButton) return;
-        const url = new URL(exportButton.href, window.location.href);
-        url.searchParams.set('cols', visibleColumns.join(','));
-        exportButton.href = url.toString();
-    }
-
-    function updateHiddenFilterStatus(hidden) {
-        document.querySelectorAll('.breadcrumb-filter-muted').forEach(function (item) {
-            item.classList.remove('breadcrumb-filter-muted');
-            const note = item.querySelector('.hidden-column-note');
-            if (note) note.remove();
-        });
-
-        Object.entries(filterColumnMap).forEach(function ([inputName, column]) {
-            const input = document.querySelector('[name="' + inputName + '"]');
-            const breadcrumbItem = document.querySelector('[data-breadcrumb-col="' + column + '"]');
-            if (hidden.includes(column) && input && input.value !== '' && breadcrumbItem) {
-                breadcrumbItem.classList.add('breadcrumb-filter-muted');
-                const note = document.createElement('small');
-                note.className = 'hidden-column-note';
-                note.textContent = '(colonne masquée)';
-                breadcrumbItem.appendChild(note);
-            }
-        });
-    }
-
-    function applyVisibility() {
-        const hidden = hiddenColumns();
-        const visible = toggles.filter(toggle => toggle.checked).map(toggle => toggle.value);
-
-        document.querySelectorAll('[data-col]').forEach(cell => {
-            cell.style.display = hidden.includes(cell.dataset.col) ? 'none' : '';
-        });
-        localStorage.setItem(storageKey, JSON.stringify(hidden));
-        updateExportLink(visible);
-        updateHiddenFilterStatus(hidden);
-    }
-
-    let savedHidden = [];
+    const storageKey = 'kpi-roaming-visible-columns';
+    const allowedColumns = new Set(toggles.map(toggle => toggle.value));
+    const currentUrl = new URL(window.location.href);
+    const hasColsParameter = Array.from(currentUrl.searchParams.keys()).some(key => key === 'cols' || /^cols\[/.test(key));
+    let savedColumns = [];
     try {
         const stored = JSON.parse(localStorage.getItem(storageKey) || '[]');
-        savedHidden = Array.isArray(stored) ? stored : [];
+        savedColumns = Array.isArray(stored) ? stored.filter(column => allowedColumns.has(column)) : [];
     } catch (error) {
-        savedHidden = [];
+        savedColumns = [];
+    }
+
+    if (!hasColsParameter && savedColumns.length > 0) {
+        currentUrl.searchParams.forEach(function (value, key) {
+            if (key === 'cols' || /^cols\[/.test(key)) currentUrl.searchParams.delete(key);
+        });
+        savedColumns.forEach(column => currentUrl.searchParams.append('cols[]', column));
+        window.location.replace(currentUrl.toString());
+        return;
+    }
+
+    function saveVisibleColumns() {
+        const visible = toggles.filter(toggle => toggle.checked).map(toggle => toggle.value);
+        localStorage.setItem(storageKey, JSON.stringify(visible));
     }
 
     toggles.forEach(toggle => {
-        toggle.checked = !savedHidden.includes(toggle.value);
         toggle.addEventListener('change', function () {
-            if (!this.checked && toggles.filter(item => item.checked).length === 0) {
+            const enabledCheckedCount = toggles.filter(item => !item.disabled && item.checked).length;
+            if (!this.checked && enabledCheckedCount === 0) {
                 this.checked = true;
                 return;
             }
-            applyVisibility();
+            saveVisibleColumns();
+            this.form.submit();
         });
     });
 
     document.getElementById('show-all-columns').addEventListener('click', function () {
         toggles.forEach(toggle => { toggle.checked = true; });
-        applyVisibility();
+        saveVisibleColumns();
+        this.closest('form').submit();
     });
 
-    applyVisibility();
+    saveVisibleColumns();
 });
 </script>
 @include('partials.date_sync')

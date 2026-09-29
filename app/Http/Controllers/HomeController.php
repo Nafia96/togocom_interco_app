@@ -1889,6 +1889,10 @@ public function kpiRoming(Request $request)
     $start = $query['start'];
     $end = $query['end'];
     $filters = $query['filters'];
+    $visibleDims = $query['visibleDims'];
+    $visibleMetrics = $query['visibleMetrics'];
+    $allCols = $query['allCols'];
+    $granularity = $query['granularity'];
 
     $monthOptions = [];
     $currentMonth = Carbon::now()->startOfMonth();
@@ -1987,11 +1991,32 @@ public function kpiRoming(Request $request)
             . ' (' . $periodStart->format('d/m/Y') . ' → ' . $periodEnd->format('d/m/Y') . ')'
         : $periodStart->format('d/m/Y') . ' → ' . $periodEnd->format('d/m/Y');
 
+    $granularityLabels = [
+        'none' => 'Aucune',
+        'day' => 'Jour',
+        'week' => 'Semaine',
+        'month' => 'Mois',
+        'year' => 'Année',
+    ];
+
     $breadcrumb = [[
         'type' => 'period',
         'label' => 'Période',
         'value' => $periodLabel,
     ]];
+
+    if ($granularity !== 'none') {
+        $removeGranularityQuery = $request->query();
+        $removeGranularityQuery['granularity'] = 'none';
+        $breadcrumb[] = [
+            'type' => 'filter',
+            'label' => 'Granularité',
+            'value' => $granularityLabels[$granularity] ?? 'Aucune',
+            'column' => 'period',
+            'hidden' => false,
+            'removeUrl' => route('kpi.roaming', $removeGranularityQuery),
+        ];
+    }
 
     if ($filterDirection !== '' && $filterDirection !== 'ALL') {
         $breadcrumb[] = [
@@ -2006,9 +2031,9 @@ public function kpiRoming(Request $request)
     $breadcrumbFilters = [
         ['param' => 'filter_orig_type', 'label' => 'Orig type', 'value' => $filterOrigType, 'column' => 'orig_type'],
         ['param' => 'filter_dest_type', 'label' => 'Dest type', 'value' => $filterDestType, 'column' => 'dest_type'],
-        ['param' => 'filter_orig_net', 'label' => 'Orig net', 'value' => $filterOrigNet, 'column' => 'orig_net_name'],
-        ['param' => 'filter_dest_net', 'label' => 'Dest net', 'value' => $filterDestNet, 'column' => 'dest_net_name'],
-        ['param' => 'filter_partner', 'label' => 'Partner', 'value' => $filterPartner, 'column' => 'partner_name'],
+        ['param' => 'filter_orig_net', 'label' => 'Orig net', 'value' => $filterOrigNet, 'column' => 'orig_net'],
+        ['param' => 'filter_dest_net', 'label' => 'Dest net', 'value' => $filterDestNet, 'column' => 'dest_net'],
+        ['param' => 'filter_partner', 'label' => 'Partner', 'value' => $filterPartner, 'column' => 'partner'],
     ];
 
     foreach ($breadcrumbFilters as $filter) {
@@ -2018,6 +2043,7 @@ public function kpiRoming(Request $request)
                 'label' => $filter['label'],
                 'value' => $filter['value'],
                 'column' => $filter['column'],
+                'hidden' => !in_array($filter['column'], $visibleDims, true),
                 'removeUrl' => route('kpi.roaming', \Illuminate\Support\Arr::except($request->query(), [$filter['param']])),
             ];
         }
@@ -2046,8 +2072,12 @@ public function kpiRoming(Request $request)
         'filterPartner',
         'monthOptions',
         'selectedMonth',
+        'visibleDims',
+        'visibleMetrics',
+        'allCols',
         'breadcrumb',
-        'rowCount'
+        'rowCount',
+        'granularity'
     ));
 }
 
@@ -2058,36 +2088,37 @@ public function kpiRoamingExport(Request $request)
     }
 
     $query = $this->buildKpiRoamingQuery($request);
-    $knownColumns = [
-        'orig_type' => 'Orig type',
-        'dest_type' => 'Dest type',
-        'orig_net_name' => 'Orig net',
-        'dest_net_name' => 'Dest net',
-        'partner_name' => 'Partner',
-        'attempt' => 'Attempt',
-        'ner' => 'NER',
-        'asr' => 'ASR',
-        'acd_sec' => 'ACD sec',
-    ];
+    $allCols = $query['allCols'];
+    $columnKeys = array_keys($allCols);
+    $columns = array_values(array_filter($columnKeys, function ($key) use ($query) {
+        return in_array($key, $query['visibleDims'], true) || in_array($key, $query['visibleMetrics'], true);
+    }));
 
-    $requestedColumns = array_filter(array_map('trim', explode(',', (string) $request->input('cols', ''))));
-    $columns = array_values(array_intersect($requestedColumns, array_keys($knownColumns)));
-    if (!$columns) {
-        $columns = array_keys($knownColumns);
-    }
+    $resultFields = [
+        'period' => 'period',
+        'orig_type' => 'orig_type',
+        'dest_type' => 'dest_type',
+        'orig_net' => 'orig_net_name',
+        'dest_net' => 'dest_net_name',
+        'partner' => 'partner_name',
+        'attempt' => 'attempt',
+        'ner' => 'ner',
+        'asr' => 'asr',
+        'acd_sec' => 'acd_sec',
+    ];
 
     $filename = 'kpi_roaming_' . $query['start'] . '_' . $query['end'] . '.csv';
 
-    return response()->streamDownload(function () use ($query, $columns, $knownColumns) {
+    return response()->streamDownload(function () use ($query, $columns, $allCols, $resultFields) {
         $output = fopen('php://output', 'w');
         fwrite($output, "\xEF\xBB\xBF");
-        fputcsv($output, array_map(function ($column) use ($knownColumns) {
-            return $knownColumns[$column];
+        fputcsv($output, array_map(function ($column) use ($allCols) {
+            return $allCols[$column];
         }, $columns), ';');
 
         foreach (DB::connection('inter_traffic')->cursor($query['sql'], $query['params']) as $row) {
-            fputcsv($output, array_map(function ($column) use ($row) {
-                return $row->{$column};
+            fputcsv($output, array_map(function ($column) use ($row, $resultFields) {
+                return $row->{$resultFields[$column]};
             }, $columns), ';');
         }
 
@@ -2160,24 +2191,142 @@ private function buildKpiRoamingQuery(Request $request)
         }
     }
 
-    $sql = "
-        SELECT
-            orig_type,
-            dest_type,
-            orig_net_name,
-            dest_net_name,
-            partner_name,
-            SUM(attempt) AS attempt,
-            CONCAT(ROUND((SUM(completed) / NULLIF(SUM(attempt), 0)) * 100), '%') AS ner,
-            CONCAT(ROUND((SUM(answered) / NULLIF(SUM(attempt), 0)) * 100), '%') AS asr,
-            IF(SUM(answered) = 0, 0, ROUND(SUM(duration) / SUM(answered))) AS acd_sec
-        FROM splitted_qos
-        WHERE " . implode(' AND ', $where) . "
-        GROUP BY orig_type, dest_type, orig_net_name, dest_net_name, partner_name
-        ORDER BY orig_net_name, dest_net_name, partner_name, orig_type, dest_type
-    ";
+    $allCols = [
+        'orig_type' => 'Orig type',
+        'dest_type' => 'Dest type',
+        'orig_net' => 'Orig net',
+        'dest_net' => 'Dest net',
+        'partner' => 'Partner',
+        'attempt' => 'Attempt',
+        'ner' => 'NER',
+        'asr' => 'ASR',
+        'acd_sec' => 'ACD sec',
+    ];
+    $dimensionColumns = [
+        'orig_type' => 'orig_type',
+        'dest_type' => 'dest_type',
+        'orig_net' => 'orig_net_name',
+        'dest_net' => 'dest_net_name',
+        'partner' => 'partner_name',
+    ];
+    $metricExpressions = [
+        'attempt' => 'SUM(attempt) AS attempt',
+        'ner' => "CONCAT(ROUND((SUM(completed) / NULLIF(SUM(attempt), 0)) * 100), '%') AS ner",
+        'asr' => "CONCAT(ROUND((SUM(answered) / NULLIF(SUM(attempt), 0)) * 100), '%') AS asr",
+        'acd_sec' => 'IF(SUM(answered) = 0, 0, ROUND(SUM(duration) / SUM(answered))) AS acd_sec',
+    ];
 
-    return compact('sql', 'params', 'start', 'end', 'filters', 'month');
+    $granularity = strtolower(trim((string) $request->input('granularity', 'none')));
+    $allowedGranularities = ['none', 'day', 'week', 'month', 'year'];
+    $granularity = in_array($granularity, $allowedGranularities, true) ? $granularity : 'none';
+
+    $allCols = [
+        'orig_type' => 'Orig type',
+        'dest_type' => 'Dest type',
+        'orig_net' => 'Orig net',
+        'dest_net' => 'Dest net',
+        'partner' => 'Partner',
+        'attempt' => 'Attempt',
+        'ner' => 'NER',
+        'asr' => 'ASR',
+        'acd_sec' => 'ACD sec',
+    ];
+
+    $dimensionColumns = [
+        'orig_type' => 'orig_type',
+        'dest_type' => 'dest_type',
+        'orig_net' => 'orig_net_name',
+        'dest_net' => 'dest_net_name',
+        'partner' => 'partner_name',
+    ];
+
+    if ($granularity !== 'none') {
+        $periodExpressions = [
+            'day' => 'event_date',
+            'week' => 'DATE_SUB(event_date, INTERVAL WEEKDAY(event_date) DAY)',
+            'month' => "DATE_FORMAT(event_date, '%Y-%m-01')",
+            'year' => "DATE_FORMAT(event_date, '%Y-01-01')",
+        ];
+
+        $periodExpression = $periodExpressions[$granularity] ?? 'event_date';
+        $dimensionColumns = ['period' => 'period'] + $dimensionColumns;
+        $allCols = ['period' => 'Période'] + $allCols;
+    }
+
+    $requestedCols = $request->input('cols');
+    if (is_string($requestedCols)) {
+        $requestedCols = explode(',', $requestedCols);
+    }
+    $requestedCols = is_array($requestedCols) ? array_values(array_filter(array_map(function ($column) {
+        return is_string($column) ? trim($column) : '';
+    }, $requestedCols), function ($column) {
+        return $column !== '';
+    })) : [];
+
+    if (!$requestedCols) {
+        $requestedCols = array_keys($allCols);
+    } else {
+        $requestedCols = array_values(array_unique(array_filter($requestedCols, function ($column) use ($allCols) {
+            return array_key_exists($column, $allCols);
+        })));
+    }
+
+    $visibleDims = array_values(array_filter(array_keys($dimensionColumns), function ($column) use ($requestedCols, $granularity) {
+        return $column === 'period' ? $granularity !== 'none' : in_array($column, $requestedCols, true);
+    }));
+    if ($granularity !== 'none') {
+        $visibleDims = array_values(array_unique(array_merge(['period'], $visibleDims)));
+    }
+
+    $metricExpressions = [
+        'attempt' => 'SUM(attempt) AS attempt',
+        'ner' => "CONCAT(ROUND((SUM(completed) / NULLIF(SUM(attempt), 0)) * 100), '%') AS ner",
+        'asr' => "CONCAT(ROUND((SUM(answered) / NULLIF(SUM(attempt), 0)) * 100), '%') AS asr",
+        'acd_sec' => 'IF(SUM(answered) = 0, 0, ROUND(SUM(duration) / SUM(answered))) AS acd_sec',
+    ];
+
+    $visibleMetrics = array_values(array_filter(array_keys($metricExpressions), function ($column) use ($requestedCols) {
+        return in_array($column, $requestedCols, true);
+    }));
+    if (!$visibleDims && !$visibleMetrics) {
+        $visibleMetrics = ['attempt'];
+    }
+
+    $select = [];
+    if ($granularity !== 'none') {
+        $select[] = $periodExpressions[$granularity] . ' AS period';
+    }
+    foreach ($visibleDims as $dimension) {
+        if ($dimension === 'period') {
+            continue;
+        }
+        $select[] = $dimensionColumns[$dimension];
+    }
+    foreach ($visibleMetrics as $metric) {
+        $select[] = $metricExpressions[$metric];
+    }
+
+    $orderColumns = ['period', 'orig_net', 'dest_net', 'partner', 'orig_type', 'dest_type'];
+    $orderBy = array_values(array_filter($orderColumns, function ($column) use ($visibleDims) {
+        return in_array($column, $visibleDims, true);
+    }));
+
+    $sql = 'SELECT ' . implode(",\n            ", $select) . "\n        FROM splitted_qos\n        WHERE " . implode(' AND ', $where);
+    if ($visibleDims) {
+        $sql .= "\n        GROUP BY " . implode(', ', array_map(function ($dimension) use ($dimensionColumns) {
+            return $dimensionColumns[$dimension];
+        }, $visibleDims));
+    }
+    if ($orderBy) {
+        $sql .= "\n        ORDER BY " . implode(', ', array_map(function ($dimension) use ($dimensionColumns) {
+            if ($dimension === 'period') {
+                return 'period DESC';
+            }
+            return $dimensionColumns[$dimension];
+        }, $orderBy));
+    }
+
+    return compact('sql', 'params', 'start', 'end', 'filters', 'month', 'visibleDims', 'visibleMetrics', 'allCols', 'granularity');
 }
 
 public function KpinCarrier(Request $request)
