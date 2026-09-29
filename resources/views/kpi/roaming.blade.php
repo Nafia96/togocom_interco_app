@@ -15,8 +15,7 @@ body {
     font-size:0.85rem;
 }
 
-th { text-align:center; white-space:nowrap; }
-td { white-space:nowrap; }
+th { text-align:center; }
 
 .card {
     border-radius: 15px;
@@ -64,7 +63,36 @@ table.table thead th {
 table.kpi-roaming-table {
     width: 100%;
     min-width: 1100px;
-    table-layout: fixed;
+    table-layout: auto;
+}
+
+table.kpi-roaming-table th[data-col="period"],
+table.kpi-roaming-table td[data-col="period"] {
+    width: 160px;
+    max-width: 160px;
+    white-space: normal;
+    word-break: normal;
+}
+
+table.kpi-roaming-table th.period-column-week,
+table.kpi-roaming-table td.period-column-week {
+    width: 200px;
+    max-width: 200px;
+}
+
+table.kpi-roaming-table th[data-col="orig_type"],
+table.kpi-roaming-table td[data-col="orig_type"],
+table.kpi-roaming-table th[data-col="dest_type"],
+table.kpi-roaming-table td[data-col="dest_type"],
+table.kpi-roaming-table th[data-col="attempt"],
+table.kpi-roaming-table td[data-col="attempt"],
+table.kpi-roaming-table th[data-col="ner"],
+table.kpi-roaming-table td[data-col="ner"],
+table.kpi-roaming-table th[data-col="asr"],
+table.kpi-roaming-table td[data-col="asr"],
+table.kpi-roaming-table th[data-col="acd_sec"],
+table.kpi-roaming-table td[data-col="acd_sec"] {
+    white-space: nowrap;
 }
 
 table.kpi-roaming-table th[data-col="orig_type"],
@@ -208,23 +236,40 @@ table.table thead tr.filter-row th {
     box-shadow: inset 0 -1px 0 rgba(255,255,255,0.1);
     height: 52px;
     box-sizing: border-box;
+    text-align: center;
 }
 
 tbody td:first-child {
-    position: sticky; left: 0; background: #fff; z-index: 7; font-weight: 700; box-shadow: 2px 0 6px rgba(0,0,0,.04);
+    position: sticky; left: 0; min-width: 120px; background: #fff; z-index: 7; font-weight: 700; box-shadow: 2px 0 6px rgba(0,0,0,.04);
+}
+
+table.kpi-roaming-table tbody td {
+    text-align: center;
 }
 
 thead th:first-child {
     position: sticky;
     left: 0;
+    min-width: 120px;
     background: linear-gradient(90deg, #133272 0%, #1e4a98 100%);
     z-index: 11;
     box-shadow: 2px 0 6px rgba(0,0,0,.12);
 }
 
 tr.filter-row th:first-child {
+    min-width: 120px;
     background: linear-gradient(90deg, #173d82 0%, #1d4d9c 100%);
     z-index: 12;
+}
+
+table.kpi-roaming-table .filter-description {
+    display: block;
+    color: rgba(255, 255, 255, .9);
+    font-size: .7rem;
+    font-weight: 400;
+    line-height: 1.15;
+    text-align: center;
+    white-space: normal;
 }
 
 .table-hover tbody tr:hover { background: rgba(19, 50, 114, 0.03); }
@@ -320,7 +365,7 @@ tr.filter-row th:first-child {
                         </select>
                     </div>
                     <div class="col-lg-1 col-md-3 kpi-filter-field kpi-filter-narrow">
-                        <label for="granularity" class="form-label">Granularité</label>
+                        <label for="granularity" class="form-label">Périodicité</label>
                         <select id="granularity" name="granularity" class="form-select form-select-sm" onchange="this.form.submit()">
                             <option value="none" {{ ($granularity ?? 'none') === 'none' ? 'selected' : '' }}>Aucune</option>
                             <option value="day" {{ ($granularity ?? 'none') === 'day' ? 'selected' : '' }}>Jour</option>
@@ -365,7 +410,7 @@ tr.filter-row th:first-child {
                                 <tr>
                                     @foreach ($allCols as $columnKey => $columnLabel)
                                         @if (in_array($columnKey, $visibleColumns, true))
-                                            <th data-col="{{ $columnKey }}">{{ $columnLabel }}</th>
+                                            <th data-col="{{ $columnKey }}" class="{{ $columnKey === 'period' ? 'period-column period-column-' . ($granularity ?? 'none') : '' }}">{{ $columnLabel }}</th>
                                         @endif
                                     @endforeach
                                 </tr>
@@ -374,7 +419,7 @@ tr.filter-row th:first-child {
                                         @if (in_array($columnKey, $visibleColumns, true))
                                             @if (isset($filterConfigs[$columnKey]))
                                                 @php($config = $filterConfigs[$columnKey])
-                                                <th data-col="{{ $columnKey }}">
+                                                <th data-col="{{ $columnKey }}" class="{{ $columnKey === 'period' ? 'period-column period-column-' . ($granularity ?? 'none') : '' }}">
                                                     <select name="{{ $config['name'] }}" class="form-select form-select-sm" onchange="this.form.submit()">
                                                         <option value="">Tous</option>
                                                         @foreach (($filterOptions[$columnKey] ?? []) as $value)
@@ -383,7 +428,13 @@ tr.filter-row th:first-child {
                                                     </select>
                                                 </th>
                                             @else
-                                                <th data-col="{{ $columnKey }}" class="text-center text-muted">-</th>
+                                                <th data-col="{{ $columnKey }}" class="{{ $columnKey === 'period' ? 'period-column period-column-' . ($granularity ?? 'none') : '' }}">
+                                                    @if (in_array($columnKey, ['attempt', 'ner', 'asr', 'acd_sec'], true))
+                                                        <small class="filter-description">{{ ['attempt' => 'Nombre de tentatives', 'ner' => 'Qualité réseau', 'asr' => 'Taux d’efficacité', 'acd_sec' => 'Durée moyenne de communication'][$columnKey] }}</small>
+                                                    @else
+                                                        <span class="text-muted">-</span>
+                                                    @endif
+                                                </th>
                                             @endif
                                         @endif
                                     @endforeach
@@ -433,7 +484,7 @@ tr.filter-row th:first-child {
                                                             $cellText = $cellValue ?? '-';
                                                         }
                                                     ?>
-                                                    <td data-col="{{ $columnKey }}" class="{{ $cellClass }}">{{ $cellText }}</td>
+                                                    <td data-col="{{ $columnKey }}" class="{{ $cellClass }} {{ $columnKey === 'period' ? 'period-column period-column-' . ($granularity ?? 'none') : '' }}">{{ $cellText }}</td>
                                                 <?php endif; ?>
                                             @endforeach
                                         </tr>
