@@ -1879,6 +1879,93 @@ public function kpip(Request $request)
     ]);
 }
 
+public function kpiCoutCarrier(Request $request)
+{
+    if (session('id') == null) {
+        return redirect()->route('home');
+    }
+
+    $validated = $request->validate([
+        'start_date' => ['nullable', 'date_format:Y-m-d'],
+        'end_date' => ['nullable', 'date_format:Y-m-d'],
+        'filter_dest_net' => ['nullable', 'string', 'max:255'],
+        'filter_carrier' => ['nullable', 'string', 'max:255'],
+        'filter_rate' => ['nullable', 'string', 'max:255'],
+    ]);
+
+    $start = $validated['start_date'] ?? Carbon::now()->startOfYear()->toDateString();
+    $end = $validated['end_date'] ?? Carbon::now()->endOfMonth()->toDateString();
+    $filterDestNet = $validated['filter_dest_net'] ?? '';
+    $filterCarrier = $validated['filter_carrier'] ?? '';
+    $filterRate = $validated['filter_rate'] ?? '';
+
+    $baseQuery = function () use ($start, $end) {
+        return DB::connection('inter_traffic')
+            ->table('BILLING_STAT')
+            ->whereBetween('start_date', [$start, $end])
+            ->where('direction', 'like', 'charge')
+            ->where('orig_net_name', 'like', 'Togo Mobile Togocel')
+            ->where('dest_net_name', 'not like', 'Not available');
+    };
+
+    $query = $baseQuery()
+        ->select([
+            'direction',
+            DB::raw('SUBSTR(start_date, 1, 7) AS period'),
+            'dest_net_name',
+            'carrier_name',
+            'rate',
+            DB::raw('SUM(minutes) AS minutes'),
+        ]);
+
+    foreach ([
+        'dest_net_name' => $filterDestNet,
+        'carrier_name' => $filterCarrier,
+        'rate' => $filterRate,
+    ] as $column => $value) {
+        if ($value !== '') {
+            $query->where($column, $value);
+        }
+    }
+
+    $results = $query
+        ->groupBy('direction', DB::raw('SUBSTR(start_date, 1, 7)'), 'dest_net_name', 'carrier_name', 'rate')
+        ->orderBy('direction')
+        ->orderBy('period')
+        ->orderBy('dest_net_name')
+        ->orderBy('carrier_name')
+        ->orderBy('rate')
+        ->get();
+
+    $filterOptions = [];
+    foreach ([
+        'dest_net' => 'dest_net_name',
+        'carrier' => 'carrier_name',
+        'rate' => 'rate',
+    ] as $key => $column) {
+        $filterOptions[$key] = $baseQuery()
+            ->select($column)
+            ->distinct()
+            ->whereNotNull($column)
+            ->where($column, '!=', '')
+            ->orderBy($column)
+            ->pluck($column);
+    }
+
+    $rowCount = $results->count();
+
+    return view('kpi.cout-carrier', compact(
+        'results',
+        'start',
+        'end',
+        'filterOptions',
+        'filterDestNet',
+        'filterCarrier',
+        'filterRate',
+        'rowCount'
+    ));
+}
+
 public function kpiRoming(Request $request)
 {
     if (session('id') == null) {
@@ -2525,7 +2612,7 @@ public function KpinCarrier(Request $request)
             partner_name,
             SUM(attempt) AS attempt,
             CONCAT(ROUND((SUM(completed)/SUM(attempt))*100,2), '%') AS NER,
-            CONCAT(ROUND((SUM(answered)/SUM(attempt))*100,2), '%') AS ACD,
+            CONCAT(ROUND((SUM(answered)/SUM(attempt))*100,2), '%') AS ASR,
             IF(SUM(minutes)=0,0,ROUND((SUM(minutes)*60)/SUM(answered))) AS ACD_SEC
         FROM COMPLETION_STAT
         WHERE event_date BETWEEN :start AND :end

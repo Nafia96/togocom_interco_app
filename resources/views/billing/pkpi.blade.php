@@ -80,9 +80,9 @@
                                         <th>Période</th>
                                         <th>Semaine</th>
                                         <th>Partenaire</th>
-                                        <th>Tentatives</th>
+                                        <th>Tentatives net</th>
                                         <th>NER</th>
-                                        <th>ACD (%)</th>
+                                        <th>ASR (%)</th>
                                         <th>ACD (sec)</th>
                                     </tr>
                                 </thead>
@@ -95,7 +95,7 @@
                                             <td>{{ $row->partner_name }}</td>
                                             <td>{{ number_format($row->attempt, 0, ',', ' ') }}</td>
                                             <td>{{ $row->NER }}</td>
-                                            <td>{{ $row->ACD }}</td>
+                                            <td>{{ $row->ASR }}</td>
                                             <td>{{ $row->ACD_SEC }}</td>
                                         </tr>
                                     @endforeach

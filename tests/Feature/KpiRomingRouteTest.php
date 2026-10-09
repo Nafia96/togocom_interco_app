@@ -26,4 +26,15 @@ class KpiRomingRouteTest extends TestCase
         $response->assertSee('Taux d’efficacité');
         $response->assertSee('Durée moyenne de communication');
     }
+
+    public function test_partner_kpi_uses_asr_label_and_not_duplicate_acd()
+    {
+        $response = $this->withSession(['id' => 1])->get('/partnerKpi?start_period=2026-08-01&end_period=2026-08-31');
+
+        $response->assertOk();
+        $response->assertSee('Tentatives net');
+        $response->assertSee('ASR (%)');
+        $response->assertSee('ACD (sec)');
+        $response->assertDontSee('ACD (%)');
+    }
 }
