@@ -975,6 +975,236 @@ class HomeController extends Controller
         return view('index');
     }
 
+    public function billingComparisonExport(Request $request)
+    {
+        $request->merge(['export' => true]);
+
+        return $this->billingComparison($request);
+    }
+
+    public function billingComparison(Request $request)
+    {
+        if (session('id') == null) {
+            return redirect()->route('home');
+        }
+
+        $exportCsv = $request->boolean('export');
+
+        $startMonth = $request->input('start_month', Carbon::now()->subMonths(11)->format('Y-m'));
+        $endMonth = $request->input('end_month', Carbon::now()->format('Y-m'));
+        $selectedOperator = $request->input('operator');
+
+        try {
+            $start = Carbon::parse($startMonth . '-01')->startOfMonth();
+            $end = Carbon::parse($endMonth . '-01')->endOfMonth();
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors(['start_month' => 'La période sélectionnée est invalide.'])->withInput();
+        }
+
+        if ($start->greaterThan($end)) {
+            return redirect()->back()->withErrors(['start_month' => 'La date de début doit être avant la date de fin.'])->withInput();
+        }
+
+        $operators = Operator::where('is_delete', 0)
+            ->select('id', 'name')
+            ->orderBy('name')
+            ->get();
+
+        $provisionalRows = DB::connection('inter_traffic')
+            ->table('BILLING_STAT')
+            ->selectRaw('carrier_name as inter_operator, YEAR(start_date) as year, MONTH(start_date) as month, SUM(CAST(minutes AS DECIMAL(20,6))) as provisional_volume')
+            ->whereBetween('start_date', [$start->copy()->startOfDay(), $end->copy()->endOfDay()])
+            ->where('direction', 'Revenue')
+            ->groupBy('carrier_name', DB::raw('YEAR(start_date)'), DB::raw('MONTH(start_date)'))
+            ->get();
+
+        $operatorWarnings = [];
+
+        $realRows = Invoice::where('is_delete', 0)
+            ->whereNotNull('call_volume')
+            ->whereBetween('periodDate', [$start->toDateString(), $end->toDateString()])
+            ->selectRaw('operator_id, YEAR(periodDate) as year, MONTH(periodDate) as month, SUM(CAST(call_volume AS DECIMAL(20,2))) as real_volume')
+            ->groupBy('operator_id', DB::raw('YEAR(periodDate)'), DB::raw('MONTH(periodDate)'))
+            ->get();
+
+        $provisionalByOperatorMonth = [];
+        foreach ($provisionalRows as $row) {
+            $canonical = $this->resolveOperatorName($row->inter_operator, $operators, $operatorWarnings);
+            $monthKey = $row->year . '-' . str_pad((int) $row->month, 2, '0', STR_PAD_LEFT);
+            $provisionalByOperatorMonth[$canonical][$monthKey] = (float) $row->provisional_volume;
+        }
+
+        $realByOperatorMonth = [];
+        foreach ($realRows as $row) {
+            $operator = Operator::find($row->operator_id);
+            $canonical = $operator ? $operator->name : 'Inconnu';
+            $monthKey = $row->year . '-' . str_pad((int) $row->month, 2, '0', STR_PAD_LEFT);
+            $realByOperatorMonth[$canonical][$monthKey] = (float) $row->real_volume;
+        }
+
+        $comparison = [];
+        foreach ($operators as $operator) {
+            $canonical = $operator->name;
+
+            if ($selectedOperator && $selectedOperator !== $canonical) {
+                continue;
+            }
+
+            $cursor = $start->copy();
+
+            while ($cursor->lte($end)) {
+                $monthKey = $cursor->format('Y-m');
+                $provisionalVolume = (float) ($provisionalByOperatorMonth[$canonical][$monthKey] ?? 0);
+                $realVolume = (float) ($realByOperatorMonth[$canonical][$monthKey] ?? 0);
+                $ecart = $provisionalVolume - $realVolume;
+                $ecartPct = $realVolume > 0 ? (($ecart / $realVolume) * 100) : null;
+
+                if ($realVolume == 0.0 && $provisionalVolume == 0.0) {
+                    $deviationLevel = 'none';
+                    $ecartPctLabel = '-';
+                } elseif ($realVolume == 0.0 && $provisionalVolume > 0) {
+                    $deviationLevel = 'bad';
+                    $ecartPctLabel = 'N/A';
+                } else {
+                    $absoluteDeviation = abs($ecartPct);
+                    $deviationLevel = $absoluteDeviation >= 10 ? 'bad' : ($absoluteDeviation >= 5 ? 'warn' : 'none');
+                    $ecartPctLabel = number_format($ecartPct, 2, ',', ' ') . ' %';
+                }
+
+                $comparison[] = [
+                    'operator' => $canonical,
+                    'month' => $monthKey,
+                    'provisional' => (float) $provisionalVolume,
+                    'real' => (float) $realVolume,
+                    'ecart' => (float) $ecart,
+                    'ecart_pct' => $ecartPct,
+                    'ecart_pct_label' => $ecartPctLabel,
+                    'deviation_level' => $deviationLevel,
+                ];
+
+                $cursor->addMonth();
+            }
+        }
+
+        usort($comparison, function ($a, $b) {
+            $operatorCompare = strcmp($a['operator'], $b['operator']);
+            return $operatorCompare !== 0 ? $operatorCompare : strcmp($a['month'], $b['month']);
+        });
+
+        $operatorsList = $operators->pluck('name')->sort()->values()->all();
+
+        if ($exportCsv) {
+            return $this->downloadBillingComparisonCsv($comparison, $startMonth, $endMonth, $selectedOperator);
+        }
+
+        return view('billing.billingComparison', compact(
+            'comparison',
+            'operatorsList',
+            'startMonth',
+            'endMonth',
+            'selectedOperator',
+            'operatorWarnings'
+        ));
+    }
+
+    protected function downloadBillingComparisonCsv($comparison, $startMonth, $endMonth, $selectedOperator)
+    {
+        $filename = 'comparaison_mesures_' . preg_replace('/[^0-9A-Za-z_-]+/', '_', $startMonth . '_' . $endMonth) . '.csv';
+
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Pragma' => 'no-cache',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+        ];
+
+        $callback = function () use ($comparison, $selectedOperator) {
+            $handle = fopen('php://output', 'w');
+            fprintf($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
+            fputcsv($handle, ['Opérateur', 'Mois', 'Provisoire', 'Réel', 'Écart', 'Écart %']);
+
+            foreach ($comparison as $row) {
+                fputcsv($handle, [
+                    $row['operator'],
+                    $row['month'],
+                    number_format((float) $row['provisional'], 2, ',', ' '),
+                    number_format((float) $row['real'], 2, ',', ' '),
+                    number_format((float) $row['ecart'], 2, ',', ' '),
+                    $row['ecart_pct_label'] ?? 'N/A',
+                ]);
+            }
+
+            fclose($handle);
+        };
+
+        return response()->streamDownload($callback, $filename, $headers);
+    }
+
+    protected function resolveOperatorName($value, $operators, array &$warnings = [])
+    {
+        if (empty($value)) {
+            $warnings[] = 'Opérateur vide détecté.';
+            return 'Inconnu';
+        }
+
+        $input = $this->normalizeOperatorName($value);
+        $rawValue = trim((string) $value);
+
+        if ($input === '') {
+            $warnings[] = 'Opérateur invalide à normaliser : ' . $rawValue;
+            return 'Inconnu';
+        }
+
+        foreach ($operators as $operator) {
+            if ($this->normalizeOperatorName($operator->name) === $input) {
+                return $operator->name;
+            }
+        }
+
+        $matches = [];
+
+        foreach ($operators as $operator) {
+            $name = $this->normalizeOperatorName($operator->name);
+            if ($name === '') {
+                continue;
+            }
+
+            if (str_contains($name, $input) || str_contains($input, $name)) {
+                $matches[] = $operator->name;
+            }
+        }
+
+        if (count($matches) === 1) {
+            return $matches[0];
+        }
+
+        if (count($matches) > 1) {
+            $uniqueMatches = array_values(array_unique($matches));
+            $warnings[] = 'Opérateur provisoire ambigu : ' . $rawValue . ' → ' . implode(', ', $uniqueMatches);
+            \Log::warning('Operator match ambiguous for provisional billing row: ' . $rawValue . ' -> ' . implode(', ', $uniqueMatches));
+            return $rawValue;
+        }
+
+        $warnings[] = 'Aucun opérateur ne correspond à : ' . $rawValue;
+        \Log::warning('Operator match unresolved for provisional billing row: ' . $rawValue);
+
+        return trim((string) $value);
+    }
+
+    protected function normalizeOperatorName($value)
+    {
+        if (!is_string($value) || trim($value) === '') {
+            return '';
+        }
+
+        $normalized = mb_strtolower($value, 'UTF-8');
+        $normalized = str_replace(['&', '/', '-', '.', '_', '(', ')', ',', ';', ':'], ' ', $normalized);
+        $normalized = preg_replace('/[\x00-\x1F\x7F]/u', '', $normalized);
+        $normalized = preg_replace('/[^a-z0-9]+/u', '', $normalized);
+
+        return trim($normalized);
+    }
+
     public function billingPivotNetCarrier(Request $request)
     {
         //dd('ok');
@@ -2213,6 +2443,344 @@ public function kpiRoamingExport(Request $request)
     }, $filename, [
         'Content-Type' => 'text/csv; charset=UTF-8',
     ]);
+}
+
+public function roamingOpenings(Request $request)
+{
+    if (session('id') == null) {
+        return redirect()->route('home');
+    }
+
+    $data = $this->buildRoamingOpeningsData($request);
+    $data['rowCount'] = $data['results']->count();
+
+    return view('kpi.roaming-openings', $data);
+}
+
+public function store(Request $request)
+{
+    if (session('id') == null) {
+        return redirect()->route('home');
+    }
+
+    $serviceColumns = [
+        'postpaid_inbound',
+        'postpaid_outbound',
+        'camel_inbound',
+        'camel_outbound',
+        'data_3g_inbound',
+        'data_3g_outbound',
+        'data_4g_inbound',
+        'data_4g_outbound',
+        'data_5g_nsa_inbound',
+        'data_5g_nsa_outbound',
+        'k2r',
+        'vrs',
+    ];
+
+    $rules = [
+        'country' => ['required', 'string', 'max:100'],
+        'code' => ['required', 'string', 'max:255'],
+        'operator' => ['required', 'string', 'max:150'],
+        'return_query' => ['nullable', 'string', 'max:4000'],
+    ];
+    foreach ($serviceColumns as $column) {
+        $rules[$column] = ['nullable', 'in:1'];
+    }
+
+    $validator = \Illuminate\Support\Facades\Validator::make($request->all(), $rules);
+    if ($validator->fails()) {
+        return redirect()->back()->withErrors($validator)->withInput();
+    }
+
+    $validated = $validator->validated();
+    $connection = DB::connection('mysql');
+    $nextNumero = ((int) $connection->table('roaming_openings')->max('numero')) + 1;
+    $row = [
+        'numero' => $nextNumero,
+        'country' => trim($validated['country']),
+        'code' => trim($validated['code']),
+        'operator' => trim($validated['operator']),
+    ];
+    foreach ($serviceColumns as $column) {
+        $row[$column] = isset($validated[$column]) ? 1 : 0;
+    }
+    $connection->table('roaming_openings')->insert($row);
+
+    $query = $this->roamingOpeningsReturnQuery($validated['return_query'] ?? '');
+
+    return redirect()
+        ->route('kpi.roaming-openings', $query)
+        ->with('success', 'Ouverture ajoutée avec succès.');
+}
+
+public function update(Request $request, $id)
+{
+    if (session('id') == null) {
+        return redirect()->route('home');
+    }
+
+    $connection = DB::connection('mysql');
+    abort_unless($connection->table('roaming_openings')->where('id', $id)->exists(), 404);
+
+    $serviceColumns = [
+        'postpaid_inbound',
+        'postpaid_outbound',
+        'camel_inbound',
+        'camel_outbound',
+        'data_3g_inbound',
+        'data_3g_outbound',
+        'data_4g_inbound',
+        'data_4g_outbound',
+        'data_5g_nsa_inbound',
+        'data_5g_nsa_outbound',
+        'k2r',
+        'vrs',
+    ];
+    $rules = [
+        'country' => ['required', 'string', 'max:100'],
+        'code' => ['required', 'string', 'max:255'],
+        'operator' => ['required', 'string', 'max:150'],
+        'return_query' => ['nullable', 'string', 'max:4000'],
+    ];
+    foreach ($serviceColumns as $column) {
+        $rules[$column] = ['nullable', 'in:1'];
+    }
+
+    $validator = \Illuminate\Support\Facades\Validator::make($request->all(), $rules);
+    if ($validator->fails()) {
+        $oldInput = array_merge($request->except(['_token', '_method']), [
+            'opening_mode' => 'edit',
+            'opening_id' => $id,
+        ]);
+        return redirect()->back()->withErrors($validator)->withInput($oldInput);
+    }
+
+    $validated = $validator->validated();
+    $values = [
+        'country' => trim($validated['country']),
+        'code' => trim($validated['code']),
+        'operator' => trim($validated['operator']),
+    ];
+    foreach ($serviceColumns as $column) {
+        $values[$column] = isset($validated[$column]) ? 1 : 0;
+    }
+    $connection->table('roaming_openings')->where('id', $id)->update($values);
+
+    return redirect()
+        ->route('kpi.roaming-openings', $this->roamingOpeningsReturnQuery($validated['return_query'] ?? ''))
+        ->with('success', 'Ouverture modifiée avec succès.');
+}
+
+public function destroy(Request $request, $id)
+{
+    if (session('id') == null) {
+        return redirect()->route('home');
+    }
+
+    $deleted = DB::connection('mysql')->table('roaming_openings')->where('id', $id)->delete();
+    abort_unless($deleted, 404);
+
+    return redirect()
+        ->route('kpi.roaming-openings', $this->roamingOpeningsReturnQuery($request->input('return_query', '')))
+        ->with('success', 'Ouverture supprimée avec succès.');
+}
+
+private function roamingOpeningsReturnQuery($queryString)
+{
+    $query = [];
+    parse_str($queryString, $query);
+
+    $serviceColumns = [
+        'postpaid_inbound',
+        'postpaid_outbound',
+        'camel_inbound',
+        'camel_outbound',
+        'data_3g_inbound',
+        'data_3g_outbound',
+        'data_4g_inbound',
+        'data_4g_outbound',
+        'data_5g_nsa_inbound',
+        'data_5g_nsa_outbound',
+        'k2r',
+        'vrs',
+    ];
+    $allowedQueryKeys = array_merge(
+        ['filter_country', 'filter_code', 'filter_operator'],
+        array_map(function ($column) {
+            return 'filter_' . $column;
+        }, $serviceColumns),
+        ['cols']
+    );
+    $query = array_intersect_key($query, array_flip($allowedQueryKeys));
+    if (isset($query['cols']) && is_array($query['cols'])) {
+        $allowedColumns = array_merge(['country', 'code', 'operator'], $serviceColumns);
+        $query['cols'] = array_values(array_intersect($query['cols'], $allowedColumns));
+    }
+
+    return $query;
+}
+
+public function roamingOpeningsExport(Request $request)
+{
+    if (session('id') == null) {
+        return redirect()->route('home');
+    }
+
+    $data = $this->buildRoamingOpeningsData($request);
+    $columnLabels = [
+        'country' => 'Pays',
+        'code' => 'Code',
+        'operator' => 'Opérateur',
+        'postpaid_inbound' => 'Postpaid Inbound',
+        'postpaid_outbound' => 'Postpaid Outbound',
+        'camel_inbound' => 'Camel Inbound',
+        'camel_outbound' => 'Camel Outbound',
+        'data_3g_inbound' => 'Data 3G Inbound',
+        'data_3g_outbound' => 'Data 3G Outbound',
+        'data_4g_inbound' => 'Data 4G Inbound',
+        'data_4g_outbound' => 'Data 4G Outbound',
+        'data_5g_nsa_inbound' => 'Data 5G N-SA Inbound',
+        'data_5g_nsa_outbound' => 'Data 5G N-SA Outbound',
+        'k2r' => 'K2R',
+        'vrs' => 'VRS',
+    ];
+    $serviceColumns = array_slice(array_keys($columnLabels), 3);
+    $visibleCols = $data['visibleCols'];
+
+    return response()->streamDownload(function () use ($data, $columnLabels, $serviceColumns, $visibleCols) {
+        $output = fopen('php://output', 'w');
+        fwrite($output, "\xEF\xBB\xBF");
+        fputcsv($output, array_map(function ($column) use ($columnLabels) {
+            return $columnLabels[$column];
+        }, $visibleCols), ';');
+
+        foreach ($data['results'] as $row) {
+            fputcsv($output, array_map(function ($column) use ($row, $serviceColumns) {
+                if (in_array($column, $serviceColumns, true)) {
+                    return (int) $row->{$column} === 1 ? 'Ouvert' : 'Non ouvert';
+                }
+
+                return $row->{$column} ?? '';
+            }, $visibleCols), ';');
+        }
+
+        fclose($output);
+    }, 'roaming_openings.csv', [
+        'Content-Type' => 'text/csv; charset=UTF-8',
+    ]);
+}
+
+private function buildRoamingOpeningsData(Request $request)
+{
+    $serviceColumns = [
+        'postpaid_inbound',
+        'postpaid_outbound',
+        'camel_inbound',
+        'camel_outbound',
+        'data_3g_inbound',
+        'data_3g_outbound',
+        'data_4g_inbound',
+        'data_4g_outbound',
+        'data_5g_nsa_inbound',
+        'data_5g_nsa_outbound',
+        'k2r',
+        'vrs',
+    ];
+    $allColumns = array_merge(['country', 'code', 'operator'], $serviceColumns);
+
+    $rules = [
+        'filter_country' => ['nullable', 'string', 'max:255'],
+        'filter_code' => ['nullable', 'string', 'max:255'],
+        'filter_operator' => ['nullable', 'string', 'max:255'],
+    ];
+    foreach ($serviceColumns as $column) {
+        $rules['filter_' . $column] = ['nullable', 'string', 'in:0,1'];
+    }
+    $validated = $request->validate($rules);
+
+    $filterColumns = [
+        'filter_country' => 'country',
+        'filter_code' => 'code',
+        'filter_operator' => 'operator',
+    ];
+    foreach ($serviceColumns as $column) {
+        $filterColumns['filter_' . $column] = $column;
+    }
+
+    $selectedFilters = [];
+    $where = [];
+    $params = [];
+    foreach ($filterColumns as $filterName => $column) {
+        $value = $validated[$filterName] ?? '';
+        $selectedFilters[$filterName] = $value;
+        if ($value !== '') {
+            if (in_array($filterName, ['filter_country', 'filter_code', 'filter_operator'], true)) {
+                $where[] = '`' . $column . '` LIKE ?';
+                $params[] = '%' . $value . '%';
+            } else {
+                $where[] = '`' . $column . '` = ?';
+                $params[] = $value;
+            }
+        }
+    }
+
+    $requestedColumns = $request->input('cols', []);
+    if (!is_array($requestedColumns)) {
+        $requestedColumns = [$requestedColumns];
+    }
+    $visibleCols = array_values(array_unique(array_filter(
+        $allColumns,
+        function ($column) use ($requestedColumns) {
+            return in_array($column, $requestedColumns, true);
+        }
+    )));
+    if (empty($visibleCols)) {
+        $visibleCols = $allColumns;
+    }
+
+    $rowColumns = array_merge(['id'], $allColumns);
+    $selectColumns = implode(', ', array_map(function ($column) {
+        return '`' . $column . '`';
+    }, $rowColumns));
+    $sql = 'SELECT `id`, ' . $selectColumns . ' FROM `roaming_openings`';
+    if (!empty($where)) {
+        $sql .= ' WHERE ' . implode(' AND ', $where);
+    }
+    $sql .= ' ORDER BY `country`, `operator`';
+
+    $results = collect(DB::connection('mysql')->select($sql, $params));
+
+    $filterOptions = [];
+    foreach ([
+        'country' => 'country',
+        'code' => 'code',
+        'operator' => 'operator',
+    ] as $key => $column) {
+        $filterOptions[$key] = DB::connection('mysql')
+            ->table('roaming_openings')
+            ->selectRaw('DISTINCT TRIM(`' . $column . '`) AS value')
+            ->whereNotNull($column)
+            ->whereRaw('TRIM(`' . $column . '`) <> ?', [''])
+            ->orderBy('value')
+            ->pluck('value')
+            ->map(function ($value) {
+                return trim((string) $value);
+            })
+            ->filter(function ($value) {
+                return $value !== '';
+            })
+            ->unique()
+            ->values();
+    }
+
+    return compact(
+        'results',
+        'filterOptions',
+        'selectedFilters',
+        'visibleCols',
+        'allColumns'
+    );
 }
 
 private function buildKpiRoamingQuery(Request $request)

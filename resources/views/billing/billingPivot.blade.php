@@ -305,6 +305,7 @@
                     <a href="{{ route('billingp', $qs) }}" class="btn btn-sm btn-warning text-dark" style="font-weight: 700;">Opérateurs</a>
                     <a href="{{ route('billingPivotNetCarrier', $qs) }}" class="btn btn-sm btn-light text-primary">Network</a>
                     <a href="{{ route('billingPivotCountryCarrier', $qs) }}" class="btn btn-sm btn-light text-primary">Pays</a>
+                    <a href="{{ route('billing.comparison', $qs) }}" class="btn btn-sm btn-outline-primary">Comparer réel / provisoire</a>
                     <button id="toggleTableBtn" class="btn btn-sm btn-light text-success toggle-btn">Mode Progression</button>
                     <div class="d-flex gap-2 ms-3 align-items-center">
                         <a href="{{ route('kpi.pivot', $qs) }}" class="btn btn-sm btn-warning px-3" style="font-weight:700;">

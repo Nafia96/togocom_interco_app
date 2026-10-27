@@ -33,20 +33,21 @@ class KpiCoutCarrierTest extends TestCase
             ->assertSee('Minutes');
     }
 
-    public function test_launchpad_links_to_costs_and_cost_menu_only_shows_carrier_page()
+    public function test_launchpad_links_to_costs_and_cost_menu_groups_all_cost_pages()
     {
         $this->withSession(['id' => 1, 'type_user' => 3])
             ->get(route('lunchepade'))
             ->assertOk()
             ->assertSee('LES COÛTS')
+            ->assertSee('Infos utiles')
             ->assertSee(route('kpi.cout-carrier'));
 
         $this->withSession(['id' => 1])
             ->get('/kpi/cout-carrier')
             ->assertOk()
             ->assertSee('Coût Carrier')
-            ->assertDontSee('KPI Roming')
-            ->assertDontSee('Partner KPI')
-            ->assertDontSee('Network KPI');
+            ->assertSee('Ouvertures Roaming')
+            ->assertSee('Liste des SIM de test')
+            ->assertDontSee('aria-label="KPI nav"', false);
     }
 }

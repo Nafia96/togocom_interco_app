@@ -3,6 +3,7 @@
 
 use App\Http\Controllers\OperatorController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\SimTestRoamingController;
 use App\Http\Controllers\NationalController;
 use App\Http\Controllers\OperationController;
 use App\Http\Controllers\RoamingController;
@@ -44,6 +45,8 @@ Route::get('billing', [HomeController::class, 'billing2'])->name('billing2');
 Route::get('billing2', [HomeController::class, 'billing2'])->name('billing2');
 Route::get('roaming', [HomeController::class, 'roaming2'])->name('roaming');
 Route::get('billingp', [HomeController::class, 'billingpivot'])->name('billingp');
+Route::get('/billing-comparison', [HomeController::class, 'billingComparison'])->name('billing.comparison');
+Route::get('/billing-comparison/export', [HomeController::class, 'billingComparisonExport'])->name('billing.comparison.export');
 
 Route::get('billingn', [HomeController::class, 'billingPivotNetCarrier'])->name('billingPivotNetCarrier');
 
@@ -56,6 +59,16 @@ Route::get('/billingKpiNetwork', [HomeController::class, 'billingKpiNetwork'])->
 // KPI pivot
 Route::get('kpi/pivot', [HomeController::class, 'kpip'])->name('kpi.pivot');
 Route::get('/kpi/roaming', [HomeController::class, 'kpiRoming'])->name('kpi.roaming');
+Route::get('/kpi/roaming-openings', [HomeController::class, 'roamingOpenings'])->name('kpi.roaming-openings');
+Route::get('/kpi/roaming-openings/export', [HomeController::class, 'roamingOpeningsExport'])->name('kpi.roaming-openings.export');
+Route::post('/kpi/roaming-openings', [HomeController::class, 'store'])->name('kpi.roaming-openings.store');
+Route::put('/kpi/roaming-openings/{id}', [HomeController::class, 'update'])->name('kpi.roaming-openings.update');
+Route::delete('/kpi/roaming-openings/{id}', [HomeController::class, 'destroy'])->name('kpi.roaming-openings.destroy');
+Route::get('/kpi/sim-test-roaming', [SimTestRoamingController::class, 'index'])->name('kpi.sim-test-roaming');
+Route::get('/kpi/sim-test-roaming/export', [SimTestRoamingController::class, 'export'])->name('kpi.sim-test-roaming.export');
+Route::post('/kpi/sim-test-roaming', [SimTestRoamingController::class, 'store'])->name('kpi.sim-test-roaming.store');
+Route::put('/kpi/sim-test-roaming/{id}', [SimTestRoamingController::class, 'update'])->name('kpi.sim-test-roaming.update');
+Route::delete('/kpi/sim-test-roaming/{id}', [SimTestRoamingController::class, 'destroy'])->name('kpi.sim-test-roaming.destroy');
 Route::get('/kpi/roaming/export', [HomeController::class, 'kpiRoamingExport'])->name('kpi.roaming.export');
 Route::get('/kpi/cout-carrier', [HomeController::class, 'kpiCoutCarrier'])->name('kpi.cout-carrier');
 Route::get('/kpi/network', [HomeController::class, 'Kpin'])->name('kpi.network');
