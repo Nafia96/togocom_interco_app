@@ -125,9 +125,9 @@
                                         <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pr-0 pt-3">
                                             <div class="card-content">
                                                 <h5 class="font-15" style="color:#ffd100;"> INFOS UTILS</h5>
-                                                <h2 class="mb-3 font-18" style="color:#ffd100;">LES COÛTS</h2>
-                                                <h2 class="mb-3 font-18" style="color:#ffd100;">LES COÛTS</h2>
-                                                <h2 class="mb-3 font-18" style="color:#ffd100;">LES COÛTS</h2>
+                                                <h2 class="mb-3 font-18" style="color:#ffd100;">Les coûts </h2>
+                                                <h2 class="mb-3 font-18" style="color:#ffd100;">Les ouvertures</h2>
+                                                <h2 class="mb-3 font-18" style="color:#ffd100;">Liste des sim</h2>
                                             </div>
                                         </div>
                                         <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6 pl-0">
