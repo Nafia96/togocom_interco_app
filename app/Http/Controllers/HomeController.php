@@ -990,9 +990,10 @@ class HomeController extends Controller
 
         $exportCsv = $request->boolean('export');
 
-        $startMonth = $request->input('start_month', Carbon::now()->subMonths(11)->format('Y-m'));
-        $endMonth = $request->input('end_month', Carbon::now()->format('Y-m'));
-        $selectedOperator = $request->input('operator');
+        $defaultMonth = Carbon::now()->subMonth()->format('Y-m');
+        $startMonth = $request->input('start_month', $defaultMonth);
+        $endMonth = $request->input('end_month', $defaultMonth);
+        $selectedOperator = $request->input('operator', '');
 
         try {
             $start = Carbon::parse($startMonth . '-01')->startOfMonth();
@@ -1006,40 +1007,65 @@ class HomeController extends Controller
         }
 
         $operators = Operator::where('is_delete', 0)
-            ->select('id', 'name')
+            ->select('id', 'name', 'currency')
             ->orderBy('name')
             ->get();
 
         $provisionalRows = DB::connection('inter_traffic')
             ->table('BILLING_STAT')
-            ->selectRaw('carrier_name as inter_operator, YEAR(start_date) as year, MONTH(start_date) as month, SUM(CAST(minutes AS DECIMAL(20,6))) as provisional_volume')
+            ->selectRaw('carrier_name as inter_operator, YEAR(start_date) as year, MONTH(start_date) as month, SUM(CAST(minutes AS DECIMAL(20,6))) as provisional_volume, SUM(CAST(amount_cfa AS DECIMAL(20,6))) as provisional_charge')
             ->whereBetween('start_date', [$start->copy()->startOfDay(), $end->copy()->endOfDay()])
-            ->where('direction', 'Revenue')
+            ->where('direction', 'Charge')
             ->groupBy('carrier_name', DB::raw('YEAR(start_date)'), DB::raw('MONTH(start_date)'))
             ->get();
 
         $operatorWarnings = [];
 
-        $realRows = Invoice::where('is_delete', 0)
-            ->whereNotNull('call_volume')
-            ->whereBetween('periodDate', [$start->toDateString(), $end->toDateString()])
-            ->selectRaw('operator_id, YEAR(periodDate) as year, MONTH(periodDate) as month, SUM(CAST(call_volume AS DECIMAL(20,2))) as real_volume')
-            ->groupBy('operator_id', DB::raw('YEAR(periodDate)'), DB::raw('MONTH(periodDate)'))
-            ->get();
+        $realInvoiceRows = Invoice::where('is_delete', 0)
+            ->where('invoice_type', 'real')
+            ->where('tgc_invoice', 2)
+            ->whereBetween('period', [$start->format('Y-m'), $end->format('Y-m')])
+            ->orderByDesc('updated_at')
+            ->orderByDesc('id')
+            ->get(['id', 'operator_id', 'period', 'call_volume', 'amount', 'updated_at']);
+
+        $operatorsById = $operators->keyBy('id');
+        $realByOperatorMonth = [];
+        $realChargeByOperatorMonth = [];
+        $invoiceWarnings = [];
+        $realInvoicesByOperatorMonth = $realInvoiceRows->groupBy(function ($row) {
+            return $row->operator_id . '|' . $row->period;
+        });
+
+        foreach ($realInvoicesByOperatorMonth as $invoiceRows) {
+            $row = $invoiceRows->first();
+            $operator = $operatorsById->get($row->operator_id);
+            if (!$operator) {
+                continue;
+            }
+
+            $canonical = $operator->name;
+            $monthKey = $row->period;
+            $realByOperatorMonth[$canonical][$monthKey] = (float) $row->call_volume;
+
+            $conversionRate = strtoupper($operator->currency) === 'EUR' ? 655.957 : 1;
+            $realChargeByOperatorMonth[$canonical][$monthKey] = (float) $row->amount * $conversionRate;
+
+            if ($invoiceRows->count() > 1) {
+                $invoiceWarnings[] = 'Plusieurs factures réelles existent pour ' . $canonical . ' en ' . $monthKey
+                    . ' (' . $invoiceRows->count() . ' lignes); la facture #' . $row->id
+                    . ' (mise à jour le ' . $row->updated_at . ') a été retenue.';
+            }
+        }
 
         $provisionalByOperatorMonth = [];
+        $provisionalChargeByOperatorMonth = [];
         foreach ($provisionalRows as $row) {
             $canonical = $this->resolveOperatorName($row->inter_operator, $operators, $operatorWarnings);
             $monthKey = $row->year . '-' . str_pad((int) $row->month, 2, '0', STR_PAD_LEFT);
             $provisionalByOperatorMonth[$canonical][$monthKey] = (float) $row->provisional_volume;
-        }
-
-        $realByOperatorMonth = [];
-        foreach ($realRows as $row) {
-            $operator = Operator::find($row->operator_id);
-            $canonical = $operator ? $operator->name : 'Inconnu';
-            $monthKey = $row->year . '-' . str_pad((int) $row->month, 2, '0', STR_PAD_LEFT);
-            $realByOperatorMonth[$canonical][$monthKey] = (float) $row->real_volume;
+            $provisionalChargeByOperatorMonth[$canonical][$monthKey] =
+                ($provisionalChargeByOperatorMonth[$canonical][$monthKey] ?? 0) + (float) $row->provisional_charge;
         }
 
         $comparison = [];
@@ -1056,19 +1082,34 @@ class HomeController extends Controller
                 $monthKey = $cursor->format('Y-m');
                 $provisionalVolume = (float) ($provisionalByOperatorMonth[$canonical][$monthKey] ?? 0);
                 $realVolume = (float) ($realByOperatorMonth[$canonical][$monthKey] ?? 0);
-                $ecart = $provisionalVolume - $realVolume;
-                $ecartPct = $realVolume > 0 ? (($ecart / $realVolume) * 100) : null;
+                $ecart = $realVolume - $provisionalVolume;
+                $ecartPct = $provisionalVolume > 0 ? (($ecart / $provisionalVolume) * 100) : null;
 
-                if ($realVolume == 0.0 && $provisionalVolume == 0.0) {
+                $provisionalCharge = (float) ($provisionalChargeByOperatorMonth[$canonical][$monthKey] ?? 0);
+                $realCharge = (float) ($realChargeByOperatorMonth[$canonical][$monthKey] ?? 0);
+                $chargeEcart = $realCharge - $provisionalCharge;
+                $chargeEcartPct = $provisionalCharge > 0 ? (($chargeEcart / $provisionalCharge) * 100) : null;
+
+                if ($provisionalVolume == 0.0 && $realVolume == 0.0) {
                     $deviationLevel = 'none';
                     $ecartPctLabel = '-';
-                } elseif ($realVolume == 0.0 && $provisionalVolume > 0) {
+                } elseif ($provisionalVolume == 0.0 && $realVolume > 0) {
                     $deviationLevel = 'bad';
-                    $ecartPctLabel = 'N/A';
+                    $ecartPctLabel = 'Pas de valeur';
                 } else {
-                    $absoluteDeviation = abs($ecartPct);
-                    $deviationLevel = $absoluteDeviation >= 10 ? 'bad' : ($absoluteDeviation >= 5 ? 'warn' : 'none');
+                    $deviationLevel = $ecartPct < 0 ? 'good' : ($ecartPct > 2 ? 'bad' : 'none');
                     $ecartPctLabel = number_format($ecartPct, 2, ',', ' ') . ' %';
+                }
+
+                if ($provisionalCharge == 0.0 && $realCharge == 0.0) {
+                    $chargeDeviationLevel = 'none';
+                    $chargeEcartPctLabel = '-';
+                } elseif ($provisionalCharge == 0.0 && $realCharge > 0) {
+                    $chargeDeviationLevel = 'bad';
+                    $chargeEcartPctLabel = 'Pas de valeur';
+                } else {
+                    $chargeDeviationLevel = $chargeEcartPct < 0 ? 'good' : ($chargeEcartPct > 2 ? 'bad' : 'none');
+                    $chargeEcartPctLabel = number_format($chargeEcartPct, 2, ',', ' ') . ' %';
                 }
 
                 $comparison[] = [
@@ -1080,6 +1121,12 @@ class HomeController extends Controller
                     'ecart_pct' => $ecartPct,
                     'ecart_pct_label' => $ecartPctLabel,
                     'deviation_level' => $deviationLevel,
+                    'provisional_charge' => $provisionalCharge,
+                    'real_charge' => $realCharge,
+                    'charge_ecart' => $chargeEcart,
+                    'charge_ecart_pct' => $chargeEcartPct,
+                    'charge_ecart_pct_label' => $chargeEcartPctLabel,
+                    'charge_deviation_level' => $chargeDeviationLevel,
                 ];
 
                 $cursor->addMonth();
@@ -1103,7 +1150,8 @@ class HomeController extends Controller
             'startMonth',
             'endMonth',
             'selectedOperator',
-            'operatorWarnings'
+            'operatorWarnings',
+            'invoiceWarnings'
         ));
     }
 
@@ -1121,16 +1169,23 @@ class HomeController extends Controller
         $callback = function () use ($comparison, $selectedOperator) {
             $handle = fopen('php://output', 'w');
             fprintf($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
-            fputcsv($handle, ['Opérateur', 'Mois', 'Provisoire', 'Réel', 'Écart', 'Écart %']);
+            fputcsv($handle, [
+                'Opérateur', 'Période de facturation', 'Volume partenaire (min)', 'Volume YAS (min)', 'Écart volume (min)', 'Écart volume %',
+                'Charge partenaire (XOF)', 'Charge YAS (XOF)', 'Écart charge (XOF)', 'Écart charge %',
+            ]);
 
             foreach ($comparison as $row) {
                 fputcsv($handle, [
                     $row['operator'],
                     $row['month'],
-                    number_format((float) $row['provisional'], 2, ',', ' '),
                     number_format((float) $row['real'], 2, ',', ' '),
+                    number_format((float) $row['provisional'], 2, ',', ' '),
                     number_format((float) $row['ecart'], 2, ',', ' '),
                     $row['ecart_pct_label'] ?? 'N/A',
+                    number_format((float) $row['real_charge'], 2, ',', ' '),
+                    number_format((float) $row['provisional_charge'], 2, ',', ' '),
+                    number_format((float) $row['charge_ecart'], 2, ',', ' '),
+                    $row['charge_ecart_pct_label'] ?? 'N/A',
                 ]);
             }
 
