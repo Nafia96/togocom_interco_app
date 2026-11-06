@@ -64,6 +64,11 @@
             KPI Roming
         </a>
 
+        <a href="{{ route('kpi.billing-roaming', $qs) }}" class="btn btn-sm {{ request()->routeIs('kpi.billing-roaming') ? 'kpi-active' : 'kpi-inactive' }}">
+            <svg viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h11A1.5 1.5 0 0 1 15 2.5v11a.5.5 0 0 1-.757.429L12 12.5l-2.243 1.429A.5.5 0 0 1 9 13.5V12l-2.243 1.429A.5.5 0 0 1 6 13.5V12l-2.243 1.429A.5.5 0 0 1 3 13.5V2.5a.5.5 0 0 1 .5-.5H1z"/></svg>
+            Billing Splited
+        </a>
+
     </div>
 
     <a href="{{ route('billingp', $qs) }}" class="btn btn-sm btn-secondary ms-3 px-3" style="font-weight:700; background: #133272; color: #ffd100; border: none;">

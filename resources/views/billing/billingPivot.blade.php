@@ -316,6 +316,10 @@
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-diagram-3 me-1" viewBox="0 0 16 16"><path d="M6 3.5A1.5 1.5 0 1 1 6 0a1.5 1.5 0 0 1 0 3.5ZM3.5 9a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Zm8 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3ZM6 16a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3ZM13.5 9a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3ZM6 4.5v3m0 4v3M4.5 7.5h5M8 7.5h3.5"/></svg>
                             KPI Roming
                         </a>
+                        <a href="{{ route('kpi.billing-roaming', $qs) }}" class="btn btn-sm btn-outline-warning border-warning" style="font-weight:700;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-receipt me-1" viewBox="0 0 16 16"><path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h11A1.5 1.5 0 0 1 15 2.5v11a.5.5 0 0 1-.757.429L12 12.5l-2.243 1.429A.5.5 0 0 1 9 13.5V12l-2.243 1.429A.5.5 0 0 1 6 13.5V12l-2.243 1.429A.5.5 0 0 1 3 13.5V2.5a.5.5 0 0 1 .5-.5H1z"/></svg>
+                            Billing Splited
+                        </a>
                     </div>
                 </div>
             </div>

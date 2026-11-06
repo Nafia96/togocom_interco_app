@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <title>KPI Roming</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="{{ asset('css/multi-filter.css') }}?v={{ filemtime(public_path('css/multi-filter.css')) }}" rel="stylesheet">
 <style>
     :root {
         --kpi-header-row-height: 48px;
@@ -273,6 +274,44 @@ table.kpi-roaming-table .filter-description {
 }
 
 .table-hover tbody tr:hover { background: rgba(19, 50, 114, 0.03); }
+.kpi-sort-link {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    color: inherit;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.kpi-sort-link:hover { color: #ffd100; }
+.kpi-sort-indicator { opacity: .42; font-size: .75em; }
+.kpi-sort-indicator.active { opacity: 1; }
+.kpi-pagination {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    overflow-x: auto;
+}
+
+.kpi-pagination nav { max-width: 100%; }
+
+.kpi-pagination .pagination {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: .2rem;
+    margin-bottom: 0;
+}
+
+.kpi-pagination .page-item { flex: 0 0 auto; }
+
+.kpi-pagination .page-link {
+    min-width: 2.1rem;
+    padding: .3rem .55rem;
+    text-align: center;
+    font-size: .82rem;
+    line-height: 1.25;
+}
 </style>
 </head>
 <body>
@@ -301,7 +340,7 @@ table.kpi-roaming-table .filter-description {
                             </li>
                         @elseif ($breadcrumbItem['type'] === 'filter')
                             <li class="breadcrumb-item filter-item {{ !empty($breadcrumbItem['hidden']) ? 'breadcrumb-filter-muted' : '' }}" data-breadcrumb-col="{{ $breadcrumbItem['column'] }}">
-                                <span>{{ $breadcrumbItem['label'] }} : <strong>{{ $breadcrumbItem['value'] }}</strong></span>
+                                <span>{{ $breadcrumbItem['label'] }} : <strong title="{{ $breadcrumbItem['title'] ?? $breadcrumbItem['value'] }}">{{ $breadcrumbItem['value'] }}</strong></span>
                                 @if (!empty($breadcrumbItem['hidden']))
                                     <small class="hidden-column-note">(colonne masquée)</small>
                                 @endif
@@ -312,7 +351,7 @@ table.kpi-roaming-table .filter-description {
                         @endif
                     @endforeach
                     <li class="breadcrumb-item breadcrumb-row-count">
-                        <span class="badge text-bg-secondary">{{ $rowCount }} ligne(s)</span>
+                        <span class="badge text-bg-secondary">{{ $results->firstItem() ?? 0 }}–{{ $results->lastItem() ?? 0 }} sur {{ $rowCount }} ligne(s)</span>
                     </li>
                 </ol>
             </nav>
@@ -328,24 +367,25 @@ table.kpi-roaming-table .filter-description {
                 ];
 
                 $filterConfigs = [
-                    'orig_type' => ['column' => 'orig_type', 'name' => 'filter_orig_type', 'selected' => $filterOrigType ?? ''],
-                    'dest_type' => ['column' => 'dest_type', 'name' => 'filter_dest_type', 'selected' => $filterDestType ?? ''],
-                    'orig_net' => ['column' => 'orig_net_name', 'name' => 'filter_orig_net', 'selected' => $filterOrigNet ?? ''],
-                    'dest_net' => ['column' => 'dest_net_name', 'name' => 'filter_dest_net', 'selected' => $filterDestNet ?? ''],
-                    'partner' => ['column' => 'partner_name', 'name' => 'filter_partner', 'selected' => $filterPartner ?? ''],
+                    'orig_type' => ['column' => 'orig_type', 'name' => 'filter_orig_type', 'label' => 'Orig type', 'selected' => $filterOrigType ?? []],
+                    'dest_type' => ['column' => 'dest_type', 'name' => 'filter_dest_type', 'label' => 'Dest type', 'selected' => $filterDestType ?? []],
+                    'orig_net' => ['column' => 'orig_net_name', 'name' => 'filter_orig_net', 'label' => 'Orig net', 'selected' => $filterOrigNet ?? []],
+                    'dest_net' => ['column' => 'dest_net_name', 'name' => 'filter_dest_net', 'label' => 'Dest net', 'selected' => $filterDestNet ?? []],
+                    'partner' => ['column' => 'partner_name', 'name' => 'filter_partner', 'label' => 'Partner', 'selected' => $filterPartner ?? []],
                 ];
             @endphp
 
-            <form method="GET" action="{{ route('kpi.roaming') }}" class="mb-3">
+            <form id="kpi-filter-form" method="GET" action="{{ route('kpi.roaming') }}" class="mb-3">
                 <div class="row g-2 align-items-end mb-3 kpi-filter-bar">
                     <div class="col-lg-1 col-md-3 kpi-filter-field kpi-filter-narrow">
-                        <label for="filter_direction" class="form-label">Direction</label>
-                        <select id="filter_direction" name="filter_direction" class="form-select form-select-sm">
-                            <option value="">Tous</option>
-                            @foreach (($filterOptions['direction'] ?? []) as $value)
-                                <option value="{{ $value }}" {{ ($filterDirection ?? '') == $value ? 'selected' : '' }}>{{ $value }}</option>
-                            @endforeach
-                        </select>
+                        @include('partials.multi_filter', [
+                            'name' => 'filter_direction',
+                            'label' => 'Direction',
+                            'options' => $filterOptions['direction'] ?? [],
+                            'selected' => $filterDirection ?? [],
+                            'formId' => 'kpi-filter-form',
+                            'compact' => false,
+                        ])
                     </div>
                     <div class="col-lg-2 col-md-3 kpi-filter-field">
                         <label for="start_date" class="form-label">Date début</label>
@@ -374,6 +414,14 @@ table.kpi-roaming-table .filter-description {
                             <option value="year" {{ ($granularity ?? 'none') === 'year' ? 'selected' : '' }}>Année</option>
                         </select>
                     </div>
+                    <div class="col-lg-1 col-md-3 kpi-filter-field kpi-filter-narrow">
+                        <label for="per_page" class="form-label">Lignes par page</label>
+                        <select id="per_page" name="per_page" class="form-select form-select-sm" onchange="this.form.submit()">
+                            @foreach ([50, 100, 200, 500] as $pageSize)
+                                <option value="{{ $pageSize }}" {{ $results->perPage() === $pageSize ? 'selected' : '' }}>{{ $pageSize }}</option>
+                            @endforeach
+                        </select>
+                    </div>
                     <div class="col-12 col-lg-auto d-flex flex-wrap gap-2">
                         <button type="submit" class="btn btn-sm btn-primary">Appliquer</button>
                         <a href="{{ route('kpi.roaming') }}" class="btn btn-sm btn-outline-secondary">Réinitialiser</a>
@@ -386,7 +434,9 @@ table.kpi-roaming-table .filter-description {
                             </button>
                             <div class="dropdown-menu dropdown-menu-end p-2" id="column-menu">
                                 @foreach ($tableColumns as $columnKey => $columnLabel)
-                                    @php($isLockedPeriod = $columnKey === 'period' && (($granularity ?? 'none') !== 'none'))
+                                    @php
+                                        $isLockedPeriod = $columnKey === 'period' && (($granularity ?? 'none') !== 'none');
+                                    @endphp
                                     <label class="dropdown-item d-flex align-items-center gap-2 {{ $isLockedPeriod ? 'text-muted' : '' }}">
                                         <input type="checkbox"
                                                class="form-check-input column-toggle"
@@ -404,13 +454,42 @@ table.kpi-roaming-table .filter-description {
                     </div>
                 </div>
 
+                @if ($rowCount > 5000)
+                    <div class="alert alert-warning py-2" role="alert">
+                        Résultat volumineux ({{ number_format($rowCount, 0, ',', ' ') }} lignes) : affinez avec les filtres, la période ou les colonnes, ou utilisez l’export CSV.
+                    </div>
+                @endif
+
                 <div class="table-responsive">
                         <table class="table kpi-roaming-table table-bordered table-hover table-sm align-middle mb-0">
                             <thead>
                                 <tr>
                                     @foreach ($allCols as $columnKey => $columnLabel)
                                         @if (in_array($columnKey, $visibleColumns, true))
-                                            <th data-col="{{ $columnKey }}" class="{{ $columnKey === 'period' ? 'period-column period-column-' . ($granularity ?? 'none') : '' }}">{{ $columnLabel }}</th>
+                                            @php
+                                                $numericSort = in_array($columnKey, ['attempt', 'ner', 'asr', 'acd_sec'], true);
+                                                $activeSort = $sort === $columnKey;
+                                                $nextDir = $activeSort
+                                                    ? ($numericSort ? ($dir === 'desc' ? 'asc' : null) : ($dir === 'asc' ? 'desc' : null))
+                                                    : ($numericSort ? 'desc' : 'asc');
+                                                if ($nextDir === null) {
+                                                    $sortUrl = request()->fullUrlWithQuery(['sort' => null, 'dir' => null, 'page' => null]);
+                                                    $sortTitle = 'Retirer le tri';
+                                                } else {
+                                                    $sortUrl = request()->fullUrlWithQuery(['sort' => $columnKey, 'dir' => $nextDir, 'page' => null]);
+                                                    $sortTitle = $columnKey === 'period'
+                                                        ? ($nextDir === 'asc' ? 'Du plus ancien au plus récent' : 'Du plus récent au plus ancien')
+                                                        : ($numericSort
+                                                            ? ($nextDir === 'desc' ? 'Trier du plus grand au plus petit' : 'Trier du plus petit au plus grand')
+                                                            : ($nextDir === 'asc' ? 'Trier de A à Z' : 'Trier de Z à A'));
+                                                }
+                                            @endphp
+                                            <th data-col="{{ $columnKey }}" aria-sort="{{ $activeSort ? ($dir === 'asc' ? 'ascending' : 'descending') : 'none' }}" class="{{ $columnKey === 'period' ? 'period-column period-column-' . ($granularity ?? 'none') : '' }}">
+                                                <a class="kpi-sort-link" href="{{ $sortUrl }}" title="{{ $sortTitle }}">
+                                                    <span>{{ $columnLabel }}</span>
+                                                    <span class="kpi-sort-indicator {{ $activeSort ? 'active' : '' }}" aria-hidden="true">{{ $activeSort ? ($dir === 'asc' ? '▲' : '▼') : '↕' }}</span>
+                                                </a>
+                                            </th>
                                         @endif
                                     @endforeach
                                 </tr>
@@ -418,14 +497,18 @@ table.kpi-roaming-table .filter-description {
                                     @foreach ($allCols as $columnKey => $columnLabel)
                                         @if (in_array($columnKey, $visibleColumns, true))
                                             @if (isset($filterConfigs[$columnKey]))
-                                                @php($config = $filterConfigs[$columnKey])
+                                                @php
+                                                    $config = $filterConfigs[$columnKey];
+                                                @endphp
                                                 <th data-col="{{ $columnKey }}" class="{{ $columnKey === 'period' ? 'period-column period-column-' . ($granularity ?? 'none') : '' }}">
-                                                    <select name="{{ $config['name'] }}" class="form-select form-select-sm" onchange="this.form.submit()">
-                                                        <option value="">Tous</option>
-                                                        @foreach (($filterOptions[$columnKey] ?? []) as $value)
-                                                            <option value="{{ $value }}" {{ ($config['selected'] ?? '') == $value ? 'selected' : '' }}>{{ $value }}</option>
-                                                        @endforeach
-                                                    </select>
+                                                    @include('partials.multi_filter', [
+                                                        'name' => $config['name'],
+                                                        'label' => $config['label'],
+                                                        'options' => $filterOptions[$columnKey] ?? [],
+                                                        'selected' => $config['selected'],
+                                                        'formId' => 'kpi-filter-form',
+                                                        'compact' => true,
+                                                    ])
                                                 </th>
                                             @else
                                                 <th data-col="{{ $columnKey }}" class="{{ $columnKey === 'period' ? 'period-column period-column-' . ($granularity ?? 'none') : '' }}">
@@ -441,7 +524,7 @@ table.kpi-roaming-table .filter-description {
                                 </tr>
                             </thead>
                             <tbody>
-                                @if ($results->isEmpty())
+                                @if ($results->count() === 0)
                                     <tr>
                                         <td colspan="{{ $visibleColumnCount }}" class="text-center text-muted">Aucune donnée pour cette période / ces filtres.</td>
                                     </tr>
@@ -494,12 +577,16 @@ table.kpi-roaming-table .filter-description {
                         </table>
                 </div>
             </form>
+            <div class="kpi-pagination mt-3">
+                {{ $results->links('pagination::bootstrap-4') }}
+            </div>
 
         </div>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ asset('js/multi-filter.js') }}?v={{ filemtime(public_path('js/multi-filter.js')) }}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const table = document.querySelector('table.kpi-roaming-table');

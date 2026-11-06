@@ -60,6 +60,8 @@ Route::get('/billingKpiNetwork', [HomeController::class, 'billingKpiNetwork'])->
 Route::get('kpi/pivot', [HomeController::class, 'kpip'])->name('kpi.pivot');
 Route::get('/kpi/roaming', [HomeController::class, 'kpiRoming'])->name('kpi.roaming');
 Route::get('/kpi/roaming-openings', [HomeController::class, 'roamingOpenings'])->name('kpi.roaming-openings');
+Route::get('/kpi/billing-roaming', [HomeController::class, 'billingRoaming'])->name('kpi.billing-roaming');
+Route::get('/kpi/billing-roaming/export', [HomeController::class, 'billingRoamingExport'])->name('kpi.billing-roaming.export');
 Route::get('/kpi/roaming-openings/export', [HomeController::class, 'roamingOpeningsExport'])->name('kpi.roaming-openings.export');
 Route::post('/kpi/roaming-openings', [HomeController::class, 'store'])->name('kpi.roaming-openings.store');
 Route::put('/kpi/roaming-openings/{id}', [HomeController::class, 'update'])->name('kpi.roaming-openings.update');

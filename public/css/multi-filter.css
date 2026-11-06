@@ -1,0 +1,44 @@
+.multi-filter { width: 100%; }
+
+.multi-filter-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .45rem;
+    max-width: 100%;
+    text-align: left;
+}
+
+.multi-filter-toggle .multi-filter-label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.multi-filter-compact .multi-filter-toggle {
+    min-height: 32px;
+    padding: .25rem .4rem;
+    white-space: nowrap;
+}
+
+.multi-filter-menu {
+    max-height: 320px;
+    overflow: hidden;
+    box-shadow: 0 .4rem 1rem rgba(0, 0, 0, .2);
+}
+
+.multi-filter-options {
+    max-height: 240px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.multi-filter-option {
+    min-height: 30px;
+    padding: .3rem .4rem;
+    white-space: normal;
+    cursor: pointer;
+}
+
+.multi-filter-option[hidden] { display: none !important; }
