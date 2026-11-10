@@ -162,6 +162,10 @@ Route::middleware([NotConnected::class])->group(function () {
     // Generic routes that work with any direction value. Use URL-encoded direction names when needed.
     Route::get('show_measure/{direction}', [NationalController::class, 'show_by_direction'])->name('show_measure');
     Route::post('mesure', [NationalController::class, 'mesure_store'])->name('mesure.store');
+        Route::get('international/declarations', [NationalController::class, 'declarations'])->name('international.declarations');
+        Route::post('international/declarations', [NationalController::class, 'store_declaration'])->name('international.declarations.store');
+        Route::put('international/declarations/{declaration}', [NationalController::class, 'update_declaration'])->name('international.declarations.update');
+        Route::get('international/transit-fees', [NationalController::class, 'transit_fees'])->name('international.transit-fees');
     // Dedicated dashboards per sens (unique pages for each direction)
     Route::get('tgc_tgt_dashboard', [NationalController::class, 'show_tgc_tgt'])->name('tgc_tgt_dashboard');
     Route::get('tgt_mat_dashboard', [NationalController::class, 'show_tgt_mat'])->name('tgt_mat_dashboard');

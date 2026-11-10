@@ -263,6 +263,15 @@
                             </ul>
                         </li>
 
+                        <li class="dropdown {{ Request::is('international/*') ? 'active open' : '' }}">
+                        <li class="dropdown {{ Request::is('international/*') ? 'active open' : '' }}">
+                            <a href="#" class="menu-toggle nav-link has-dropdown"><i data-feather="globe"></i><span>International</span></a>
+                            <ul class="dropdown-menu" style="{{ Request::is('international/*') ? 'display:block;' : '' }}">
+                                <li class="{{ Request::is('international/declarations') ? 'active' : '' }}"><a class="nav-link" href="{{ route('international.declarations') }}">DECLARATIONS</a></li>
+                                <li class="{{ Request::is('international/transit-fees') ? 'active' : '' }}"><a class="nav-link" href="{{ route('international.transit-fees') }}">TRANSIT FEES</a></li>
+                            </ul>
+                        </li>
+
                         <li class="menu-header">Gestions des comptes</li>
 
 

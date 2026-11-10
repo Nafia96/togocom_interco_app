@@ -16,6 +16,7 @@ use App\Models\Measure;
 use App\Models\UnitPrice;
 use App\Models\MeasureValidationAudit;
 use App\Models\NationalInvoice;
+use App\Models\InternationalDeclaration;
 use Illuminate\Http\Request;
 
 class NationalController extends Controller
@@ -659,6 +660,65 @@ class NationalController extends Controller
     {
         $invoices = \App\Models\NationalInvoice::orderBy('created_at', 'desc')->get();
         return view('invoices.national_index', compact('invoices'));
+    }
+
+    public function declarations()
+    {
+        $declarations = InternationalDeclaration::orderBy('period', 'desc')->get();
+        $declarationTotals = InternationalDeclaration::query()
+            ->selectRaw('COALESCE(SUM(retail_tgc), 0) AS retail_tgc, COALESCE(SUM(wholesale), 0) AS wholesale, COALESCE(SUM(visitor_roaming), 0) AS visitor_roaming, COALESCE(SUM(charge), 0) AS charge')
+            ->first();
+
+        return view('national.declarations', compact('declarations', 'declarationTotals'));
+    }
+
+    public function transit_fees()
+    {
+        $transitFees = InternationalDeclaration::query()
+            ->select('period', 'retail_tgc', 'wholesale')
+            ->selectRaw('COALESCE(retail_tgc, 0) + COALESCE(wholesale, 0) AS total')
+            ->selectRaw('ROUND((COALESCE(retail_tgc, 0) + COALESCE(wholesale, 0)) * 0.02, 2) AS transit_fees')
+            ->orderBy('period', 'desc')
+            ->get();
+
+        return view('national.transit_fees', compact('transitFees'));
+    }
+
+    public function store_declaration(Request $request)
+    {
+        $validated = $request->validate([
+            'period' => ['required', 'regex:/^\d{4}-(0[1-9]|1[0-2])$/', 'unique:international_declarations,period'],
+            'field' => ['required', 'in:retail_tgc,wholesale,visitor_roaming,charge'],
+            'value' => ['required', 'numeric', 'between:0,999999999999999999.99'],
+        ], [
+            'period.unique' => 'Cette période existe déjà. Veuillez choisir une autre période.',
+        ]);
+
+        InternationalDeclaration::create([
+            'period' => $validated['period'],
+            $validated['field'] => $validated['value'],
+        ]);
+
+        return redirect()->route('international.declarations')->with('success', 'Déclaration enregistrée.');
+    }
+
+    public function update_declaration(Request $request, InternationalDeclaration $declaration)
+    {
+        $validated = $request->validate([
+            'period' => [
+                'required',
+                'regex:/^\d{4}-(0[1-9]|1[0-2])$/',
+                \Illuminate\Validation\Rule::unique('international_declarations', 'period')->ignore($declaration->id),
+            ],
+            'retail_tgc' => ['nullable', 'numeric', 'between:0,999999999999999999.99'],
+            'wholesale' => ['nullable', 'numeric', 'between:0,999999999999999999.99'],
+            'visitor_roaming' => ['nullable', 'numeric', 'between:0,999999999999999999.99'],
+            'charge' => ['nullable', 'numeric', 'between:0,999999999999999999.99'],
+        ]);
+
+        $declaration->update($validated);
+
+        return redirect()->route('international.declarations')->with('success', 'Déclaration modifiée.');
     }
 
     /**
